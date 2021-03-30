@@ -47,7 +47,8 @@ typedef float vec2_t[2];
 enum class RenderBackend
 {
 	GL,
-	DX
+	DX,
+	VK
 };
 
 // Uncomment one of the two following typedefs:

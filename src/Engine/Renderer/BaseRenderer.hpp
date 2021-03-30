@@ -461,6 +461,8 @@ protected:
 	std::vector<IFont*> m_Fonts;
 	RenderBackend m_Backend;
 
+	static constexpr size_t NUM_FRAME_DATA = 2;
+
 	// Inherited via IRenderer
 	virtual void ShareResources(IRenderer* renderer) override;
 	virtual void SetRenderCallback(IRenderCallback* pCallback) override;

@@ -597,18 +597,36 @@ bool CVKRenderer::CreateDevice()
 		for (size_t i = 0; i < queue_families_count; i++)
 		{
 			auto family = queue_families[i];
-			if ((family.queueCount > 0) && family.queueFlags & desired_capabilities)
+			if ((family.queueCount > 0) && family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			{
-				queue_familiy_index = i;
+				m_GraphicsQueueId = i;
 				break;
 			}
 		}
+		for (size_t i = 0; i < queue_families_count; i++)
+		{
+			auto family = queue_families[i];
+			if ((family.queueCount > 0))
+			{
+					// A rather perplexing call in the Vulkan API, but
+				// it is a necessity to call.
+				VkBool32 supportsPresent = VK_FALSE;
+				vkGetPhysicalDeviceSurfaceSupportKHR( physical_device, i, m_PresentationSurface, &supportsPresent );
+				if ( supportsPresent ) {
+					// Got it!
+					m_PresentationQueueId = i;
+					break;
+				}
+			}
+		}
+		#if 0
 		VkBool32 isSupported;
 		if (vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, 0, m_PresentationSurface, &isSupported) != VkResult::VK_SUCCESS || isSupported == VK_FALSE)
 		{
 			VK_ERROR("Surface not supported");
 			return false;
 		}
+		#endif
 	}
 
 	std::vector<VkSurfaceFormatKHR> vk_surfaceFormats;
@@ -681,6 +699,37 @@ bool CVKRenderer::CreateDevice()
 #endif
 
 	return true;
+}
+
+void CVKRenderer::CreateSemaphores()
+{
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType				  = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	for (int i = 0; i < NUM_FRAME_DATA; ++i)
+	{
+		ID_VK_CHECK(vkCreateSemaphore(m_Device, &semaphoreCreateInfo, NULL, &acquireSemaphores[i]));
+		ID_VK_CHECK(vkCreateSemaphore(m_Device, &semaphoreCreateInfo, NULL, &renderCompleteSemaphores[i]));
+	}
+}
+
+void CVKRenderer::CreateCommandPool()
+{
+	// Because command buffers can be very flexible, we don't want to be
+	// doing a lot of allocation while we're trying to render.
+	// For this reason we create a pool to hold allocated command buffers.
+	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+	commandPoolCreateInfo.sType					  = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+
+	// This allows the command buffer to be implicitly reset when vkBeginCommandBuffer is called.
+	// You can also explicitly call vkResetCommandBuffer.
+	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	// We'll be building command buffers to send to the graphics queue
+	assert(0);
+	//commandPoolCreateInfo.queueFamilyIndex = vkcontext.graphicsFamilyIdx;
+
+	ID_VK_CHECK(vkCreateCommandPool(m_Device, &commandPoolCreateInfo, NULL, &commandPool));
 }
 
 void CVKRenderer::setupDebugMessenger()

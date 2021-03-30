@@ -9,10 +9,6 @@
 class CVKRenderer;
 extern CVKRenderer* gD3DRender;
 
-inline bool SUCCESS_VK(VkResult result)
-{
-	return result == VK_SUCCESS;
-}
 
 inline bool FAILED_VK(VkResult result)
 {
@@ -21,6 +17,17 @@ inline bool FAILED_VK(VkResult result)
 
 #define VK_LOG(fmt, ...) CryLog("[VK] " fmt, __VA_ARGS__)
 #define VK_ERROR(fmt, ...) CryError("[VK] " fmt, __VA_ARGS__)
+
+inline bool SUCCESS_VK(VkResult result)
+{
+	return result == VK_SUCCESS;
+}
+
+inline void ID_VK_CHECK(VkResult result)
+{
+	if (!SUCCESS_VK(result))
+		VK_ERROR("Error api call");
+}
 
 #define RETURN_B_IF_FAILED(result, msg, ...) \
 	if (FAILED_VK((result)))                 \
@@ -104,6 +111,8 @@ class CVKRenderer : public CRenderer
 	void PrintQueueFamilyProperties(const VkQueueFamilyProperties& properties);
 
 	bool CreateDevice();
+	void CreateSemaphores();
+	void CreateCommandPool();
 
 	void setupDebugMessenger();
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -125,17 +134,31 @@ class CVKRenderer : public CRenderer
 	std::vector<VkPhysicalDevice> EnumeratePhysicalDevices();
 
 	friend INT_PTR SelectDeviceProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+  public:
   private:
 	VkInstance m_Instance;
 	VkDebugUtilsMessengerEXT debugMessenger;
 	VkDevice m_Device;
+
 	VkQueue m_GraphicsQueue{VK_NULL_HANDLE};
 	VkQueue m_ComputeQueue{VK_NULL_HANDLE};
 	VkQueue m_PresentationQueue{VK_NULL_HANDLE};
+	
+	uint m_GraphicsQueueId{};
+	uint m_ComputeQueueId{};
+	uint m_PresentationQueueId{};
+
 	VkSurfaceKHR m_PresentationSurface{VK_NULL_HANDLE};
 
 	std::vector<VkPhysicalDeviceFeatures> device_features;
 	std::vector<VkPhysicalDeviceProperties> device_properties;
+
+
+	VkCommandPool commandPool;
+
+	VkSemaphore acquireSemaphores[NUM_FRAME_DATA];
+	VkSemaphore renderCompleteSemaphores[NUM_FRAME_DATA];
 
 	size_t m_DeviceId{0};
 
