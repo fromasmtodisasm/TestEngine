@@ -1,7 +1,7 @@
 #include <BlackBox/Core/Platform/CryLibrary.h>
 
-#include "FxParser.h"
 #include "Driver.hpp"
+#include "FxParser.h"
 
 #include <memory>
 
@@ -20,13 +20,13 @@ FxParser::~FxParser()
 
 bool FxParser::Parse(const std::string& f, PEffect* pEffect)
 {
-
-#define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
+#ifndef STATIC_PARSER
+#	define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
 	//auto g_driver = std::unique_ptr<IDriver>(CreateParserDriver());
 	//CCryLibrary ;
 	if (m_FxLibrary = CryLoadLibrary("FxParser"))
 	{
-		PFNCREATEDRIVERINTERFACE CreateParserDriver = (PFNCREATEDRIVERINTERFACE)CryGetProcAddress(m_FxLibrary,"CreateParserDriver");
+		PFNCREATEDRIVERINTERFACE CreateParserDriver = (PFNCREATEDRIVERINTERFACE)CryGetProcAddress(m_FxLibrary, "CreateParserDriver");
 		g_driver									= CreateParserDriver();
 
 		typedef void* (*PtrFunc_ModuleInitISystem)(ISystem * pSystem, const char* moduleName);
@@ -39,4 +39,9 @@ bool FxParser::Parse(const std::string& f, PEffect* pEffect)
 		return *pEffect != nullptr;
 	}
 	return false;
+#else
+	g_driver = CreateParserDriver();
+	*pEffect = g_driver->parse(f.data());
+	return *pEffect != nullptr;
+#endif // !STATIC_PARSER
 }

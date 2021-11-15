@@ -4,6 +4,8 @@ add_package(stb)
 add_package(freetype)
 add_package(freeimage)
 
+set(STATIC_PARSER ON)
+
 add_subdirectory(Shaders)
 
 start_sources()
@@ -88,6 +90,9 @@ macro(add_common_libs)
 	target_link_libraries(${THIS_PROJECT} PRIVATE Utils)
 	target_link_libraries(${THIS_PROJECT} PRIVATE FxParser)
 	add_sdl(${THIS_PROJECT})
+	if (STATIC_PARSER)
+		target_compile_definitions(${THIS_PROJECT} PUBLIC "STATIC_PARSER")
+	endif()
 endmacro()
 
 macro(add_common_includes)

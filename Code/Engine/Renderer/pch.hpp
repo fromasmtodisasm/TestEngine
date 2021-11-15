@@ -190,4 +190,4 @@ inline void SetDebugName(ID3D11DeviceChild* pNativeResource, const char* name)
 #endif
 }
 
-typedef IUnknown* d3dShaderHandleType;
+typedef IUnknown d3dShaderHandleType;

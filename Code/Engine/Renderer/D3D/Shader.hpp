@@ -35,37 +35,42 @@ enum ED3DShError
 	ED3DShError_Compiling,
 };
 
-class CHWShader : public NoCopy, public _reference_target_t
+class CHWShader : public NoCopy
+	, public _reference_target_t
 {
   public:
-	EHWShaderClass            m_eSHClass;
+	EHWShaderClass m_eSHClass;
 	//EHWSProfile m_eHWProfile;
 
 	static class CHWShader* s_pCurHWVS;
-	static char *s_GS_MultiRes_NV;
-
-	string                    m_Name;
-	string                    m_NameSourceFX;
-	string                    m_EntryFunc;
-	static CHWShader*  mfForName(const char* name, const char* nameSource, const char* szEntryFunc, EHWShaderClass eClass, CShader* pFX, uint64 nMaskGen = 0, uint64 nMaskGenFX = 0);
+	static char*			s_GS_MultiRes_NV;
+	string					m_Name;
+	string					m_NameSourceFX;
+	string					m_EntryFunc;
+	static CHWShader*		mfForName(const char* name, const char* nameSource, const char* szEntryFunc, EHWShaderClass eClass, CShader* pFX, uint64 nMaskGen = 0, uint64 nMaskGenFX = 0);
+	const char*				mfProfileString(EHWShaderClass type);
+	inline const char* GetName()
+	{
+		return m_Name.c_str();
+	}
 };
 
 // Shader pass definition for HW shaders
 struct SShaderPass
 {
 	std::string Name;
-	uint32      m_RenderState;     // Render state flags
+	uint32		m_RenderState; // Render state flags
 	signed char m_eCull;
-	uint8       m_AlphaRef;
+	uint8		m_AlphaRef;
 
-	uint16      m_PassFlags;         // Different usefull Pass flags (SHPF_)
+	uint16 m_PassFlags; // Different usefull Pass flags (SHPF_)
 
-	CHWShader*  m_VShader;        // Pointer to the vertex shader for the current pass
-	CHWShader*  m_PShader;        // Pointer to fragment shader
-	CHWShader*  m_GShader;        // Pointer to the geometry shader for the current pass
-	CHWShader*  m_DShader;        // Pointer to the domain shader for the current pass
-	CHWShader*  m_HShader;        // Pointer to the hull shader for the current pass
-	CHWShader*  m_CShader;        // Pointer to the compute shader for the current pass
+	CHWShader* m_VShader; // Pointer to the vertex shader for the current pass
+	CHWShader* m_PShader; // Pointer to fragment shader
+	CHWShader* m_GShader; // Pointer to the geometry shader for the current pass
+	CHWShader* m_DShader; // Pointer to the domain shader for the current pass
+	CHWShader* m_HShader; // Pointer to the hull shader for the current pass
+	CHWShader* m_CShader; // Pointer to the compute shader for the current pass
 	SShaderPass();
 
 	int Size()
@@ -76,14 +81,14 @@ struct SShaderPass
 
 	void GetMemoryUsage(ICrySizer* pSizer) const
 	{
-		#if 0
+#if 0
 		pSizer->AddObject(m_VShader);
 		pSizer->AddObject(m_PShader);
 		pSizer->AddObject(m_GShader);
 		pSizer->AddObject(m_HShader);
 		pSizer->AddObject(m_DShader);
 		pSizer->AddObject(m_CShader);
-		#endif
+#endif
 	}
 	void mfFree()
 	{
@@ -111,10 +116,148 @@ struct SShaderPass
 			m_CShader->AddRef();
 	}
 
-private:
+  private:
 	SShaderPass& operator=(const SShaderPass& sl);
 };
 
+//====================================================================================
+//! Registered shader techniques ID's
+enum EShaderTechniqueID
+{
+	TTYPE_GENERAL = -1,
+	TTYPE_Z		  = 0,
+	TTYPE_SHADOWGEN,
+	TTYPE_GLOWPASS,
+	TTYPE_MOTIONBLURPASS,
+	TTYPE_CUSTOMRENDERPASS,
+	TTYPE_EFFECTLAYER,
+	TTYPE_WATERREFLPASS,
+	TTYPE_WATERCAUSTICPASS,
+	TTYPE_ZPREPASS,
+
+	//! PC specific techniques must go after this point, to support shader serializing TTYPE_CONSOLE_MAX must equal TTYPE_MAX for console.
+	TTYPE_CONSOLE_MAX,
+	TTYPE_DEBUG = TTYPE_CONSOLE_MAX,
+
+	TTYPE_MAX
+};
+
+struct SShaderTechnique
+{
+	CShader*  m_shader; // Shader owner of this technique.
+	CCryNameR m_NameStr;
+	//CCryNameTSCRC             m_NameCRC;
+	TArray<SShaderPass> m_Passes; // General passes
+	int					m_Flags;  // Different flags (FHF_)
+	uint32				m_nPreprocessFlags;
+	int8				m_nTechnique[TTYPE_MAX]; // Next technique in sequence
+	//TArray<CRenderElement*> m_REs;                   // List of all render elements registered in the shader
+	//TArray<SHRenderTarget*>   m_RTargets;
+	float m_fProfileTime;
+
+	int Size()
+	{
+		uint32 i;
+		int	   nSize = sizeof(SShaderTechnique);
+		for (i = 0; i < m_Passes.Num(); i++)
+		{
+			nSize += m_Passes[i].Size();
+		}
+		//nSize += m_RTargets.GetMemoryUsage();
+		return nSize;
+	}
+
+	void GetMemoryUsage(ICrySizer* pSizer) const
+	{
+		pSizer->Add(*this);
+		pSizer->AddObject(m_Passes);
+#if 0
+		pSizer->AddObject(m_REs);
+		pSizer->AddObject(m_RTargets);
+#endif
+	}
+
+	SShaderTechnique(CShader* shader)
+	{
+		m_shader = shader;
+		uint32 i;
+		for (i = 0; i < TTYPE_MAX; i++)
+		{
+			m_nTechnique[i] = -1;
+		}
+#if 0
+		for (i = 0; i < m_REs.Num(); i++)
+		{
+			SAFE_DELETE(m_REs[i]);
+		}
+		m_REs.Free();
+#endif
+
+		m_Flags			   = 0;
+		m_nPreprocessFlags = 0;
+		m_fProfileTime	   = 0;
+	}
+	SShaderTechnique& operator=(const SShaderTechnique& sl)
+	{
+		memcpy(this, &sl, sizeof(SShaderTechnique));
+		if (sl.m_Passes.Num())
+		{
+			m_Passes.Copy(sl.m_Passes);
+			for (uint32 i = 0; i < sl.m_Passes.Num(); i++)
+			{
+				SShaderPass* d = &m_Passes[i];
+				d->AddRefsToShaders();
+			}
+		}
+#if 0
+		if (sl.m_REs.Num())
+		{
+			m_REs.Create(sl.m_REs.Num());
+			for (uint32 i = 0; i < sl.m_REs.Num(); i++)
+			{
+				if (sl.m_REs[i])
+					m_REs[i] = sl.m_REs[i]->mfCopyConstruct();
+			}
+		}
+#endif
+
+		return *this;
+	}
+
+	~SShaderTechnique()
+	{
+		for (uint32 i = 0; i < m_Passes.Num(); i++)
+		{
+			SShaderPass* sl = &m_Passes[i];
+
+			sl->mfFree();
+		}
+#if 0
+		for (uint32 i = 0; i < m_REs.Num(); i++)
+		{
+			CRenderElement* pRE = m_REs[i];
+			pRE->Release(false);
+		}
+		m_REs.Free();
+#endif
+		m_Passes.Free();
+	}
+	void UpdatePreprocessFlags(CShader* pSH);
+
+	void* operator new(size_t Size)
+	{
+		void* ptr = malloc(Size);
+		memset(ptr, 0, Size);
+		return ptr;
+	}
+	void* operator new(size_t Size, const std::nothrow_t& nothrow)
+	{
+		void* ptr = malloc(Size);
+		if (ptr) memset(ptr, 0, Size);
+		return ptr;
+	}
+	void operator delete(void* Ptr) { free(Ptr); }
+};
 
 class SD3DShader
 {
@@ -187,9 +330,9 @@ struct SD3DShaderHandle
 
 	void GetMemoryUsage(ICrySizer* pSizer) const
 	{
-		#if 0
+#if 0
 		pSizer->AddObject(m_pShader);
-		#endif
+#endif
 	}
 };
 
@@ -213,7 +356,7 @@ class CHWShader_D3D : public CHWShader
 	};
 
   public:
-	SHWSInstance*		 m_pCurInst{};
+	SHWSInstance* m_pCurInst{};
 
 	CHWShader_D3D()
 	{
@@ -227,7 +370,7 @@ class CHWShader_D3D : public CHWShader
 	{
 		return ED3DShError_CompilingError;
 	}
-	#if 0
+#if 0
 	//ILINE most common outcome (avoid LHS on link register 360)
 	ILINE ED3DShError mfIsValid(SHWSInstance*& pInst, bool bFinalise)
 	{
@@ -238,10 +381,12 @@ class CHWShader_D3D : public CHWShader
 
 		return mfIsValid_Int(pInst, bFinalise);
 	}
-	#endif
-	bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags);
+#endif
+	bool	   CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags);
+	D3DBlob*				mfCompileHLSL(CShader* pSH, char* prog_text, void** ppConstantTable, D3DBlob** ppErrorMsgs, uint32 nFlags);
+	CHWShader* mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr);
 
-	bool Upload(ID3DBlob* pBlob, CShader* pSH);
+	bool Upload(SHWSInstance* pInst, ID3DBlob* pBlob, CShader* pSH);
 	void mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH, bool bCol, byte bNormal, bool bTC0, bool bTC1[2], bool bPSize, bool bTangent[2], bool bBitangent[2], bool bHWSkin, bool bSH[2], bool bVelocity, bool bMorph)
 	{
 		if (bBitangent[0])
@@ -497,7 +642,6 @@ class CShader : public IShader
 
 	static void							   LoadShader(SShaderPass* pass, EHWShaderClass st, std::vector<std::string>& code, CShader* pSH);
 	static const char*					   mfProfileString(EHWShaderClass type);
-	static std::pair<ID3DBlob*, ID3DBlob*> Load(const std::string_view text, EHWShaderClass type, const char* pEntry, bool bFromMemory);
 	static CHWShader_D3D*				   LoadFromFile(const std::string_view text, IShader::Type type, const char* pEntry);
 	static std::pair<ID3DBlob*, ID3DBlob*> LoadFromMemory(const std::vector<std::string>& text, EHWShaderClass type, const char* pEntry);
 
@@ -507,9 +651,12 @@ class CShader : public IShader
 	int	   m_Flags	 = 0;
 	int	   m_Flags2	 = 0;
 
-	ID3D11InputLayout*						m_pInputLayout;
-	D3D11_SHADER_DESC						m_Desc;
-	ID3D11ShaderReflection*					m_pReflection;
-	DynVertexFormat							format;
+	ID3D11InputLayout*		  m_pInputLayout;
+	D3D11_SHADER_DESC		  m_Desc;
+	ID3D11ShaderReflection*	  m_pReflection;
+	InputLayoutHandle		  m_eVertexFormat; // Base vertex format for the shader (see VertexFormats.h)
+	ECull					  m_eCull;		   // Global culling type
+	TArray<SShaderTechnique*> m_HWTechniques;  // Hardware techniques
+
 	std::array<CHWShader_D3D*, Type::E_NUM> m_Shaders{0};
 };

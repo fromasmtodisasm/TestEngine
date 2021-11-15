@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 
 CShader::~CShader()
 {
+	#if 0
 	for (auto s : m_Shaders)
 	{
 		if (s)
@@ -21,11 +22,12 @@ CShader::~CShader()
 			SAFE_RELEASE(sh);
 		}
 	}
+	#endif
 }
 
 CShader& CShader::operator=(const CShader& src)
 {
-	//uint32 i;
+	uint32 i;
 
 	//mfFree();
 
@@ -38,7 +40,7 @@ CShader& CShader::operator=(const CShader& src)
 	m_NameFile		 = src.m_NameFile;
 	//m_NameShaderICRC = src.m_NameShaderICRC;
 
-	#if 0
+	#if 1
 	if (src.m_HWTechniques.Num())
 	{
 		m_HWTechniques.Create(src.m_HWTechniques.Num());
@@ -174,17 +176,14 @@ void CShader::CreateInputLayout()
 		{
 			if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::UInt);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32_UINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::SInt);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32_SINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::Float);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32_FLOAT;
 			}
 			t_ByteOffset += 4;
@@ -193,17 +192,14 @@ void CShader::CreateInputLayout()
 		{
 			if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::UVec2);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32_UINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::SVec2);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32_SINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::FVec2);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
 			}
 			t_ByteOffset += 8;
@@ -212,17 +208,14 @@ void CShader::CreateInputLayout()
 		{
 			if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::UVec3);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32B32_UINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::SVec3);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::FVec3);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 			}
 			t_ByteOffset += 12;
@@ -239,17 +232,14 @@ void CShader::CreateInputLayout()
 			}
 			if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::UVec4);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::SVec4);
 				t_InputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
 			}
 			else if (SP_DESC.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 			{
-				format.add(SP_DESC.SemanticName, DynVertexFormat::FVec4);
 				t_InputElementDesc.Format = isColor ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R32G32B32A32_FLOAT;
 			}
 			t_ByteOffset += offset;
@@ -344,10 +334,10 @@ void SaveHlslToDisk(const std::vector<std::string>& code, IShader::Type type)
 	output_file.close();
 }
 
-const char* CShader::mfProfileString(EHWShaderClass type)
+const char* CHWShader::mfProfileString(EHWShaderClass type)
 {
 	const char* szProfile = "Unknown";
-	return type == Type::E_VERTEX ? "vs_4_0" : type == Type::E_GEOMETRY ? "gs_4_0"
+	return type == eHWSC_Vertex ? "vs_4_0" : type == eHWSC_Geometry ? "gs_4_0"
 																		: "ps_4_0";
 	switch (type)
 	{
@@ -374,7 +364,74 @@ const char* CShader::mfProfileString(EHWShaderClass type)
 	return szProfile;
 }
 
-std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, EHWShaderClass type, const char* pEntry, bool bFromMemory)
+bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags)
+{
+	PROFILE_FRAME(Shader_HWShaderActivate);
+
+	bool bResult = true;
+	SHWSInstance* pInst = m_pCurInst;
+
+	//mfLogShaderRequest(pInst);
+
+	#if 0
+	if (mfIsValid(pInst, true) == ED3DShError_NotCompiled)
+	{
+		char name[128];
+		mfGenName(pInst, name, 128, 1);
+	}
+	#endif
+	return false;
+}
+
+bool CHWShader_D3D::Upload(SHWSInstance* pInst, ID3DBlob* pBlob, CShader* pSH)
+{
+	HRESULT hr;
+	auto	pBuf = (DWORD*)pBlob->GetBufferPointer();
+	auto	nSize = pBlob->GetBufferSize();
+
+	d3dShaderHandleType* handle{};
+
+	switch (m_eSHClass)
+	{
+	case eHWSC_Vertex:
+		hr = (handle = GetDeviceObjectFactory().CreateVertexShader(pBuf, nSize)) ? S_OK : E_FAIL;
+		break;
+	case eHWSC_Geometry:
+		hr = (handle = GetDeviceObjectFactory().CreateGeometryShader(pBuf, nSize)) ? S_OK : E_FAIL;
+		break;
+	case eHWSC_Pixel:
+		hr = (handle = GetDeviceObjectFactory().CreatePixelShader(pBuf, nSize)) ? S_OK : E_FAIL;
+		break;
+	case IShader::E_NUM:
+		break;
+	default:
+		break;
+	}
+
+	if (SUCCEEDED(hr))
+	{
+		if (handle && hr == S_OK)
+			pInst->m_Handle = SD3DShaderHandle(handle, m_eSHClass, nSize);
+	// Assign name to Shader for enhanced debugging
+#if !defined(RELEASE) && (BB_PLATFORM_WINDOWS)
+	char name[1024];
+	sprintf(name, "%s_%s", pSH->GetName(), m_EntryFunc.c_str());
+
+#	if BB_PLATFORM_WINDOWS
+#		if BB_RENDERER_DIRECT3D
+	auto pObject = (ID3D11DeviceChild*)pInst->m_Handle.m_pShader->GetHandle();
+	::SetDebugName(pObject, name);
+#		elif BB_RENDERER_VULKAN
+	auto pObject = reinterpret_cast<NCryVulkan::CShader*>(pInst->m_Handle.m_pShader->GetHandle());
+	SetDebugName(pObject, name);
+#		endif
+#	endif
+#endif
+	}
+	return (hr == S_OK);
+}
+
+CHWShader* CHWShader_D3D::mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr)
 {
 	HRESULT hr = S_OK;
 	CHWShader_D3D::SHWSInstance* pInst = m_pCurInst;
@@ -383,9 +440,9 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, EHWSha
 
 	ID3DBlob*	pShaderBlob{};
 	ID3DBlob*	pErrorBlob{};
-	const char* code = bFromMemory ? text.data() : nullptr;
-	const char* file = bFromMemory ? nullptr : text.data();
-	auto		size = text.size();
+	const char* code = prog_text;
+	const char* file = GetName();
+	auto		size = strlen(prog_text);
 
 	auto nFlags = D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION;
 	auto hr		= D3DCompile(
@@ -394,7 +451,7 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, EHWSha
 		file,
 		nullptr,
 		nullptr,
-		pEntry,
+		pFunCCryName,
 		szProfile,
 		nFlags,
 		0, //flags2
@@ -424,7 +481,7 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, EHWSha
 	}
 	else
 	{
-		#if 0
+		#if 1
 		void* pShaderReflBuf;
 		UINT* pData = (UINT*)pShaderBlob->GetBufferPointer();
 		UINT  nSize = (uint32)pShaderBlob->GetBufferSize();
@@ -442,75 +499,20 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, EHWSha
 	}
 
 	return std::make_pair(pShaderBlob,pErrorBlob);
+
 }
 
-bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags)
+D3DBlob* CHWShader_D3D::mfCompileHLSL(CShader* pSH, char* prog_text, void** ppConstantTable, D3DBlob** ppErrorMsgs, uint32 nFlags)
 {
-	PROFILE_FRAME(Shader_HWShaderActivate);
+	string strErr;
+	D3DBlob* pCode = NULL;
 
-	bool bResult = true;
-	SHWSInstance* pInst = m_pCurInst;
-
-	//mfLogShaderRequest(pInst);
-
-	#if 0
-	if (mfIsValid(pInst, true) == ED3DShError_NotCompiled)
+	if (!prog_text)
 	{
-		char name[128];
-		mfGenName(pInst, name, 128, 1);
+		assert(0);
+		return NULL;
 	}
-	#endif
-	return false;
-}
+	auto res = mfCompileHLSL_Int(pSH, prog_text, &pCode, ppConstantTable, ppErrorMsgs, strErr);
 
-bool CHWShader_D3D::Upload(ID3DBlob* pBlob, CShader* pSH)
-{
-	HRESULT hr;
-	auto	pBuf = (DWORD*)pBlob->GetBufferPointer();
-	auto	nSize = pBlob->GetBufferSize();
-
-	IUnknown* handle{};
-
-	switch (m_eSHClass)
-	{
-	case eHWSC_Vertex:
-		hr = (handle = GetDeviceObjectFactory().CreateVertexShader(pBuf, nSize)) ? S_OK : E_FAIL;
-		break;
-	case eHWSC_Geometry:
-		hr = (handle = GetDeviceObjectFactory().CreateGeometryShader(pBuf, nSize)) ? S_OK : E_FAIL;
-		break;
-	case eHWSC_Pixel:
-		hr = (handle = GetDeviceObjectFactory().CreatePixelShader(pBuf, nSize)) ? S_OK : E_FAIL;
-		break;
-	case IShader::E_NUM:
-		break;
-	default:
-		break;
-	}
-
-	if (SUCCEEDED(hr))
-	{
-		m_D3DShader = (ID3D11Resource*)handle;
-	// Assign name to Shader for enhanced debugging
-#if !defined(RELEASE) && (BB_PLATFORM_WINDOWS)
-	char name[1024];
-	sprintf(name, "%s_%s", pSH->GetName(), m_EntryFunc.c_str());
-
-#	if BB_PLATFORM_WINDOWS
-#		if BB_RENDERER_DIRECT3D
-	auto pObject = (ID3D11DeviceChild*)m_D3DShader;
-	::SetDebugName(pObject, name);
-#		elif BB_RENDERER_VULKAN
-	auto pObject = reinterpret_cast<NCryVulkan::CShader*>(pInst->m_Handle.m_pShader->GetHandle());
-	SetDebugName(pObject, name);
-#		endif
-#	endif
-#endif
-	}
-	return (hr == S_OK);
-}
-
-CHWShader* CHWShader::mfForName(const char* name, const char* nameSource, const char* szEntryFunc, EHWShaderClass eClass, CShader* pFX, uint64 nMaskGen, uint64 nMaskGenFX)
-{
-	return nullptr;
+	return pCode;
 }

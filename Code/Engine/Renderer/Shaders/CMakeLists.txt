@@ -17,7 +17,11 @@ add_sources(
 	"ScannerHelpers.cpp")
 end_sources()
 
-EngineModule(FxParser FORCE_SHARED_WIN PCH "${CMAKE_CURRENT_SOURCE_DIR}/../pch.hpp" SOLUTION_FOLDER "Engine")
+if (STATIC_PARSER)
+	EngineModule(FxParser MODULE_FORCE_STATIC PCH "${CMAKE_CURRENT_SOURCE_DIR}/../pch.hpp" SOLUTION_FOLDER "Engine")
+else()
+	EngineModule(FxParser FORCE_SHARED_WIN PCH "${CMAKE_CURRENT_SOURCE_DIR}/../pch.hpp" SOLUTION_FOLDER "Engine")
+endif()
 target_compile_definitions(FxParser PUBLIC "-DYYDEBUG=1")
 
 # ===============> bison

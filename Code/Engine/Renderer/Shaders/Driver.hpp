@@ -10,11 +10,15 @@
 #pragma warning(pop)
 //#include "Scanner.hpp"
 
-#ifdef PARSERDRIVER_EXPORTS
-#	define PARSERDRIVER_API DLL_EXPORT
+#ifndef _LIB
+	#ifdef PARSERDRIVER_EXPORTS
+	#	define PARSERDRIVER_API DLL_EXPORT
+	#else
+	#	define PARSERDRIVER_API DLL_IMPORT
+	#endif
 #else
-#	define PARSERDRIVER_API DLL_IMPORT
-#endif
+	#	define PARSERDRIVER_API extern
+#endif // !_LIB
 
 class CEffect;
 struct IEffect;
