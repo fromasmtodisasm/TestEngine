@@ -17,6 +17,8 @@
 #endif
     #include <BlackBox/Renderer/IRender.hpp>
     #include <BlackBox/Renderer/IShader.hpp>
+    #include "../D3D/Shader.hpp"
+    #include "../Common/CommonRender.h"
     //#include "../BufferManager.hpp"
     #ifdef S_FALSE
     #undef S_FALSE
@@ -158,7 +160,7 @@
 ;
 
 %type  <std::string>    shader_assignment
-%type  <IShader::Type>  shader_type
+%type  <EHWShaderClass>  shader_type
 %type  <std::string>    struct_footer
 %type  <std::string>    struct_header
 %type  <DirectDeclarator> direct_declarator
@@ -242,11 +244,11 @@
 //%token <passstateType>      DEPTHMASK 100 //PassState::DepthMask
 //%token <passstateType>      DEPTHFUNC 101 //PassState::DepthFunc
 
-%token  <IShader::Type>  VERTEXPROGRAM
-%token  <IShader::Type>  FRAGMENTPROGRAM
-%token  <IShader::Type>  GEOMETRYPROGRAM
-%token  <IShader::Type>  HULLPROGRAM
-%token  <IShader::Type>  EVALPROGRAM
+%token  <EHWShaderClass>  VERTEXPROGRAM
+%token  <EHWShaderClass>  FRAGMENTPROGRAM
+%token  <EHWShaderClass>  GEOMETRYPROGRAM
+%token  <EHWShaderClass>  HULLPROGRAM
+%token  <EHWShaderClass>  EVALPROGRAM
 %token  SHDPROFILE
 %token  SAMPLERRESOURCE
 %token  SAMPLERTEXUNIT

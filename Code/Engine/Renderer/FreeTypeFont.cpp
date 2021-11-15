@@ -282,30 +282,6 @@ bool FreeTypeFont::Init(const char* font, unsigned int w, unsigned int h)
 			CryError("Error create sampler for font");
 			return false;
 		}
-		{
-#	if 0
-			//VERTEX_FORMAT_P3F_C4B_T2F
-			D3D11_INPUT_ELEMENT_DESC layout[] = {
-				{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-				{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-				//{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
-				{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0}
-			};
-			UINT numElements = sizeof(layout) / sizeof(layout[0]);
-			auto hr = GetDevice()->CreateInputLayout(
-				layout,
-				numElements,
-				shader->m_Shaders[IShader::Type::E_VERTEX]->m_Bytecode->GetBufferPointer(),
-				shader->m_Shaders[IShader::Type::E_VERTEX]->m_Bytecode->GetBufferSize(),
-				&m_pFontLayout);
-			if (FAILED(hr))
-			{
-				CryError("Error create input layout for font");
-				return false;
-			}
-			GlobalResources::VERTEX_FORMAT_P3F_C4B_T2F_Layout = m_pFontLayout;
-#	endif
-		}
 		CreateRasterState();
 		CreateDSState();
 		CreateBlendState();
@@ -537,6 +513,7 @@ void RegisterColorTable()
 	if (!FreeTypeFont::printColorTableRegistered)
 	{
 		gEnv->pConsole->AddCommand("printcb", PrintColorTable, 0, "Print color font encoding");
+		FreeTypeFont::printColorTableRegistered = true;
 	}
 }
 

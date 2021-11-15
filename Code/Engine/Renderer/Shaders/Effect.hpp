@@ -1,7 +1,7 @@
 #pragma once
 #include "FxParser.h"
 #include <BlackBox/Renderer/IRender.hpp>
-#include <BlackBox/Renderer/IShader.hpp>
+#include "../D3D/Shader.hpp"
 #include <BlackBox/Renderer/VertexFormats.hpp>
 
 class CTechnique : public ITechnique
@@ -13,16 +13,17 @@ class CTechnique : public ITechnique
 	{
 	}
 	// Inherited via ITechnique
-	virtual int			GetNumPasses() override;
-	virtual bool		CompilePass(int i) override;
-	virtual SPass*		GetPass(int i) override;
-	virtual int			GetId() override;
-	virtual const char* GetName() override;;
+	virtual int			 GetNumPasses() override;
+	virtual bool		 CompilePass(int i) override;
+	virtual SShaderPass* GetPass(int i) override;
+	virtual int			 GetId() override;
+	virtual const char*	 GetName() override;
+	;
 
 	std::string Name;
 	int			Id;
 	//std::vector<std::string_view> CommonCode;
-	std::vector<SPass> Passes;
+	std::vector<SShaderPass> Passes;
 };
 
 class CEffect : public IEffect
@@ -32,28 +33,17 @@ class CEffect : public IEffect
 		: m_name(name)
 	{
 	}
-	virtual IShader*   GetShader(const char* name) override;
+	virtual IShader* GetShader(const char* name) override;
 
 	virtual int			GetNumTechniques() override;
 	virtual ITechnique* GetTechnique(int i) override;
 	virtual ITechnique* GetTechnique(const char* name, size_t size) override;
 
-	void shader_assignment(IShader::Type type, const string& name)
-	{
-		auto& tech			   = m_Techniques.back();
-		auto& pass			   = tech.Passes.back();
-		pass.EntryPoints[type] = name;
-	}
-	bool SetLang(ShaderLangId id)
-	{
-		if (m_LangId != ShaderLangId::None)
-			return false;
-		m_LangId = id;
-		return true;
-	}
+	void shader_assignment(EHWShaderClass type, const string& name);
+	bool SetLang(ShaderLangId id);
 
   public:
-	std::string				m_name;
+	std::string m_name;
 	//std::vector<ShaderInfo> m_shaders;
 	std::vector<CTechnique> m_Techniques;
 	ShaderLangId			m_LangId = ShaderLangId::None;

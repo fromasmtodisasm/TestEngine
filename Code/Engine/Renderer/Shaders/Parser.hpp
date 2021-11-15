@@ -54,6 +54,8 @@
 #endif
     #include <BlackBox/Renderer/IRender.hpp>
     #include <BlackBox/Renderer/IShader.hpp>
+    #include "../D3D/Shader.hpp"
+    #include "../Common/CommonRender.h"
     //#include "../BufferManager.hpp"
     #ifdef S_FALSE
     #undef S_FALSE
@@ -143,7 +145,7 @@
 
 
 
-#line 147 "/cygdrive/c/Users/chiap/source/repos/fromasmtodisasm/TestEngine/Code/Engine/Renderer/Shaders/Parser.hpp"
+#line 149 "/cygdrive/c/Users/chiap/source/repos/fromasmtodisasm/TestEngine/Code/Engine/Renderer/Shaders/Parser.hpp"
 
 # include <cassert>
 # include <cstdlib> // std::abort
@@ -283,7 +285,7 @@
 #endif
 
 namespace yy {
-#line 287 "/cygdrive/c/Users/chiap/source/repos/fromasmtodisasm/TestEngine/Code/Engine/Renderer/Shaders/Parser.hpp"
+#line 289 "/cygdrive/c/Users/chiap/source/repos/fromasmtodisasm/TestEngine/Code/Engine/Renderer/Shaders/Parser.hpp"
 
 
 
@@ -513,7 +515,7 @@ namespace yy {
       // HULLPROGRAM
       // EVALPROGRAM
       // shader_type
-      char dummy2[sizeof (IShader::Type)];
+      char dummy2[sizeof (EHWShaderClass)];
 
       // TRUE
       // FALSE
@@ -885,7 +887,7 @@ namespace yy {
       case symbol_kind::S_HULLPROGRAM: // HULLPROGRAM
       case symbol_kind::S_EVALPROGRAM: // EVALPROGRAM
       case symbol_kind::S_shader_type: // shader_type
-        value.move< IShader::Type > (std::move (that.value));
+        value.move< EHWShaderClass > (std::move (that.value));
         break;
 
       case symbol_kind::S_TRUE: // TRUE
@@ -954,13 +956,13 @@ namespace yy {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, IShader::Type&& v, location_type&& l)
+      basic_symbol (typename Base::kind_type t, EHWShaderClass&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
         , location (std::move (l))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const IShader::Type& v, const location_type& l)
+      basic_symbol (typename Base::kind_type t, const EHWShaderClass& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -1073,7 +1075,7 @@ switch (yykind)
       case symbol_kind::S_HULLPROGRAM: // HULLPROGRAM
       case symbol_kind::S_EVALPROGRAM: // EVALPROGRAM
       case symbol_kind::S_shader_type: // shader_type
-        value.template destroy< IShader::Type > ();
+        value.template destroy< EHWShaderClass > ();
         break;
 
       case symbol_kind::S_TRUE: // TRUE
@@ -1221,10 +1223,10 @@ switch (yykind)
 #endif
       }
 #if 201103L <= YY_CPLUSPLUS
-      symbol_type (int tok, IShader::Type v, location_type l)
+      symbol_type (int tok, EHWShaderClass v, location_type l)
         : super_type (token_kind_type (tok), std::move (v), std::move (l))
 #else
-      symbol_type (int tok, const IShader::Type& v, const location_type& l)
+      symbol_type (int tok, const EHWShaderClass& v, const location_type& l)
         : super_type (token_kind_type (tok), v, l)
 #endif
       {
@@ -2174,14 +2176,14 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_VERTEXPROGRAM (IShader::Type v, location_type l)
+      make_VERTEXPROGRAM (EHWShaderClass v, location_type l)
       {
         return symbol_type (token::TOK_VERTEXPROGRAM, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_VERTEXPROGRAM (const IShader::Type& v, const location_type& l)
+      make_VERTEXPROGRAM (const EHWShaderClass& v, const location_type& l)
       {
         return symbol_type (token::TOK_VERTEXPROGRAM, v, l);
       }
@@ -2189,14 +2191,14 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_FRAGMENTPROGRAM (IShader::Type v, location_type l)
+      make_FRAGMENTPROGRAM (EHWShaderClass v, location_type l)
       {
         return symbol_type (token::TOK_FRAGMENTPROGRAM, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_FRAGMENTPROGRAM (const IShader::Type& v, const location_type& l)
+      make_FRAGMENTPROGRAM (const EHWShaderClass& v, const location_type& l)
       {
         return symbol_type (token::TOK_FRAGMENTPROGRAM, v, l);
       }
@@ -2204,14 +2206,14 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_GEOMETRYPROGRAM (IShader::Type v, location_type l)
+      make_GEOMETRYPROGRAM (EHWShaderClass v, location_type l)
       {
         return symbol_type (token::TOK_GEOMETRYPROGRAM, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_GEOMETRYPROGRAM (const IShader::Type& v, const location_type& l)
+      make_GEOMETRYPROGRAM (const EHWShaderClass& v, const location_type& l)
       {
         return symbol_type (token::TOK_GEOMETRYPROGRAM, v, l);
       }
@@ -2219,14 +2221,14 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_HULLPROGRAM (IShader::Type v, location_type l)
+      make_HULLPROGRAM (EHWShaderClass v, location_type l)
       {
         return symbol_type (token::TOK_HULLPROGRAM, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_HULLPROGRAM (const IShader::Type& v, const location_type& l)
+      make_HULLPROGRAM (const EHWShaderClass& v, const location_type& l)
       {
         return symbol_type (token::TOK_HULLPROGRAM, v, l);
       }
@@ -2234,14 +2236,14 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_EVALPROGRAM (IShader::Type v, location_type l)
+      make_EVALPROGRAM (EHWShaderClass v, location_type l)
       {
         return symbol_type (token::TOK_EVALPROGRAM, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_EVALPROGRAM (const IShader::Type& v, const location_type& l)
+      make_EVALPROGRAM (const EHWShaderClass& v, const location_type& l)
       {
         return symbol_type (token::TOK_EVALPROGRAM, v, l);
       }
@@ -2980,7 +2982,7 @@ switch (yykind)
       case symbol_kind::S_HULLPROGRAM: // HULLPROGRAM
       case symbol_kind::S_EVALPROGRAM: // EVALPROGRAM
       case symbol_kind::S_shader_type: // shader_type
-        value.copy< IShader::Type > (YY_MOVE (that.value));
+        value.copy< EHWShaderClass > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_TRUE: // TRUE
@@ -3054,7 +3056,7 @@ switch (yykind)
       case symbol_kind::S_HULLPROGRAM: // HULLPROGRAM
       case symbol_kind::S_EVALPROGRAM: // EVALPROGRAM
       case symbol_kind::S_shader_type: // shader_type
-        value.move< IShader::Type > (YY_MOVE (s.value));
+        value.move< EHWShaderClass > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_TRUE: // TRUE
@@ -3151,7 +3153,7 @@ switch (yykind)
 
 
 } // yy
-#line 3155 "/cygdrive/c/Users/chiap/source/repos/fromasmtodisasm/TestEngine/Code/Engine/Renderer/Shaders/Parser.hpp"
+#line 3157 "/cygdrive/c/Users/chiap/source/repos/fromasmtodisasm/TestEngine/Code/Engine/Renderer/Shaders/Parser.hpp"
 
 
 

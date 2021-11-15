@@ -330,9 +330,9 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
         return CURRENT_SYMBOL;
     }
 
-    VertexShader        return yy::parser::make_VERTEXPROGRAM(IShader::Type::E_VERTEX, loc);
-    PixelShader         return yy::parser::make_FRAGMENTPROGRAM(IShader::Type::E_FRAGMENT, loc);
-    GeometryShader      return yy::parser::make_GEOMETRYPROGRAM(IShader::Type::E_GEOMETRY, loc);
+    VertexShader        return yy::parser::make_VERTEXPROGRAM(  eHWSC_Vertex,   loc);
+    PixelShader         return yy::parser::make_FRAGMENTPROGRAM(eHWSC_Pixel,    loc);
+    GeometryShader      return yy::parser::make_GEOMETRYPROGRAM(eHWSC_Geometry, loc);
 }
 
 <pass,pr_state,input_layout>{

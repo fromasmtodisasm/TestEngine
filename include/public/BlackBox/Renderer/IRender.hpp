@@ -17,6 +17,7 @@ typedef unsigned short ushort;
 #include <BlackBox/Core/MathHelper.hpp>
 #include <BlackBox/Renderer/Light.hpp>
 #include <BlackBox/Utils/smartptr.hpp>
+#include <BlackBox/Core/CryEnumMacro.h>
 
 #include <string_view>
 #include <vector>
@@ -427,6 +428,8 @@ enum EStreamMasks : uint16_t
 	VSM_MASK            = MASK(VSF_NUM),
 	VSM_NONE            = 0,
 };
+
+CRY_CREATE_ENUM_FLAG_OPERATORS(EStreamMasks);
 
 //////////////////////////////////////////////////////////////////////////
 union UHWBuf

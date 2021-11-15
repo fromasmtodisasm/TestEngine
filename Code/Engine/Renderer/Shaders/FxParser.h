@@ -6,20 +6,13 @@ struct IPass
 {
 };
 
-struct SPass
-{
-	std::string				   Name;
-	std::vector<std::string>   InputLayout;
-	std::array<std::string, 6> EntryPoints;
-};
-
 struct ITechnique : public _i_reference_target_t
 {
-	virtual int			GetNumPasses()	   = 0;
-	virtual bool		CompilePass(int i) = 0;
-	virtual SPass*		GetPass(int i)	   = 0;
-	virtual int			GetId()			   = 0;
-	virtual const char* GetName()		   = 0;
+	virtual int			 GetNumPasses()		= 0;
+	virtual bool		 CompilePass(int i) = 0;
+	virtual SShaderPass* GetPass(int i)		= 0;
+	virtual int			 GetId()			= 0;
+	virtual const char*	 GetName()			= 0;
 };
 
 struct STechnique

@@ -80,7 +80,7 @@ CShader* CShader::LoadBinaryShader(std::string_view name, int flags, uint64 nMas
 	return nullptr;
 }
 
-CHWShader* CShader::LoadFromEffect(PEffect pEffect, IShader::Type type)
+CHWShader_D3D* CShader::LoadFromEffect(PEffect pEffect, IShader::Type type)
 {
 	auto tech = pEffect->GetTechnique(0);
 	auto pass = tech->GetPass(0);
@@ -99,7 +99,7 @@ CHWShader* CShader::LoadFromEffect(PEffect pEffect, IShader::Type type)
 	return LoadFromFile(effectName, type, entry);
 }
 
-CHWShader* CShader::LoadFromMemory(const std::vector<std::string>& text, IShader::Type type, const char* pEntry)
+CHWShader_D3D* CShader::LoadFromMemory(const std::vector<std::string>& text, IShader::Type type, const char* pEntry)
 {
 	std::string code;
 	for (const auto& piece : text)
@@ -107,7 +107,7 @@ CHWShader* CShader::LoadFromMemory(const std::vector<std::string>& text, IShader
 	return CShader::Load(code, type, pEntry, true);
 }
 
-CHWShader* CShader::LoadFromFile(const std::string_view file, IShader::Type type, const char* pEntry)
+CHWShader_D3D* CShader::LoadFromFile(const std::string_view file, IShader::Type type, const char* pEntry)
 {
 	return CShader::Load(file, type, pEntry, false);
 }
@@ -305,7 +305,7 @@ const char* CompileToSpirv_Glslc(const char* name, const char* pEntrypoint, ISha
 	return "glslc";
 }
 
-CHWShader* LoadSpirvFromFile(const char* name, const char* entry, IShader::Type type)
+CHWShader_D3D* LoadSpirvFromFile(const char* name, const char* entry, IShader::Type type)
 {
 	string stage(GetGLSLANGTargetName(type));
 	char file[1001];
@@ -333,10 +333,10 @@ CHWShader* LoadSpirvFromFile(const char* name, const char* entry, IShader::Type 
 		vkCreateShaderModule(GetDevice(), &ci, nullptr, &hShader);
 	}
 
-	return new CHWShader(hShader, std::move(buffer), type);
+	return new CHWShader_D3D(hShader, std::move(buffer), type);
 }
 
-CHWShader* CShader::Load(const std::string_view text, IShader::Type type, const char* pEntry, bool bFromMemory)
+CHWShader_D3D* CShader::Load(const std::string_view text, IShader::Type type, const char* pEntry, bool bFromMemory)
 {
 	if (bFromMemory)
 		return {};

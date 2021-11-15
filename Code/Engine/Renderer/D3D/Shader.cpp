@@ -1,4 +1,5 @@
 #include "Shader.hpp"
+#include <BlackBox/System/FrameProfiler.hpp>
 #include "Renderer.h"
 #include <BlackBox/Core/Utils.hpp>
 #include <filesystem>
@@ -8,6 +9,7 @@
 #include <d3dcompiler.h>
 
 namespace fs = std::filesystem;
+#define PROFILE_FRAME(s) FUNCTION_PROFILER(PROFILE_RENDERER)
 
 CShader::~CShader()
 {
@@ -282,40 +284,26 @@ void CShader::ReflectShader()
 	}
 }
 
-bool CShader::LoadFromEffect(CShader* pSH, PEffect pEffect, int nTechnique, int nPass)
+void CShader::LoadShader(SShaderPass* pass, EHWShaderClass st, std::vector<std::string>& code, CShader* pSH)
 {
-	auto				tech = pEffect->GetTechnique(nTechnique);
-	auto				pass = tech->GetPass(nPass);
-	std::vector<string> code{pEffect->GetCode()};
-
-	IShader::Type Types[] = {
-		IShader::Type::E_VERTEX,
-		IShader::Type::E_GEOMETRY,
-		IShader::Type::E_FRAGMENT,
-	};
-	for (auto st : Types)
+	auto entry = pass->EntryPoints[st].data();
+	if (auto res = LoadFromMemory(code, st, entry); res.first)
 	{
-		auto entry = pass->EntryPoints[st].data();
-		if (auto res = LoadFromMemory(code, st, entry); res.first)
+		auto shader		   = new CHWShader_D3D(st, entry);
+		shader->m_ByteCode = res.first;
+		if (shader->Upload(shader->m_ByteCode, pSH))
 		{
-			auto  shader = new CHWShader(st, entry);
-			shader->m_ByteCode = res.first;
-			if (shader->Upload(shader->m_ByteCode, pSH))
-			{
-				pSH->m_Shaders[st]	  = shader;
-			}
-			else
-			{
-				res.second->Release();
-				delete shader;
-			}
+			pSH->m_Shaders[st] = shader;
+		}
+		else
+		{
+			res.second->Release();
+			delete shader;
 		}
 	}
-	//SaveHlslToDisk(code, type);
-	return true;
 }
 
-std::pair<ID3DBlob*,ID3DBlob*> CShader::LoadFromMemory(const std::vector<std::string>& text, IShader::Type type, const char* pEntry)
+std::pair<ID3DBlob*,ID3DBlob*> CShader::LoadFromMemory(const std::vector<std::string>& text, EHWShaderClass type, const char* pEntry)
 {
 	std::string code;
 	for (const auto& piece : text)
@@ -324,7 +312,7 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::LoadFromMemory(const std::vector<std::st
 }
 
 #if 0
-CHWShader* CShader::LoadFromFile(const std::string_view file, IShader::Type type, const char* pEntry)
+CHWShader_D3D* CShader::LoadFromFile(const std::string_view file, IShader::Type type, const char* pEntry)
 {
 	return CShader::Load(file, type, pEntry, false);
 }
@@ -356,10 +344,43 @@ void SaveHlslToDisk(const std::vector<std::string>& code, IShader::Type type)
 	output_file.close();
 }
 
-std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, IShader::Type type, const char* pEntry, bool bFromMemory)
+const char* CShader::mfProfileString(EHWShaderClass type)
 {
-	const char* profile = type == Type::E_VERTEX ? "vs_4_0" : type == Type::E_GEOMETRY ? "gs_4_0"
-																					   : "ps_4_0";
+	const char* szProfile = "Unknown";
+	return type == Type::E_VERTEX ? "vs_4_0" : type == Type::E_GEOMETRY ? "gs_4_0"
+																		: "ps_4_0";
+	switch (type)
+	{
+	case eHWSC_Vertex:
+		szProfile = "vs_5_0";
+		break;
+	case eHWSC_Pixel:
+		szProfile = "ps_5_0";
+		break;
+	case eHWSC_Geometry:
+		szProfile = "gs_5_0";
+		break;
+	case eHWSC_Domain:
+		break;
+	case eHWSC_Hull:
+		break;
+	case eHWSC_Compute:
+		szProfile = "cs_5_0";
+		break;
+	default:
+		assert(0);
+		break;
+	}
+	return szProfile;
+}
+
+std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, EHWShaderClass type, const char* pEntry, bool bFromMemory)
+{
+	HRESULT hr = S_OK;
+	CHWShader_D3D::SHWSInstance* pInst = m_pCurInst;
+	const char* szProfile = mfProfileString(pInst->m_eClass);
+	const char* pFunCCryName = m_EntryFunc.c_str();
+
 	ID3DBlob*	pShaderBlob{};
 	ID3DBlob*	pErrorBlob{};
 	const char* code = bFromMemory ? text.data() : nullptr;
@@ -374,7 +395,7 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, IShade
 		nullptr,
 		nullptr,
 		pEntry,
-		profile,
+		szProfile,
 		nFlags,
 		0, //flags2
 		&pShaderBlob,
@@ -421,10 +442,28 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::Load(const std::string_view text, IShade
 	}
 
 	return std::make_pair(pShaderBlob,pErrorBlob);
-	//return new CHWShader(pShader, pBlob, type);
 }
 
-bool CHWShader::Upload(ID3DBlob* pBlob, CShader* pSH)
+bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags)
+{
+	PROFILE_FRAME(Shader_HWShaderActivate);
+
+	bool bResult = true;
+	SHWSInstance* pInst = m_pCurInst;
+
+	//mfLogShaderRequest(pInst);
+
+	#if 0
+	if (mfIsValid(pInst, true) == ED3DShError_NotCompiled)
+	{
+		char name[128];
+		mfGenName(pInst, name, 128, 1);
+	}
+	#endif
+	return false;
+}
+
+bool CHWShader_D3D::Upload(ID3DBlob* pBlob, CShader* pSH)
 {
 	HRESULT hr;
 	auto	pBuf = (DWORD*)pBlob->GetBufferPointer();
@@ -432,15 +471,15 @@ bool CHWShader::Upload(ID3DBlob* pBlob, CShader* pSH)
 
 	IUnknown* handle{};
 
-	switch (m_Type)
+	switch (m_eSHClass)
 	{
-	case IShader::E_VERTEX:
+	case eHWSC_Vertex:
 		hr = (handle = GetDeviceObjectFactory().CreateVertexShader(pBuf, nSize)) ? S_OK : E_FAIL;
 		break;
-	case IShader::E_GEOMETRY:
+	case eHWSC_Geometry:
 		hr = (handle = GetDeviceObjectFactory().CreateGeometryShader(pBuf, nSize)) ? S_OK : E_FAIL;
 		break;
-	case IShader::E_FRAGMENT:
+	case eHWSC_Pixel:
 		hr = (handle = GetDeviceObjectFactory().CreatePixelShader(pBuf, nSize)) ? S_OK : E_FAIL;
 		break;
 	case IShader::E_NUM:
@@ -469,4 +508,9 @@ bool CHWShader::Upload(ID3DBlob* pBlob, CShader* pSH)
 #endif
 	}
 	return (hr == S_OK);
+}
+
+CHWShader* CHWShader::mfForName(const char* name, const char* nameSource, const char* szEntryFunc, EHWShaderClass eClass, CShader* pFX, uint64 nMaskGen, uint64 nMaskGenFX)
+{
+	return nullptr;
 }

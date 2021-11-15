@@ -43,7 +43,15 @@ const D3DCOLOR D3DC_Blue = D3DCOLOR_RGBA(0, 0, 1, 1);
 
 #	define D3DDevice ID3DDevice
 #	define D3DBuffer ID3DBuffer
-#   define D3DFormat DXGI_FORMAT
+//#   define D3DFormat DXGI_FORMAT
+
+#define         D3DViewPort               D3D11_VIEWPORT
+#define         D3DRectangle              D3D11_RECT
+#define         D3DFormat                 DXGI_FORMAT
+#define         D3DPrimitiveType          D3D11_PRIMITIVE_TOPOLOGY
+#define         D3DBlob                   ID3DBlob
+#define         D3DSamplerState           ID3D11SamplerState
+#define         D3DInputLayout            ID3D11InputLayout
 
 	#define D3DReflection                     D3DReflect
 	#define IID_D3DShaderReflection           IID_ID3D11ShaderReflection
@@ -181,3 +189,5 @@ inline void SetDebugName(ID3D11DeviceChild* pNativeResource, const char* name)
 	pNativeResource->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name) + 1, name);
 #endif
 }
+
+typedef IUnknown* d3dShaderHandleType;

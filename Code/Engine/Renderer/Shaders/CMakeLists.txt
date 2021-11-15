@@ -17,7 +17,7 @@ add_sources(
 	"ScannerHelpers.cpp")
 end_sources()
 
-enginemodule(FxParser FORCE_SHARED_WIN PCH "./pch.hpp" SOLUTION_FOLDER "Engine")
+EngineModule(FxParser FORCE_SHARED_WIN PCH "../pch.hpp" SOLUTION_FOLDER "Engine")
 target_compile_definitions(FxParser PUBLIC "-DYYDEBUG=1")
 
 # ===============> bison

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <BlackBox/Core/CryEnumMacro.h>
+
 //////////////////////////////////////////////////////////////////////
 class CRenderer;
 extern CRenderer* gRenDev;
@@ -270,4 +272,19 @@ struct SInputLayout
 	}
 };
 
+//////////////////////////////////////////////////////////////////////
+// Resource conventions
+
+enum EHWShaderClass : uint8
+{
+	eHWSC_Vertex   = 0,
+	eHWSC_Pixel    = 1,
+	eHWSC_Geometry = 2,
+	eHWSC_Domain   = 3,
+	eHWSC_Hull     = 4,
+	eHWSC_NumGfx   = 5,
+
+	eHWSC_Compute  = 5,
+	eHWSC_Num      = 6
+};
 

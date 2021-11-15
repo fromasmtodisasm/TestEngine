@@ -26,14 +26,14 @@ using PGeometryShader = ID3D10GeometryShader*;
 using PPixelShader = ID3D10PixelShader*;
 #endif
 
-class CHWShader : public NoCopy
+class CHWShader_D3D : public NoCopy
 {
 public:
 	VkShaderModule m_D3DShader;
 	spirv_bin m_Bytecode;
 	IShader::Type m_Type;
 
-	CHWShader(VkShaderModule pShader, spirv_bin&& pCode, IShader::Type type) : m_D3DShader(pShader), m_Bytecode(pCode), m_Type(type)
+	CHWShader_D3D(VkShaderModule pShader, spirv_bin&& pCode, IShader::Type type) : m_D3DShader(pShader), m_Bytecode(pCode), m_Type(type)
 	{
 		//auto r = m_D3DShader->Release();
 	}
@@ -61,12 +61,12 @@ public:
 	void SaveBinaryShader(std::string_view name, int flags, uint64 nMaskGen);
 	static CShader* LoadBinaryShader(std::string_view name, int flags, uint64 nMaskGen);
 
-	static CHWShader* LoadFromEffect(PEffect pEffect, Type type);
-	static CHWShader* Load(const std::string_view text, IShader::Type type, const char* pEntry, bool bFromMemory);
-	static CHWShader* LoadFromFile(const std::string_view text, IShader::Type type, const char* pEntry);
-	static CHWShader* LoadFromMemory(const std::vector<std::string>& text, IShader::Type type, const char* pEntry);
+	static CHWShader_D3D* LoadFromEffect(PEffect pEffect, Type type);
+	static CHWShader_D3D* Load(const std::string_view text, IShader::Type type, const char* pEntry, bool bFromMemory);
+	static CHWShader_D3D* LoadFromFile(const std::string_view text, IShader::Type type, const char* pEntry);
+	static CHWShader_D3D* LoadFromMemory(const std::vector<std::string>& text, IShader::Type type, const char* pEntry);
 
-	std::array<CHWShader*, Type::E_NUM> m_Shaders{0};
+	std::array<CHWShader_D3D*, Type::E_NUM> m_Shaders{0};
 
 	int m_NumRefs = 0;
 };

@@ -1,6 +1,5 @@
 #include "Effect.hpp"
-//#include <BlackBox/Renderer/IRender.hpp>
-//#include <BlackBox/Renderer/BaseShader.hpp>
+#include "../D3D/Shader.hpp"
 
 IShader* CEffect::GetShader(const char* name)
 {
@@ -30,6 +29,21 @@ ITechnique* CEffect::GetTechnique(const char* name, size_t size)
 	return nullptr;
 }
 
+void CEffect::shader_assignment(EHWShaderClass type, const string& name)
+{
+	auto& tech			   = m_Techniques.back();
+	auto& pass			   = tech.Passes.back();
+	pass.EntryPoints[type] = name;
+}
+
+bool CEffect::SetLang(ShaderLangId id)
+{
+	if (m_LangId != ShaderLangId::None)
+		return false;
+	m_LangId = id;
+	return true;
+}
+
 const char* CEffect::GetName()
 {
 	return m_name.data();
@@ -55,7 +69,7 @@ bool CTechnique::CompilePass(int i)
 	return false;
 }
 
-SPass* CTechnique::GetPass(int i)
+SShaderPass* CTechnique::GetPass(int i)
 {
 	return &Passes[i];
 }

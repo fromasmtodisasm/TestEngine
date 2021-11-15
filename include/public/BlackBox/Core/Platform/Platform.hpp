@@ -188,8 +188,6 @@ typedef unsigned int        *PUINT;
 #define MASK(x)   (BIT(x) - 1U)
 #define MASK64(x) (BIT64(x) - 1ULL)
 
-#define FUNCTION_PROFILER(...)
-
 #if defined(USE_CRY_ASSERT)
 #else
 	//! Use the platform's default assert.

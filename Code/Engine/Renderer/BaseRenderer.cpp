@@ -24,7 +24,7 @@ CRenderer* gRenDev = NULL;
 int		   RenderCVars::CV_r_GetScreenShot;
 static int dump_shaders_on_load = false;
 FxParser*  g_FxParser;
-ShaderMan* gShMan;
+CShaderManager* gShMan;
 //FxParser s_FxParser;
 
 class CNullFont : public IFont
@@ -213,7 +213,7 @@ IWindow* CRenderer::Init(int x, int y, int width, int height, unsigned int cbpp,
 	#if 0
 	CreateQuad();
 	#endif
-	gShMan = new ShaderMan;
+	gShMan = new CShaderManager;
 	//=======================
 	//pd.vs.macro["STORE_TEXCOORDS"] = "1";
 #if 0
