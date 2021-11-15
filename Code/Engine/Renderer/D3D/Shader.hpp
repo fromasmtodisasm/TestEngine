@@ -76,12 +76,14 @@ struct SShaderPass
 
 	void GetMemoryUsage(ICrySizer* pSizer) const
 	{
+		#if 0
 		pSizer->AddObject(m_VShader);
 		pSizer->AddObject(m_PShader);
 		pSizer->AddObject(m_GShader);
 		pSizer->AddObject(m_HShader);
 		pSizer->AddObject(m_DShader);
 		pSizer->AddObject(m_CShader);
+		#endif
 	}
 	void mfFree()
 	{
