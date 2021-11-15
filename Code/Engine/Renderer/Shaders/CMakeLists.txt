@@ -17,7 +17,7 @@ add_sources(
 	"ScannerHelpers.cpp")
 end_sources()
 
-EngineModule(FxParser FORCE_SHARED_WIN PCH "../pch.hpp" SOLUTION_FOLDER "Engine")
+EngineModule(FxParser FORCE_SHARED_WIN PCH "${CMAKE_CURRENT_SOURCE_DIR}/../pch.hpp" SOLUTION_FOLDER "Engine")
 target_compile_definitions(FxParser PUBLIC "-DYYDEBUG=1")
 
 # ===============> bison
@@ -107,9 +107,11 @@ setup_bison_target()
 setup_flex_target()
 setup_flex_bison_dependencies()
 
-target_include_directories(FxParser PRIVATE ${CMAKE_SOURCE_DIR})
-target_include_directories(FxParser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
+target_include_directories(FxParser PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_include_directories(FxParser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(FxParser PRIVATE "-DYY_NO_UNISTD_H")
+target_compile_definitions(FxParser PRIVATE "-DDX_RENDERER")
+
 
 target_link_libraries(FxParser PUBLIC Math)
 target_include_directories(FxParser PRIVATE ${CMAKE_SOURCE_DIR})
