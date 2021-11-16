@@ -170,8 +170,8 @@ struct SShaderTechnique
 	void GetMemoryUsage(ICrySizer* pSizer) const
 	{
 		pSizer->Add(*this);
-		pSizer->AddObject(m_Passes);
 #if 0
+		pSizer->AddObject(m_Passes);
 		pSizer->AddObject(m_REs);
 		pSizer->AddObject(m_RTargets);
 #endif
@@ -384,7 +384,7 @@ class CHWShader_D3D : public CHWShader
 #endif
 	bool	   CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags);
 	D3DBlob*				mfCompileHLSL(CShader* pSH, char* prog_text, void** ppConstantTable, D3DBlob** ppErrorMsgs, uint32 nFlags);
-	CHWShader* mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr);
+	bool mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr);
 
 	bool Upload(SHWSInstance* pInst, ID3DBlob* pBlob, CShader* pSH);
 	void mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH, bool bCol, byte bNormal, bool bTC0, bool bTC1[2], bool bPSize, bool bTangent[2], bool bBitangent[2], bool bHWSkin, bool bSH[2], bool bVelocity, bool bMorph)

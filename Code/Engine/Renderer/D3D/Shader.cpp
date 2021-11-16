@@ -431,60 +431,37 @@ bool CHWShader_D3D::Upload(SHWSInstance* pInst, ID3DBlob* pBlob, CShader* pSH)
 	return (hr == S_OK);
 }
 
-CHWShader* CHWShader_D3D::mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr)
+bool CHWShader_D3D::mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr)
 {
 	HRESULT hr = S_OK;
 	CHWShader_D3D::SHWSInstance* pInst = m_pCurInst;
 	const char* szProfile = mfProfileString(pInst->m_eClass);
 	const char* pFunCCryName = m_EntryFunc.c_str();
 
-	ID3DBlob*	pShaderBlob{};
-	ID3DBlob*	pErrorBlob{};
-	const char* code = prog_text;
-	const char* file = GetName();
-	auto		size = strlen(prog_text);
+	bool		bRes = true;
 
 	auto nFlags = D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION;
-	auto hr		= D3DCompile(
-		code,
-		size,
-		file,
-		nullptr,
-		nullptr,
-		pFunCCryName,
-		szProfile,
-		nFlags,
-		0, //flags2
-		&pShaderBlob,
-		&pErrorBlob);
-	if (FAILED(hr))
+	hr			= D3DCompile(prog_text, strlen(prog_text), GetName(), NULL, NULL, pFunCCryName, szProfile, nFlags, 0, (ID3DBlob**)ppShader, (ID3DBlob**)ppErrorMsgs);
+
+
+	if (FAILED(hr) || !*ppShader)
 	{
-		#if 0
-		auto pBlob = _smart_ptr(pShaderBlob);
-		auto error = _smart_ptr(pErrorBlob);
-		if (pErrorBlob && pErrorBlob->GetBufferPointer())
+		if (ppErrorMsgs && *ppErrorMsgs)
 		{
-			auto log	  = std::string_view((const char*)pErrorBlob->GetBufferPointer());
-			auto severity = VALIDATOR_WARNING;
-			if (auto pos = log.find("warning"))
-			{
-				severity = VALIDATOR_WARNING;
-			}
-			else
-			{
-				severity = VALIDATOR_ERROR_DBGBRK;
-			}
-			CryWarning(VALIDATOR_MODULE_RENDERER, severity, "Error and warning from compilation:\n%s", log.data());
+			const char* err = (const char*)ppErrorMsgs[0]->GetBufferPointer();
+			strErr += err;
 		}
-		#endif
-		return std::make_pair(nullptr,pErrorBlob);
+		else
+		{
+			strErr += "D3DXCompileShader failed";
+		}
+		bRes = false;
 	}
 	else
 	{
-		#if 1
 		void* pShaderReflBuf;
-		UINT* pData = (UINT*)pShaderBlob->GetBufferPointer();
-		UINT  nSize = (uint32)pShaderBlob->GetBufferSize();
+		UINT* pData = (UINT*)ppShader[0]->GetBufferPointer();
+		UINT  nSize = (uint32)ppShader[0]->GetBufferSize();
 		hr			= D3DReflection(pData, nSize, IID_D3DShaderReflection, &pShaderReflBuf);
 		if (SUCCEEDED(hr))
 		{
@@ -495,11 +472,8 @@ CHWShader* CHWShader_D3D::mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBl
 		{
 			assert(0);
 		}
-		#endif
 	}
-
-	return std::make_pair(pShaderBlob,pErrorBlob);
-
+	return bRes;
 }
 
 D3DBlob* CHWShader_D3D::mfCompileHLSL(CShader* pSH, char* prog_text, void** ppConstantTable, D3DBlob** ppErrorMsgs, uint32 nFlags)
