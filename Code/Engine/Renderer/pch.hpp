@@ -191,3 +191,16 @@ inline void SetDebugName(ID3D11DeviceChild* pNativeResource, const char* name)
 }
 
 typedef IUnknown d3dShaderHandleType;
+
+//////////////////////////////////////////////////////////////////////////
+// Report warning to validator.
+//////////////////////////////////////////////////////////////////////////
+inline void Warning(const char* format, ...) PRINTF_PARAMS(1, 2);
+inline void Warning(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	if (gEnv->pSystem)
+		gEnv->pSystem->WarningV(VALIDATOR_MODULE_RENDERER, VALIDATOR_WARNING, 0, NULL, format, args);
+	va_end(args);
+}
