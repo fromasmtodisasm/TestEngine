@@ -1,5 +1,7 @@
 #include "BaseRenderer.hpp"
 #include "BufferManager.hpp"
+#include "ShaderManager.hpp"
+
 #include <BlackBox/Renderer/IFont.hpp>
 #include <BlackBox/System/ConsoleRegistration.h>
 #include <BlackBox/System/IProjectManager.hpp>

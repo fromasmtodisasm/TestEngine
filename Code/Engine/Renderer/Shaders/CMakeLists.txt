@@ -13,7 +13,8 @@ add_sources(
 	"Parser.yy"
 	"Parser.hpp"
 	"Scanner.ll"
-	"dummy.cpp"
+	"ShaderManager.cpp"
+	"ShaderManager.hpp"
 	"ScannerHelpers.cpp")
 end_sources()
 

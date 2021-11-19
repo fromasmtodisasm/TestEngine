@@ -35,8 +35,7 @@ enum ED3DShError
 	ED3DShError_Compiling,
 };
 
-class CHWShader : public NoCopy
-	, public _reference_target_t
+class CHWShader : public CBaseResource
 {
   public:
 	EHWShaderClass m_eSHClass;
@@ -47,9 +46,11 @@ class CHWShader : public NoCopy
 	string					m_Name;
 	string					m_NameSourceFX;
 	string					m_EntryFunc;
+	static CCryNameTSCRC	mfGetClassName(EHWShaderClass eClass);
+	static CCryNameTSCRC	mfGetCacheClassName(EHWShaderClass eClass);
 	static CHWShader*		mfForName(const char* name, const char* nameSource, const char* szEntryFunc, EHWShaderClass eClass, CShader* pFX, uint64 nMaskGen = 0, uint64 nMaskGenFX = 0);
 	const char*				mfProfileString(EHWShaderClass type);
-	inline const char* GetName()
+	inline const char*		GetName()
 	{
 		return m_Name.c_str();
 	}
@@ -65,12 +66,12 @@ struct SShaderPass
 
 	uint16 m_PassFlags; // Different usefull Pass flags (SHPF_)
 
-	CHWShader* m_VShader; // Pointer to the vertex shader for the current pass
-	CHWShader* m_PShader; // Pointer to fragment shader
-	CHWShader* m_GShader; // Pointer to the geometry shader for the current pass
-	CHWShader* m_DShader; // Pointer to the domain shader for the current pass
-	CHWShader* m_HShader; // Pointer to the hull shader for the current pass
-	CHWShader* m_CShader; // Pointer to the compute shader for the current pass
+	CHWShader* m_VShader{}; // Pointer to the vertex shader for the current pass
+	CHWShader* m_PShader{}; // Pointer to fragment shader
+	CHWShader* m_GShader{}; // Pointer to the geometry shader for the current pass
+	CHWShader* m_DShader{}; // Pointer to the domain shader for the current pass
+	CHWShader* m_HShader{}; // Pointer to the hull shader for the current pass
+	CHWShader* m_CShader{}; // Pointer to the compute shader for the current pass
 	SShaderPass();
 
 	int Size()
@@ -370,21 +371,26 @@ class CHWShader_D3D : public CHWShader
 	{
 		return ED3DShError_CompilingError;
 	}
-#if 0
+#if 1
 	//ILINE most common outcome (avoid LHS on link register 360)
 	ILINE ED3DShError mfIsValid(SHWSInstance*& pInst, bool bFinalise)
 	{
+#	if 0
 		if (pInst->m_Handle.m_pShader)
 			return ED3DShError_Ok;
 		if (pInst->m_bAsyncActivating)
 			return ED3DShError_NotCompiled;
 
 		return mfIsValid_Int(pInst, bFinalise);
+#	endif
+		return ED3DShError_Fake;
 	}
 #endif
-	bool	   CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags);
-	D3DBlob*				mfCompileHLSL(CShader* pSH, char* prog_text, void** ppConstantTable, D3DBlob** ppErrorMsgs, uint32 nFlags);
-	bool mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr);
+	void mfReset();
+	~CHWShader_D3D();
+	bool	 mfActivate(CShader* pSH, uint32 nFlags);
+	D3DBlob* mfCompileHLSL(CShader* pSH, char* prog_text, void** ppConstantTable, D3DBlob** ppErrorMsgs, uint32 nFlags);
+	bool	 mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr);
 
 	bool Upload(SHWSInstance* pInst, ID3DBlob* pBlob, CShader* pSH);
 	void mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH, bool bCol, byte bNormal, bool bTC0, bool bTC1[2], bool bPSize, bool bTangent[2], bool bBitangent[2], bool bHWSkin, bool bSH[2], bool bVelocity, bool bMorph)
@@ -602,6 +608,19 @@ class CHWShader_D3D : public CHWShader
 
 		return true;
 	}
+
+	// Inherited via CHWShader
+	virtual void GetMemoryUsage(ICrySizer* pSizer) const override;
+	void		 mfFree()
+	{
+#if CRY_PLATFORM_DESKTOP
+		SAFE_DELETE(m_pTree);
+		SAFE_DELETE(m_pParser);
+#endif
+
+		//m_Flags = 0;
+		mfReset();
+	}
 };
 
 class CShader : public IShader
@@ -638,9 +657,12 @@ class CShader : public IShader
 	static CShader* LoadBinaryShader(std::string_view name, int flags, uint64 nMaskGen);
 
 	void CreateInputLayout();
+#if 0
 	void ReflectShader();
+#endif
+	static CHWShader* GetHWShader(EHWShaderClass type, SShaderPass& pass);
 
-	static void							   LoadShader(SShaderPass* pass, EHWShaderClass st, std::vector<std::string>& code, CShader* pSH);
+	static void							   LoadShaderPass(SShaderPass* pass, EHWShaderClass st, std::vector<std::string>& code, CShader* pSH);
 	static const char*					   mfProfileString(EHWShaderClass type);
 	static CHWShader_D3D*				   LoadFromFile(const std::string_view text, IShader::Type type, const char* pEntry);
 	static std::pair<ID3DBlob*, ID3DBlob*> LoadFromMemory(const std::vector<std::string>& text, EHWShaderClass type, const char* pEntry);

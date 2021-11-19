@@ -88,7 +88,7 @@ void Driver::Release()
 	delete this;
 }
 
-extern "C" DLL_EXPORT IDriver* CreateParserDriver()
+extern "C" PARSERDRIVER_API IDriver* CreateParserDriver()
 {
 	return new Driver();
 }

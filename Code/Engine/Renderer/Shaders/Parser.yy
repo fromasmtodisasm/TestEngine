@@ -25,81 +25,9 @@
     #endif
     class Scanner;
     class Driver;
-    //using shader_assignment = std::pair<std::string, std::string>
-
     //extern void lex_pop_state();
     #define lex_pop_state() scanner.pop_state()
     #define lex_print_state() scanner.print_state()
-
-
-    namespace nvFX {
-    /*************************************************************************/ /**
-    ** \brief IUniform Parameter interface
-    **/ /*************************************************************************/ 
-    class IUniform 
-    {
-    protected:
-        IUniform() {}
-    public:
-        virtual ~IUniform() {}
-        enum Type {
-            TUndefined = 0,
-            TInt, TInt2, TInt3, TInt4,
-            //UInt,
-            TBool, TBool2, TBool3, TBool4,
-            TFloat, TVec2, TVec3, TVec4,
-            TMat2, TMat2x4, TMat3, TMat34,TMat4, 
-            TUBO, // Uniform Buffer Object
-            TCB,  // Constant Buffer (D3D)
-            TUniform,
-            TTexture, // a generic texture : for example when the app created this uniform to bind a texture to a sampler
-            // Note: texture==sampler in this type list. D3D uses texture objects, OpenGL will use samplers...
-            // Those typed texture/GL-samplers are when the parser encoutered an external declaration of uniform : it needs to know the type
-            TTexture1D,
-            TTexture2D,
-            TTexture2DShadow,
-            TTexture2DRect,
-            TTexture3D,
-            TTextureCube,
-            TTexUnit, //TODO: check about this... used for the Cg case (can't assign texunit)
-            // TODO : add missing cases
-    #ifndef OGLES2
-            TSubroutineUniform,
-            TSubroutineUniformByID,
-    #endif
-        };
-        enum PrecisionType /// precision is only used for OpenGL ES
-        {
-            PHighP = 0,
-            PMediumP = 1,
-            PLowP = 2,
-        };
-    };
-    inline std::string toString(IUniform::Type type)
-    {
-        switch(type)
-        {
-            case nvFX::IUniform::TFloat: return "float";
-            case nvFX::IUniform::TVec2: return "vec2";
-            case nvFX::IUniform::TVec3: return  "vec3";
-            case nvFX::IUniform::TVec4: return  "vec4";
-            case nvFX::IUniform::TInt: return  "int";
-            case nvFX::IUniform::TInt2: return  "ivec2";
-            case nvFX::IUniform::TInt3: return  "ivec3";
-            case nvFX::IUniform::TInt4: return  "ivec4";
-            case nvFX::IUniform::TBool: return  "bool";
-            case nvFX::IUniform::TBool2: return  "bvec2";
-            case nvFX::IUniform::TBool3: return  "bvec3";
-            case nvFX::IUniform::TBool4: return  "bvec4";
-            case nvFX::IUniform::TMat2: return  "mat2";
-            case nvFX::IUniform::TMat3: return  "mat3";
-            case nvFX::IUniform::TMat4: return  "mat4";
-            default: assert(0); return "unknown_type";
-
-        }
-
-    }
-    }
 
     struct DirectDeclarator
     {
@@ -505,7 +433,7 @@ PASS {
     lex_pop_state();
 }
 | PASS IDENTIFIER {
-    SPass pass;
+    SShaderPass pass;
     pass.Name = $2.c_str();
     driver.currentEffect->m_Techniques.back().Passes.push_back(pass);
     //driver.currentEffect->m_shaders.push_back(IEffect::ShaderInfo{$1, $3});

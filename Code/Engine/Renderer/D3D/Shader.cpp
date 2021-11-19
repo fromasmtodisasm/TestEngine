@@ -1,4 +1,5 @@
 #include "Shader.hpp"
+#include "Shader.hpp"
 #include <BlackBox/System/FrameProfiler.hpp>
 #include "Renderer.h"
 #include <BlackBox/Core/Utils.hpp>
@@ -99,9 +100,9 @@ void CShader::Bind()
 
 	if (!WaitUntilLoaded())
 		return;
-	if (auto s = m_Shaders[E_VERTEX]->m_D3DShader; s) { d->VSSetShader((PVertexShader)s, nullptr, 0); }
+	if (auto s = m_Shaders[E_VERTEX]->m_pCurInst->m_Handle.m_pShader->GetHandle(); s) { d->VSSetShader((PVertexShader)s, nullptr, 0); }
 	//if (auto s = m_Shaders[E_GEOMETRY]->m_D3DShader; s) { d->VSSetShader((PVertexShader)s); }
-	if (auto s = m_Shaders[E_FRAGMENT]->m_D3DShader; s) { d->PSSetShader((PPixelShader)s, nullptr, 0); }
+	if (auto s = m_Shaders[E_FRAGMENT]->m_pCurInst->m_Handle.m_pShader->GetHandle(); s) { d->PSSetShader((PPixelShader)s, nullptr, 0); }
 
 	d->IASetInputLayout(m_pInputLayout);
 }
@@ -147,7 +148,7 @@ void CShader::CreateInputLayout()
 {
 	HRESULT hr{};
 
-	auto								  pVSBuf = (ID3DBlob*)m_Shaders[IShader::Type::E_VERTEX]->m_ByteCode;
+	auto								  pVSBuf = (ID3DBlob*)m_Shaders[IShader::Type::E_VERTEX]->m_pCurInst->m_Shader.m_pShaderData;
 	std::vector<D3D11_INPUT_ELEMENT_DESC> t_InputElementDescVec; // actually does not matter what store
 	unsigned int						  t_ByteOffset = 0;
 
@@ -261,6 +262,7 @@ void CShader::CreateInputLayout()
 	//SAFE_RELEASE(m_pReflection);
 }
 
+#if 0
 void CShader::ReflectShader()
 {
 	HRESULT hr{};
@@ -273,15 +275,38 @@ void CShader::ReflectShader()
 		m_pReflection->GetDesc(&m_Desc);
 	}
 }
-
-void CShader::LoadShader(SShaderPass* pass, EHWShaderClass st, std::vector<std::string>& code, CShader* pSH)
+#endif
+CHWShader* GetHWShader(EHWShaderClass type, SShaderPass& pass)
 {
-	auto entry = pass->EntryPoints[st].data();
-	if (auto res = LoadFromMemory(code, st, entry); res.first)
+	switch (type)
 	{
-		auto shader		   = new CHWShader_D3D(st, entry);
-		shader->m_ByteCode = res.first;
-		if (shader->Upload(shader->m_ByteCode, pSH))
+	case eHWSC_Vertex:
+		return pass.m_VShader;
+	case eHWSC_Pixel:
+		return pass.m_PShader;
+	case eHWSC_Geometry:
+		return pass.m_GShader;
+	case eHWSC_Domain:
+		return pass.m_DShader;
+	case eHWSC_Hull:
+		return pass.m_HShader;
+	case eHWSC_Compute:
+		return pass.m_CShader;
+	default:
+		return nullptr;
+	}
+}
+
+void CShader::LoadShaderPass(SShaderPass* pass, EHWShaderClass st, std::vector<std::string>& code, CShader* pSH)
+{
+	auto entry = GetHWShader(st, *pass)->m_EntryFunc;
+	if (auto res = LoadFromMemory(code, st, entry.c_str()); res.first)
+	{
+		auto shader		   = new CHWShader_D3D;
+		shader->m_eSHClass = st; 
+		shader->m_EntryFunc = entry.c_str();
+		shader->m_pCurInst->m_Handle =  SD3DShaderHandle(res.first, st, res.first->GetBufferSize());
+		if (shader->Upload(shader->m_pCurInst, (ID3DBlob*)shader->m_pCurInst->m_Handle.m_pShader->GetHandle(), pSH))
 		{
 			pSH->m_Shaders[st] = shader;
 		}
@@ -298,7 +323,8 @@ std::pair<ID3DBlob*,ID3DBlob*> CShader::LoadFromMemory(const std::vector<std::st
 	std::string code;
 	for (const auto& piece : text)
 		code += piece;
-	return CShader::Load(code, type, pEntry, true);
+	//return CShader::Load(code, type, pEntry, true);
+	return std::make_pair(nullptr,nullptr);
 }
 
 #if 0
@@ -334,6 +360,174 @@ void SaveHlslToDisk(const std::vector<std::string>& code, IShader::Type type)
 	output_file.close();
 }
 
+CCryNameTSCRC CHWShader::mfGetClassName(EHWShaderClass eClass)
+{
+	static const auto s_sClassNameVertex = CCryNameTSCRC("CHWShader_VS");
+	static const auto s_sClassNamePixel = CCryNameTSCRC("CHWShader_PS");
+	static const auto s_sClassNameGeometry = CCryNameTSCRC("CHWShader_GS");
+	static const auto s_sClassNameDomain = CCryNameTSCRC("CHWShader_DS");
+	static const auto s_sClassNameHull = CCryNameTSCRC("CHWShader_HS");
+	static const auto s_sClassNameCompute = CCryNameTSCRC("CHWShader_CS");
+
+	switch (eClass)
+	{
+	case eHWSC_Vertex:
+		return s_sClassNameVertex;
+	case eHWSC_Pixel:
+		return s_sClassNamePixel;
+	case eHWSC_Geometry:
+		return s_sClassNameGeometry;
+	case eHWSC_Domain:
+		return s_sClassNameDomain;
+	case eHWSC_Hull:
+		return s_sClassNameHull;
+	default:
+		CRY_ASSERT("WTF");
+	case eHWSC_Compute:
+		return s_sClassNameCompute;
+	}
+}
+
+CCryNameTSCRC CHWShader::mfGetCacheClassName(EHWShaderClass eClass)
+{
+	static const auto s_sClassNameVertex = CCryNameTSCRC("CHWShader_cache_VS");
+	static const auto s_sClassNamePixel = CCryNameTSCRC("CHWShader_cache_PS");
+	static const auto s_sClassNameGeometry = CCryNameTSCRC("CHWShader_cache_GS");
+	static const auto s_sClassNameDomain = CCryNameTSCRC("CHWShader_cache_DS");
+	static const auto s_sClassNameHull = CCryNameTSCRC("CHWShader_cache_HS");
+	static const auto s_sClassNameCompute = CCryNameTSCRC("CHWShader_cache_CS");
+
+	switch (eClass)
+	{
+	case eHWSC_Vertex:
+		return s_sClassNameVertex;
+	case eHWSC_Pixel:
+		return s_sClassNamePixel;
+	case eHWSC_Geometry:
+		return s_sClassNameGeometry;
+	case eHWSC_Domain:
+		return s_sClassNameDomain;
+	case eHWSC_Hull:
+		return s_sClassNameHull;
+	default:
+		CRY_ASSERT("WTF");
+	case eHWSC_Compute:
+		return s_sClassNameCompute;
+	}
+}
+
+
+CHWShader* CHWShader::mfForName(const char* name, const char* nameSource, const char* szEntryFunc, EHWShaderClass eClass, CShader* pFX, uint64 nMaskGen, uint64 nMaskGenFX)
+{
+	//	CRY_PROFILE_FUNCTION(PROFILE_LOADING_ONLY)(iSystem);
+	if (!name || !name[0])
+		return nullptr;
+	MEMSTAT_CONTEXT(EMemStatContextType::Shader, name);
+
+	CHWShader_D3D* pSH	   = nullptr;
+	stack_string   strName = name;
+	stack_string   AddStr;
+	const auto	   className = mfGetClassName(eClass);
+
+	const auto	 cacheClassName = mfGetCacheClassName(eClass);
+	const string cacheName		= strName;
+	const auto	 cacheNameCrc	= CCryNameTSCRC{cacheName.c_str()};
+
+	#if 0
+	if (nMaskGen)
+	{
+#if defined(CRY_COMPILER_GCC) || defined(CRY_COMPILER_CLANG)
+		strName += AddStr.Format("(%llx)", nMaskGen);
+#else
+		strName += AddStr.Format("(%I64x)", nMaskGen);
+#endif
+	}
+	#endif
+	const CCryNameTSCRC Name = strName.c_str();
+
+	CBaseResource* pBR = CBaseResource::GetResource(className, Name, true);
+	if (!pBR)
+	{
+		pSH					= new CHWShader_D3D;
+		pSH->m_Name			= strName.c_str();
+		pSH->m_NameSourceFX = nameSource;
+		pSH->Register(className, Name);
+		pSH->mfFree();
+
+		pSH->m_EntryFunc = szEntryFunc;
+		//pSH->m_CRC32	 = CRC32;
+		pSH->m_eSHClass	 = eClass;
+	}
+	else
+	{
+		pSH = static_cast<CHWShader_D3D*>(pBR);
+		#if 0
+		if (pSH->m_CRC32 == CRC32)
+		{
+			if (CRenderer::CV_r_shadersAllowCompilation)
+			{
+				if (SHData.size())
+				{
+					pSH->mfStoreCacheTokenMap(Table, SHData);
+				}
+			}
+			return pSH;
+		}
+		#endif
+
+		// CRC mismatch
+		pSH->mfFree();
+		//pSH->m_CRC32	= CRC32;
+		pSH->m_eSHClass = eClass;
+	}
+
+	// Acquire cache resource
+	auto* hwSharedCache = CBaseResource::GetResource(cacheClassName, cacheNameCrc, true);
+	#if 0
+	if (!hwSharedCache)
+	{
+		char dstName[256];
+		pSH->mfGetDstFileName(nullptr, dstName, 256, 0);
+
+		hwSharedCache = new SHWShaderCache(string{dstName});
+		hwSharedCache->Register(cacheClassName, cacheNameCrc);
+	}
+	pSH->m_pCache = static_cast<SHWShaderCache*>(hwSharedCache);
+
+	if (CParserBin::m_bEditable || ((!pVRProjectionManager || pVRProjectionManager->IsMultiResEnabledStatic()) && eClass == eHWSC_Vertex))
+	{
+		pSH->m_TokenTable = Table;
+		pSH->m_TokenData  = SHData;
+	}
+	#endif
+
+	#if 0
+	pSH->m_dwShaderType	  = dwType;
+	pSH->m_nMaskGenShader = nMaskGen;
+	pSH->m_nMaskGenFX	  = nMaskGenFX;
+
+	pSH->mfWarmupCache(pFX);
+	#endif
+
+	#if 1
+	#if 0
+	pSH->mfConstructFX(Table, SHData);
+	#endif
+	#pragma message("TODO: Implement it!")
+	#endif
+
+	return pSH;
+}
+
+void CHWShader_D3D::mfReset()
+{
+}
+
+CHWShader_D3D::~CHWShader_D3D()
+{
+	mfFree();
+}
+
 const char* CHWShader::mfProfileString(EHWShaderClass type)
 {
 	const char* szProfile = "Unknown";
@@ -364,6 +558,7 @@ const char* CHWShader::mfProfileString(EHWShaderClass type)
 	return szProfile;
 }
 
+// Compile pixel/vertex shader for the current instance properties
 bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags)
 {
 	PROFILE_FRAME(Shader_HWShaderActivate);
@@ -429,6 +624,10 @@ bool CHWShader_D3D::Upload(SHWSInstance* pInst, ID3DBlob* pBlob, CShader* pSH)
 #endif
 	}
 	return (hr == S_OK);
+}
+
+void CHWShader_D3D::GetMemoryUsage(ICrySizer* pSizer) const
+{
 }
 
 bool CHWShader_D3D::mfCompileHLSL_Int(CShader* pSH, char* prog_text, D3DBlob** ppShader, void** ppConstantTable, D3DBlob** ppErrorMsgs, string& strErr)

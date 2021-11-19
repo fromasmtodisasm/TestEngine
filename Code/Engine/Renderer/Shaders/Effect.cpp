@@ -29,11 +29,32 @@ ITechnique* CEffect::GetTechnique(const char* name, size_t size)
 	return nullptr;
 }
 
+CHWShader* CEffect::GetHWShader(EHWShaderClass type, SShaderPass& pass)
+{
+	switch (type)
+	{
+	case eHWSC_Vertex:
+		return pass.m_VShader;
+	case eHWSC_Pixel:
+		return pass.m_PShader;
+	case eHWSC_Geometry:
+		return pass.m_GShader;
+	case eHWSC_Domain:
+		return pass.m_DShader;
+	case eHWSC_Hull:
+		return pass.m_HShader;
+	case eHWSC_Compute:
+		return pass.m_CShader;
+	default:
+		return nullptr;
+	}
+}
+
 void CEffect::shader_assignment(EHWShaderClass type, const string& name)
 {
 	auto& tech			   = m_Techniques.back();
 	auto& pass			   = tech.Passes.back();
-	pass.EntryPoints[type] = name;
+	GetHWShader(type, pass)->m_Name = name;
 }
 
 bool CEffect::SetLang(ShaderLangId id)

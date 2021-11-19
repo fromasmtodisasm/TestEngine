@@ -12,6 +12,8 @@
 
 #include <BlackBox/System/File/ICryPak.hpp>
 
+#define AUTO_STRUCT_INFO
+
 #define DX_11
 #define BB_RENDERER_DIRECT3D 110
 #ifdef DX_RENDERER
@@ -204,3 +206,6 @@ inline void Warning(const char* format, ...)
 		gEnv->pSystem->WarningV(VALIDATOR_MODULE_RENDERER, VALIDATOR_WARNING, 0, NULL, format, args);
 	va_end(args);
 }
+
+typedef string stack_string;
+

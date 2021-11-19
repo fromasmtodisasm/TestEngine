@@ -20,7 +20,7 @@ FxParser::~FxParser()
 
 bool FxParser::Parse(const std::string& f, PEffect* pEffect)
 {
-#ifndef STATIC_PARSER
+#ifndef _LIB
 #	define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
 	//auto g_driver = std::unique_ptr<IDriver>(CreateParserDriver());
 	//CCryLibrary ;

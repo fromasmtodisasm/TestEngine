@@ -1,12 +1,14 @@
 #pragma once
 
 #include <BlackBox/Core/CryEnumMacro.h>
+#include "CryNameR.h"
 
 //////////////////////////////////////////////////////////////////////
 class CRenderer;
 extern CRenderer* gRenDev;
 
 class CShader;
+class CBaseResource;
 
 struct GlobalResources
 {
@@ -287,4 +289,155 @@ enum EHWShaderClass : uint8
 	eHWSC_Compute  = 5,
 	eHWSC_Num      = 6
 };
+
+#if 0 
+#if 0
+typedef CCryNameR CCryNameTSCRC;
+#else
+typedef string CCryNameTSCRC;
+#endif
+#endif
+
+namespace stl
+{
+	template<class T>
+	using STLGlobalAllocator = std::allocator<T>;
+}
+
+////////////////////////////////////////////////////////////////////////////
+// Resource and Resource-Directory API
+
+typedef std::map<CCryNameTSCRC, CBaseResource*> ResourcesMap;
+typedef ResourcesMap::iterator					ResourcesMapItor;
+
+typedef std::vector<CBaseResource*, stl::STLGlobalAllocator<CBaseResource*>> ResourcesList;
+typedef std::vector<int, stl::STLGlobalAllocator<int>>						 ResourceIds;
+
+struct SResourceContainer
+{
+	ResourcesList m_RList;		  // List of objects for acces by Id's
+	ResourcesMap  m_RMap;		  // Map of objects for fast searching
+	ResourceIds	  m_AvailableIDs; // Available object Id's for efficient ID's assigning after deleting
+
+	SResourceContainer()
+	{
+		m_RList.reserve(512);
+	}
+
+	~SResourceContainer();
+
+	void GetMemoryUsage(ICrySizer* pSizer) const
+	{
+		pSizer->AddObject(this, sizeof(*this));
+		pSizer->AddObject(m_RList);
+		pSizer->AddObject(m_RMap);
+		pSizer->AddObject(m_AvailableIDs);
+	}
+};
+
+
+typedef std::map<CCryNameTSCRC, SResourceContainer*> ResourceClassMap;
+typedef ResourceClassMap::iterator					 ResourceClassMapItor;
+
+class CBaseResource : NoCopy
+	//, public CResourceBindingInvalidator
+{
+  private:
+	// Per resource variables
+	volatile int32 m_nRefCount;
+	int			   m_nID;
+	CCryNameTSCRC  m_ClassName;
+	CCryNameTSCRC  m_NameCRC;
+
+	static ResourceClassMap m_sResources;
+
+	bool m_bDeleted = false;
+
+  public:
+#if 0
+	static CryRWLock s_cResLock;
+#endif
+
+  private:
+	void UnregisterAndDelete();
+
+  public:
+	// CCryUnknown interface
+	inline void	  SetRefCounter(int nRefCounter) { m_nRefCount = nRefCounter; }
+	virtual int	  GetRefCounter() const { return m_nRefCount; }
+	virtual int32 AddRef()
+	{
+		int32 nRef = CryInterlockedIncrement(&m_nRefCount);
+		return nRef;
+	}
+	virtual int32 Release()
+	{
+		// TODO: simplify, it's making ref-counting on CTexture much more expensive than it needs to be
+		IF(m_nRefCount > 0, 1)
+		{
+			int32 nRef = CryInterlockedDecrement(&m_nRefCount);
+			if (nRef < 0)
+			{
+				CryFatalError("CBaseResource::Release() called more than once!");
+			}
+
+			if (nRef == 0)
+			{
+				UnregisterAndDelete();
+				return 0;
+			}
+			return nRef;
+		}
+		return 0;
+	}
+
+	// Increment ref count, if not already scheduled for destruction.
+	#if 0
+	int32 TryAddRef()
+	{
+		volatile int nOldRef, nNewRef;
+		do
+		{
+			nOldRef = m_nRefCount;
+			if (nOldRef == 0)
+				return 0;
+			nNewRef = nOldRef + 1;
+		} while (CryInterlockedCompareExchange(alias_cast<volatile LONG*>(&m_nRefCount), nNewRef, nOldRef) != nOldRef);
+		return nNewRef;
+	}
+	#endif
+
+	// Constructors.
+	CBaseResource()
+		: m_nRefCount(1)
+		, m_nID(0)
+	{
+	}
+
+	// Destructor.
+	virtual ~CBaseResource(){};
+
+	CCryNameTSCRC GetNameCRC() const { return m_NameCRC; }
+	//inline const char *GetName() const { return m_Name.c_str(); }
+	//inline const char *GetClassName() const { return m_ClassName.c_str(); }
+	inline int	GetID() const { return m_nID; }
+	inline void SetID(int nID) { m_nID = nID; }
+
+	virtual bool IsValid() const;
+
+	static ILINE int RListIndexFromId(int id) { return id - 1; }
+	static ILINE int IdFromRListIndex(int idx) { return idx + 1; }
+
+	static ResourceClassMap&   GetMaps() { return m_sResources; }
+	static CBaseResource*	   GetResource(const CCryNameTSCRC& className, int nID, bool bAddRef);
+	static CBaseResource*	   GetResource(const CCryNameTSCRC& className, const CCryNameTSCRC& Name, bool bAddRef);
+	static SResourceContainer* GetResourcesForClass(const CCryNameTSCRC& className);
+	static void				   ShutDown();
+
+	bool Register(const CCryNameTSCRC& resName, const CCryNameTSCRC& Name);
+	bool UnRegister();
+
+	virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
+};
+
 

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "crc32.h"
+
 //#define CHECK_INVALID_ACCESS
 // Returns the resulting incremented value
 ILINE LONG CryInterlockedIncrement(volatile int* pDst)
@@ -307,7 +309,8 @@ inline bool CCryNameR::operator<(const CCryNameR& n) const
 	return m_str < n.m_str;
 }
 
-#if 0
+#if 1
+//#	define CCryNameTSCRC _CCryNameTSCRC
 ///////////////////////////////////////////////////////////////////////////////
 // Class CCryNameTSCRC.
 //////////////////////////////////////////////////////////////////////////
@@ -441,11 +444,11 @@ inline bool CCryNameTSCRC::operator>(const CCryNameTSCRC& n) const
 
 inline bool operator==(const string& s, const CCryNameTSCRC& n)
 {
-	return n == s;
+	return n == s.c_str();
 }
 inline bool operator!=(const string& s, const CCryNameTSCRC& n)
 {
-	return n != s;
+	return n != s.c_str();
 }
 
 inline bool operator==(const char* s, const CCryNameTSCRC& n)
@@ -456,4 +459,5 @@ inline bool operator!=(const char* s, const CCryNameTSCRC& n)
 {
 	return n != s;
 }
+#undef CCryNameTSCRC
 #endif

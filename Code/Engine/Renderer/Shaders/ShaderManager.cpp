@@ -1,7 +1,8 @@
 #include "../BaseRenderer.hpp"
 #include "ShaderManager.hpp"
+#include <D3D/Shader.cpp>
 
-inline void CShaderManager::RT_ShaderLoad(const char* name, int flags, uint64 nMaskGen, CShader* p)
+void CShaderManager::RT_ShaderLoad(const char* name, int flags, uint64 nMaskGen, CShader* p)
 {
 	if (auto it = m_Shaders.find((name)); it != m_Shaders.end())
 	{
@@ -19,7 +20,7 @@ inline void CShaderManager::RT_ShaderLoad(const char* name, int flags, uint64 nM
 	}
 }
 
-inline IShader* CShaderManager::Sh_Load(const char* name, int flags, uint64 nMaskGen)
+IShader* CShaderManager::Sh_Load(const char* name, int flags, uint64 nMaskGen)
 {
 	_smart_ptr<CShader> pShader = NewShader();
 	gRenDev->ExecuteRenderThreadCommand([=]
@@ -30,7 +31,7 @@ inline IShader* CShaderManager::Sh_Load(const char* name, int flags, uint64 nMas
 	return pShader;
 }
 
-inline bool CShaderManager::Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p)
+bool CShaderManager::Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p)
 {
 	PEffect			  pEffect = nullptr;
 	std::stringstream path;
@@ -51,10 +52,22 @@ inline bool CShaderManager::Compile(std::string_view name, int flags, uint64 nMa
 			nTech = tech->GetId();
 		p->m_NameShader = real_name.data();
 		p->m_NameFile	= path.str();
+		for (size_t tech = 0; tech < pEffect->GetNumTechniques(); tech++)
+		{
+			auto nPasses = pEffect->GetTechnique(tech)->GetNumPasses();
+			for (size_t pass = 0; pass < nPasses; pass++)
+			{
+				if (LoadFromEffect(p, pEffect, tech, pass))
+				{
+				}
+			}
+		}
 		if (LoadFromEffect(p, pEffect, nTech, pass))
 		{
 			p->AddRef();
+			#if 0
 			p->ReflectShader();
+			#endif
 			p->CreateInputLayout();
 			p->m_Flags2 |= EF2_LOADED;
 			delete pEffect;
@@ -84,12 +97,12 @@ bool CShaderManager::LoadFromEffect(CShader* pSH, PEffect pEffect, int nTechniqu
 	};
 	for (auto st : Types)
 	{
-		CHWShader::mfForName(pass, st, code, pSH);
+		CHWShader::mfForName(pSH->GetName(), pSH->m_NameFile.c_str(), GetHWShader(st, *pass)->m_EntryFunc.c_str(), st, pSH);
 	}
 	return true;
 }
 
-inline void CShaderManager::ReloadAll()
+void CShaderManager::ReloadAll()
 {
 	for (auto& s : m_Shaders)
 	{

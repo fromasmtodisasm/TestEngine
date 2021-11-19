@@ -1,3 +1,4 @@
+#ifdef USE_NEWPOOL
 //#if !defined USE_DEBUG_NEW && !(defined(_DEBUG) && !defined(LINUX))
 // Undefine malloc for memory manager itself..
 #	undef malloc
@@ -69,3 +70,4 @@ CRYMEMORYMANAGER_API void CryFreeSize(void* p, size_t size)
 {
 	CrySystemCrtFree(p);
 }
+#endif
