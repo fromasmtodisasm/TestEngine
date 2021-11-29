@@ -476,7 +476,7 @@ bool CSystem::Init()
 	{
 		m_env.pInput->AddEventListener(this);
 		m_env.pInput->AddEventListener(static_cast<CXConsole*>(m_env.pConsole));
-#if ENABLE_DEBUG_GUI
+#if !ENABLE_DEBUG_GUI
 		if (!InitGUI())
 			return false;
 		m_env.pInput->AddEventListener(m_GuiManager);

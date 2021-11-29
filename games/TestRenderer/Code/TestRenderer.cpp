@@ -5,10 +5,15 @@ public:
 	// Inherited via IGame
 	virtual bool Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const char* szGameMod) override
 	{
-		return false;
+		m_pSystem = pSystem;
+		return true;
 	}
 	virtual bool Update() override
 	{
+		m_pSystem->Update();
+		m_pSystem->RenderBegin();
+
+		m_pSystem->RenderEnd();
 		return m_IsRunning;
 	}
 	virtual bool Run(bool& bRelaunch) override
@@ -104,6 +109,8 @@ public:
 	}
 
 	bool m_IsRunning = true;
+
+	ISystem* m_pSystem;
 };
 
 IGAME_API IGame* CreateGameInstance()
