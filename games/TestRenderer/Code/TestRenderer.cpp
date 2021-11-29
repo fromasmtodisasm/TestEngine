@@ -9,6 +9,7 @@ public:
 	}
 	virtual bool Update() override
 	{
+		return m_IsRunning;
 	}
 	virtual bool Run(bool& bRelaunch) override
 	{
