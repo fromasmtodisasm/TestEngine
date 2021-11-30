@@ -705,7 +705,11 @@ bool CSystem::OpenRenderLibrary(std::string_view render)
 	const char* RenderLibrary = "RendererGL";
 	if (render == "DX11")
 	{
-		RenderLibrary = "RendererDX";
+		RenderLibrary = "RendererDX11";
+	}
+	else if (render == "DX12")
+	{
+		RenderLibrary = "RendererDX12";
 	}
 	else if (render == "VK")
 	{

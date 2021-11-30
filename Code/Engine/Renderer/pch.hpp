@@ -12,8 +12,7 @@
 
 #include <BlackBox/System/File/ICryPak.hpp>
 
-#define DX_11
-#define BB_RENDERER_DIRECT3D 110
+//#define BB_RENDERER_DIRECT3D 110
 #ifdef DX_RENDERER
 #	include <BlackBox/Core/Platform/Windows.hpp>
 #	define __IFont_INTERFACE_DEFINED__
@@ -23,11 +22,12 @@
 //#	include <d3dx11.h>
 //#	include <d3dx10.h>
 //#	include <D3dx11effect.h>
-#	include "D3D/DDSTextureLoader11.h"
+#	include "D3D11/DDSTextureLoader11.h"
 #	include <d3d9.h> // debug markers
 const D3DCOLOR D3DC_Blue = D3DCOLOR_RGBA(0, 0, 1, 1); 
 
-#ifdef DX_11
+#if BB_RENDERER_DIRECT3D == 110
+#define DX_11
 #	define ID3DDevice ID3D11Device
 #	define ID3DDeviceContext ID3D11DeviceContext
 #	define ID3DBuffer ID3D11Buffer

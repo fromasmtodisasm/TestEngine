@@ -8,7 +8,7 @@
 #ifdef VK_RENDERER
 #	include "Vulkan/Shader.hpp"
 #elif DX_RENDERER
-#	include "D3D/Shader.hpp"
+#	include "D3D11/Shader.hpp"
 #endif
 #ifndef VK_RENDERER
 #	include "TypedConstantBuffer.hpp"

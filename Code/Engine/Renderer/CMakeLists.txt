@@ -11,7 +11,7 @@ sources_platform(ALL)
 add_sources(
 	"NoUberFile"
 	PROJECTS
-	RendererDX
+	RendererDX11
 	RendererGL
 	RendererVK
 	SOURCE_GROUP "Source Files"
@@ -34,28 +34,41 @@ add_sources(
 		"GraphicsPipeline/Common/GraphicsPipeline.h"
 		"GraphicsPipeline/Common/GraphicsPipelineStage.cpp"
 		"GraphicsPipeline/Common/GraphicsPipelineStage.h"
-)
-
-add_sources(
-	"NoUberFile"
-	PROJECTS
-	RendererDX
-	SOURCE_GROUP "D3D"
-		"D3D/BufferManager.cpp"
-		"D3D/CMakeLists.txt"
-		"D3D/DDSTextureLoader11.cpp"
-		"D3D/DDSTextureLoader11.h"
-		"D3D/Renderer.cpp"
-		"D3D/Renderer.h"
-		"D3D/Shader.cpp"
-		"D3D/Shader.hpp"
-
 	SOURCE_GROUP "DeviceManager"
 		"DeviceManager/DeviceObjects.h"
 		"DeviceManager/Deviceobjects.cpp"
 		"DeviceManager/DeviceResources.cpp"
 		"DeviceManager/DeviceResources.hpp"
-	
+)
+
+add_sources(
+	"NoUberFile"
+	PROJECTS
+	RendererDX11
+	SOURCE_GROUP "D3D11"
+		"D3D11/BufferManager.cpp"
+		"D3D11/CMakeLists.txt"
+		"D3D11/DDSTextureLoader11.cpp"
+		"D3D11/DDSTextureLoader11.h"
+		"D3D11/Renderer.cpp"
+		"D3D11/Renderer.h"
+		"D3D11/Shader.cpp"
+		"D3D11/Shader.hpp"
+)
+
+add_sources(
+	"NoUberFile"
+	PROJECTS
+	RendererDX12
+	SOURCE_GROUP "D3D12"
+		"D3D12/BufferManager.cpp"
+		"D3D12/CMakeLists.txt"
+		"D3D12/DDSTextureLoader11.cpp"
+		"D3D12/DDSTextureLoader11.h"
+		"D3D12/Renderer.cpp"
+		"D3D12/Renderer.h"
+		"D3D12/Shader.cpp"
+		"D3D12/Shader.hpp"
 )
 
 add_sources(
@@ -86,18 +99,31 @@ macro(add_common_includes)
 	target_include_directories(${THIS_PROJECT} PRIVATE ${Stb_INCLUDE_DIR})
 endmacro()
 
-if(OPTION_DX_RENDERER)
-	message(STATUS "Using D3D11 Renderer Backend")
-	enginemodule(RendererDX FORCE_SHARED_WIN PCH
+if (FALSE)
+	message(STATUS "Using D3D12 Renderer Backend")
+	enginemodule(RendererDX12 FORCE_SHARED_WIN PCH
 							 "${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp" SOLUTION_FOLDER "Engine")
 	add_common_libs()
 	add_common_includes()
 
-	target_compile_definitions(RendererDX PUBLIC "DX_RENDERER")
-	target_link_libraries(${THIS_PROJECT} PRIVATE dxguid d3d11 d3d10 d3d9 d3dcompiler)
-	add_library(Renderer ALIAS RendererDX)
+	target_compile_definitions(RendererDX12 PUBLIC "DX_RENDERER")
+	target_compile_definitions(RendererDX12 PUBLIC "BB_RENDERER_DIRECT3D=120")
+	target_link_libraries(${THIS_PROJECT} PRIVATE dxguid d3d12 d3d11 d3d10 d3d9 d3dcompiler)
+	add_library(Renderer ALIAS RendererDX12)
+endif()
+if(OPTION_DX_RENDERER)
+	message(STATUS "Using D3D11 Renderer Backend")
+	enginemodule(RendererDX11 FORCE_SHARED_WIN PCH
+							 "${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp" SOLUTION_FOLDER "Engine")
+	add_common_libs()
+	add_common_includes()
+
+	target_compile_definitions(RendererDX11 PUBLIC "DX_RENDERER")
+	target_compile_definitions(RendererDX11 PUBLIC "BB_RENDERER_DIRECT3D=110")
+	target_link_libraries(RendererDX11 PRIVATE dxguid d3d11 d3d10 d3d9 d3dcompiler)
+	add_library(Renderer ALIAS RendererDX11)
 else()
-	cryfilecontainer(RendererDX SOLUTION_FOLDER "Engine")
+	cryfilecontainer(RendererDX11 SOLUTION_FOLDER "Engine")
 endif()
 if(OPTION_VK_RENDERER)
 	enginemodule(RendererVK FORCE_SHARED_WIN PCH "pch.hpp" SOLUTION_FOLDER

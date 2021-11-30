@@ -1,5 +1,5 @@
 #ifndef VK_RENDERER
-#	include "D3D/Shader.hpp"
+#	include "D3D11/Shader.hpp"
 #	include <BlackBox/Renderer/FreeTypeFont.hpp>
 #	include <BlackBox/Renderer/IRender.hpp>
 
@@ -10,7 +10,7 @@
 #	include <memory>
 #	include <stb_image_write.h>
 
-#	include "D3D/Renderer.h"
+#	include "D3D11/Renderer.h"
 
 #	define STB_IMAGE_WRITE_IMPLEMENTATION
 #	include <BlackBox\System\ConsoleRegistration.h>
