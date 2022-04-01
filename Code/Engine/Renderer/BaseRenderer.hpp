@@ -16,6 +16,7 @@
 #include "RenderThread.h"
 #include <BlackBox/Core/Path.hpp>
 #include "Common/Include_HLSL_CPP_Shared.h"
+#include "GraphicsPipeline/Common/GraphicsPipeline.h"
 //#include <BlackBox/Renderer/FrameBufferObject.hpp>
 
 extern FxParser* g_FxParser;

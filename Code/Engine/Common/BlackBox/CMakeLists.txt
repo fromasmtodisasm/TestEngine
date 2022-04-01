@@ -164,6 +164,7 @@ add_sources(
 		Renderer/IRenderAuxGeom.hpp
 		Renderer/VertexFormats.hpp
 		Renderer/RendElement.h
+		Renderer/IRenderView.h
 	SOURCE_GROUP "ScriptSystem"
 		ScriptSystem/IScriptSystem.hpp
 		ScriptSystem/ScriptObject.hpp

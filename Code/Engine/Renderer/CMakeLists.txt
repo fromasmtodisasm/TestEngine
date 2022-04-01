@@ -6,75 +6,87 @@ add_subdirectory(Shaders)
 
 start_sources()
 sources_platform(ALL)
-add_sources(
-	"NoUberFile"
+add_sources("NoUberFile"
 	PROJECTS
-	RenderD3D11
-	RendererGL
-	RendererVK
+		RenderD3D11
+		RendererGL
+		RendererVK
 	SOURCE_GROUP "Source Files"
-		"AuxRenderer.cpp"
-		"AuxRendererNull.cpp"
-		"BaseRenderer.cpp"
-		"FreeTypeFont.cpp"
-		"RenderThread.cpp"
-		"RenderThread.h"
-		"Shaders/FxParser.cpp"
+		AuxRenderer.cpp
+		AuxRendererNull.cpp
+		BaseRenderer.cpp
+		FreeTypeFont.cpp
+		RenderThread.cpp
+		RenderThread.h
+		Shaders/FxParser.cpp
 	SOURCE_GROUP "Common"
-		"Common/CommonRender.cpp"
-		"Common/CommonRender.h"
-		"Common/CryNameR.h"
-		"Common/Include_HLSL_CPP_Shared.h"
-		"Common/ResourceManager.cpp"
-		"Common/ResourceManager.hpp"
+		Common/CommonRender.cpp
+		Common/CommonRender.h
+		Common/CryNameR.h
+		Common/Include_HLSL_CPP_Shared.h
+		Common/ResourceManager.cpp
+		Common/ResourceManager.hpp
 	SOURCE_GROUP "GraphicsPipeline"
-		"GraphicsPipeline/StandardGraphicsPipeline.cpp"
-		"GraphicsPipeline/StandardGraphicsPipeline.h"
+		GraphicsPipeline/StandardGraphicsPipeline.cpp
+		GraphicsPipeline/StandardGraphicsPipeline.h
+
+		GraphicsPipeline/RenderView.cpp
+		GraphicsPipeline/RenderView.h
+###########################################################
+		GraphicsPipeline/MeshStage.cpp
+		GraphicsPipeline/MeshStage.h
+
+		GraphicsPipeline/PrimitiveStage.cpp
+		GraphicsPipeline/PrimitiveStage.h
+
+		GraphicsPipeline/SkyStage.cpp
+		GraphicsPipeline/SkyStage.h
+###########################################################
 	SOURCE_GROUP "GraphicsPipeline\\\\Common"
-		"GraphicsPipeline/Common/GraphicsPipeline.cpp"
-		"GraphicsPipeline/Common/GraphicsPipeline.h"
-		"GraphicsPipeline/Common/GraphicsPipelineStage.cpp"
-		"GraphicsPipeline/Common/GraphicsPipelineStage.h"
+		GraphicsPipeline/Common/GraphicsPipeline.cpp
+		GraphicsPipeline/Common/GraphicsPipeline.h
+		GraphicsPipeline/Common/GraphicsPipelineStage.cpp
+		GraphicsPipeline/Common/GraphicsPipelineStage.h
 )
 
-add_sources(
-	"NoUberFile"
+add_sources("NoUberFile"
 	PROJECTS
-	RenderD3D11
+		RenderD3D11
 	SOURCE_GROUP "D3D"
-		"D3D/BufferManager.cpp"
-		"D3D/CMakeLists.txt"
-		"D3D/DDSTextureLoader11.cpp"
-		"D3D/DDSTextureLoader11.h"
-		"D3D/Renderer.cpp"
-		"D3D/Renderer.h"
-		"D3D/Shader.cpp"
-		"D3D/Shader.hpp"
-		"D3D/SwapChain.cpp"
-		"D3D/SwapChain.hpp"
-		"D3D/Device.cpp"
-		"D3D/Device.hpp"
-
+		D3D/BufferManager.cpp
+		D3D/CMakeLists.txt
+		D3D/DDSTextureLoader11.cpp
+		D3D/DDSTextureLoader11.h
+		D3D/Renderer.cpp
+		D3D/Renderer.h
+		D3D/Shader.cpp
+		D3D/Shader.hpp
+		D3D/SwapChain.cpp
+		D3D/SwapChain.hpp
+		D3D/Device.cpp
+		D3D/Device.hpp
 	SOURCE_GROUP "DeviceManager"
-		"DeviceManager/DeviceObjects.h"
-		"DeviceManager/Deviceobjects.cpp"
-		"DeviceManager/DeviceResources.cpp"
-		"DeviceManager/DeviceResources.hpp"
-	
+		DeviceManager/DeviceObjects.h
+		DeviceManager/Deviceobjects.cpp
+		DeviceManager/DeviceResources.cpp
+		DeviceManager/DeviceResources.hpp
 )
 
-add_sources(
-	"NoUberFile"
+add_sources("NoUberFile"
 	PROJECTS
-	RendererVK
+		RendererVK
 	SOURCE_GROUP "Vulkan"
-		"Vulkan/Renderer.cpp"
-		"Vulkan/Shader.cpp"
-		"Vulkan/Renderer.h"
+		Vulkan/Renderer.cpp
+		Vulkan/Shader.cpp
+		Vulkan/Renderer.h
 )
 sources_platform(WINDOWS)
-add_sources("NoUberFile" PROJECTS RendererVK SOURCE_GROUP
-						"Vulkan\\\\Resource Files" "Vulkan/RendererVK.rc")
+add_sources("NoUberFile" 
+	PROJECTS 
+		RendererVK 
+	SOURCE_GROUP "Vulkan\\\\Resource Files" 
+		Vulkan/RendererVK.rc
+)
 
 end_sources()
 
