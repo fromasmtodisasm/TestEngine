@@ -116,8 +116,8 @@ void CD3DRenderer::Sh_Reload()
 IWindow* CD3DRenderer::Init(int x, int y, int width, int height, unsigned int cbpp, int zbpp, int sbits, bool fullscreen, IWindow* window)
 {
 	m_LigthsList.resize(4);
-	m_LigthsList[0] = {Legacy::Vec3{-10.0f, 10.0f, 10.0f},  Legacy::Vec3{300, 300, 900}};
-	m_LigthsList[1] = {Legacy::Vec3{10.0f, 10.0f, 10.0f},   Legacy::Vec3{300, 300, 300}};
+	m_LigthsList[0] = {Legacy::Vec3{-10.0f, 10.0f, 10.0f}, Legacy::Vec3{300, 300, 900}};
+	m_LigthsList[1] = {Legacy::Vec3{10.0f, 10.0f, 10.0f}, Legacy::Vec3{300, 300, 300}};
 	m_LigthsList[2] = {Legacy::Vec3{-10.0f, -10.0f, 10.0f}, Legacy::Vec3{300, 300, 300}};
 	m_LigthsList[3] = {Legacy::Vec3{-10.0f, -10.0f, 10.0f}, Legacy::Vec3{300, 300, 300}};
 	return CRenderer::Init(x, y, width, height, cbpp, zbpp, sbits, fullscreen, window);
@@ -132,15 +132,9 @@ void CD3DRenderer::BeginFrame(void)
 {
 	D3DPERF_BeginEvent(D3DC_Blue, L"BeginFrame");
 	auto pDC = m_Device->Get<ID3D11DeviceContext>();
-	if (EDITOR)
-		pDC->OMSetRenderTargets(1, m_RenderTargetScene->m_renderTargetView.GetAddressOf(), static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView));
-	else
-		pDC->OMSetRenderTargets(1, m_pMainRenderTargetView.GetAddressOf(), static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView));
 
-	if (EDITOR)
-		pDC->ClearRenderTargetView(m_RenderTargetScene->m_renderTargetView.Get(), &m_ClearColor[0]);
-	else
-		pDC->ClearRenderTargetView(m_pMainRenderTargetView.Get(), &m_ClearColor[0]);
+	m_GBuffer.OnBeginFrame(pDC, m_ClearColor);
+	pDC->ClearRenderTargetView(m_pMainRenderTargetView.Get(), &m_ClearColor[0]);
 	pDC->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView), D3D11_CLEAR_DEPTH, 1.f, 0);
 }
 
@@ -175,6 +169,55 @@ void CD3DRenderer::UpdateConstants()
 	::GetDeviceContext()->VSSetConstantBuffers(StartSlot, 3, pBuffers);
 	::GetDeviceContext()->PSSetConstantBuffers(StartSlot, 3, pBuffers);
 	//D3DPERF_EndEvent();
+}
+
+bool CD3DRenderer::CreateDepthStencil(int w, int h, std::shared_ptr<CTexture> DepthStencil)
+{
+	auto&                pDepthStencil = DepthStencil;
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+	depthStencilDesc.Width              = w;
+	depthStencilDesc.Height             = h;
+	depthStencilDesc.MipLevels          = 1;
+	depthStencilDesc.ArraySize          = 1;
+	depthStencilDesc.Format             = DXGI_FORMAT_R32_TYPELESS;
+	depthStencilDesc.SampleDesc.Count   = 1; // multisampling must match
+	depthStencilDesc.SampleDesc.Quality = 0; // swap chain values.
+	depthStencilDesc.Usage              = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags          = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	depthStencilDesc.CPUAccessFlags     = 0;
+	depthStencilDesc.MiscFlags          = 0;
+
+	if (FAILED(H(GetDevice()->CreateTexture2D(
+	                 &depthStencilDesc, 0, &pDepthStencil->m_pResource),
+	             "Error Create DS Texture")))
+		return false;
+	ID3D11ShaderResourceView*      srv;
+	ID3D11DepthStencilView*        dsv{};
+
+	CD3D11_DEPTH_STENCIL_VIEW_DESC DSD2(
+	    D3D11_DSV_DIMENSION_TEXTURE2D,
+	    DXGI_FORMAT_D32_FLOAT,
+	    0,
+	    0,
+	    1);
+
+	if (FAILED(H(GetDevice()->CreateDepthStencilView(pDepthStencil->m_pResource, &DSD2, &dsv),
+	             "Error Create DS Texture")))
+	{
+		return false;
+	}
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	srvDesc.Format                    = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels       = depthStencilDesc.MipLevels;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	if (FAILED(H(GetDevice()->CreateShaderResourceView(pDepthStencil->m_pResource, &srvDesc, &srv),
+	             "Error Create DS SRV")))
+	{
+		return false;
+	}
+	pDepthStencil->m_pView = dsv;
+	return true;
 }
 
 void CD3DRenderer::Update(void)
@@ -219,14 +262,14 @@ void CD3DRenderer::Update(void)
 				D3DPERF_EndEvent();
 			}
 			{
-                m_RenderAuxGeom->Flush();
+				m_RenderAuxGeom->Flush();
 				D3DPERF_BeginEvent(D3DC_Blue, L"DrawImages");
 				for (auto img : m_DrawImages)
 				{
 					Draw2DQuad(img.x, img.y, img.w, img.h, img.id, img.color, img.s0, img.t0, img.s1, img.t1);
 				}
 				D3DPERF_EndEvent();
-                Flush();
+				Flush();
 			}
 			//{
 			//	D3DPERF_BeginEvent(D3DC_Blue, L"DrawConsole");
@@ -408,6 +451,7 @@ bool CD3DRenderer::InitOverride()
 	}
 
 	m_DepthStencil = std::make_shared<CTexture>();
+	m_ShadowMap    = std::make_shared<CTexture>();
 	ChangeViewport(0, 0, GetWidth(), GetHeight());
 
 #if 0
@@ -456,15 +500,23 @@ bool CD3DRenderer::InitOverride()
 
 bool CD3DRenderer::OnResizeSwapchain(int newWidth, int newHeight)
 {
-	gcpRendD3D->CleanupRenderTarget();
+	//gcpRendD3D->CleanupRenderTarget();
 
 	if (m_pSwapChain->OnResize(newWidth, newHeight, m_pMainRenderTargetView.GetAddressOf()))
 	{
-		if (!CreateRenderTargets())
+		//if (!m_GBuffer.Resize(newWidth, newHeight))
+		auto result = CreateDepthStencil(newWidth, newHeight, m_DepthStencil);
+		result &= CreateDepthStencil(newWidth, newHeight, m_ShadowMap);
+		if (auto result = SGBuffer::Create(newWidth, newHeight); result.first)
+		{
+			m_GBuffer = result.second;
+			m_GBuffer.SetDS(m_DepthStencil);
+		}
+		else
 		{
 			CryFatalError("Cannot create render target");
 		}
-		return CreateDepthStencil(newWidth, newHeight);
+		return result;
 	}
 	return false;
 }
@@ -853,10 +905,10 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, int texture, c
 
 bool CD3DRenderer::CreateRenderTargets()
 {
-	auto [ok, rt] = RenderTarget::Create(GetWidth(), GetHeight());
+	auto [ok, gb] = SGBuffer::Create(GetWidth(), GetHeight());
 	if (ok)
 	{
-		m_RenderTargetScene = rt;
+		m_GBuffer = gb;
 	}
 	return ok;
 }

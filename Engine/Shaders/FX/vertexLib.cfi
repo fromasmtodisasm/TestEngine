@@ -1,0 +1,14 @@
+// Common vertex shader. Since almost all techniques share a similar vertex shader, a common vertex shader
+// has been created to save some work/code lines and as an optimization at the same time. 
+//
+//  Notes:
+//    - When adding new features here, make sure they work with instancing
+
+
+///////////////// Vertex/texture modifiers //////////////////
+
+#include "ModificatorVT.cfi"
+//#include "ModificatorTC.cfi"
+
+///////////////// General vertex output //////////////////
+

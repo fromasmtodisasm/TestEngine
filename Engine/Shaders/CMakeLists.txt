@@ -17,12 +17,12 @@ add_sources("NoUberFile"
 		"FX/sprite.fx"
 		"FX/z.fx"
 	SOURCE_GROUP "FX\\\\Include"
-		"FX/common.fx"
-		"FX/FXStreamDefs.fx"
-		"FX/FXConstantDefs.fx"
-		"FX/ModificatorVT.fx"
-		"FX/shadeLib.fx"
-		"FX/vertexLib.fx"
+		"FX/common.cfi"
+		"FX/FXStreamDefs.cfi"
+		"FX/FXConstantDefs.cfi"
+		"FX/ModificatorVT.cfi"
+		"FX/shadeLib.cfi"
+		"FX/vertexLib.cfi"
 )
 
 end_sources()

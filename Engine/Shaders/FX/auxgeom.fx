@@ -1,4 +1,4 @@
-#include "common.fx"
+#include "Common.cfi"
 
 struct VsOutput
 {

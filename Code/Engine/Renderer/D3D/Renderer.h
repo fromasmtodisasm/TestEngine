@@ -108,11 +108,18 @@ ID3DDeviceContext* GetDeviceContext();
 // NOTE: ...
 struct RenderTarget : _reference_target_t
 {
+	enum TargetType
+	{
+		Albedo,
+		Normal,
+		Metallness,
+		Roughness
+	};
 	~RenderTarget()
 	{
 	}
 
-	static std::pair<bool, _smart_ptr<RenderTarget>> Create(int textureWidth, int textureHeight)
+	static std::pair<bool, _smart_ptr<RenderTarget>> Create(int textureWidth, int textureHeight, TargetType targetType)
 	{
 		auto                 renderTarget          = std::make_pair(false, _smart_ptr<RenderTarget>(new RenderTarget));
 		auto&                m_renderTargetTexture = renderTarget.second->m_renderTargetTexture;
@@ -121,12 +128,30 @@ struct RenderTarget : _reference_target_t
 
 		D3D11_TEXTURE2D_DESC textureDesc;
 		ZeroMemory(&textureDesc, sizeof(textureDesc));
+		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		//switch (targetType)
+		//{
+		//case RenderTarget::Albedo:
+		//	format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		//	break;
+		//case RenderTarget::Normal:
+		//	format = DXGI_FORMAT_R32G32B32_FLOAT;
+		//	break;
+		//case RenderTarget::Metallness:
+		//	format = DXGI_FORMAT_R32_FLOAT;
+		//	break;
+		//case RenderTarget::Roughness:
+		//	format = DXGI_FORMAT_R32_FLOAT;
+		//	break;
+		//default:
+		//	break;
+		//}
 
 		textureDesc.Width            = textureWidth;
 		textureDesc.Height           = textureHeight;
 		textureDesc.MipLevels        = 1;
 		textureDesc.ArraySize        = 1;
-		textureDesc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		textureDesc.Format           = format;
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.Usage            = D3D11_USAGE_DEFAULT;
 		textureDesc.BindFlags        = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -163,6 +188,75 @@ struct RenderTarget : _reference_target_t
 	ComPtr<ID3DTexture2D>          m_renderTargetTexture{};
 	ComPtr<ID3DRenderTargetView>   m_renderTargetView{};
 	ComPtr<ID3DShaderResourceView> m_shaderResourceView{};
+};
+
+struct SGBuffer
+{
+public:
+	_smart_ptr<RenderTarget>  m_Albedo;
+	_smart_ptr<RenderTarget>  m_Normal;
+	_smart_ptr<RenderTarget>  m_Metallness;
+	_smart_ptr<RenderTarget>  m_Roughness;
+
+	std::shared_ptr<CTexture> m_DepthStencil;
+	///////////////////////////////////////////////////////////////////////////////////////
+public:
+	static std::pair<bool, SGBuffer> Create(int textureWidth, int textureHeight)
+	{
+		//RenderTarget::TargetType targetType
+		auto Albedo     = RenderTarget::Create(textureWidth, textureHeight, RenderTarget::TargetType::Albedo);
+		auto Normal     = RenderTarget::Create(textureWidth, textureHeight, RenderTarget::TargetType::Normal);
+		auto Metallness = RenderTarget::Create(textureWidth, textureHeight, RenderTarget::TargetType::Metallness);
+		auto Roughness  = RenderTarget::Create(textureWidth, textureHeight, RenderTarget::TargetType::Roughness);
+
+		return std::make_pair(bool(Albedo.first & Normal.first & Metallness.first & Roughness.first), SGBuffer{Albedo.second, Normal.second, Metallness.second, Roughness.second});
+	}
+
+	auto GetRenderTargetViews()
+	{
+		return std::array{
+		    m_Albedo->m_renderTargetView.Get(),
+		    //m_Normal->m_renderTargetView.Get(),
+		    //m_Metallness->m_renderTargetView.Get(),
+		    //m_Roughness->m_renderTargetView.Get()
+		};
+	}
+
+	void OnBeginFrame(ID3D11DeviceContext* pDC, Legacy::Vec4 ClearColor)
+	{
+		auto RTV = GetRenderTargetViews();
+		pDC->OMSetRenderTargets(RTV.size(), &RTV[0], static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView));
+		pDC->ClearRenderTargetView(m_Albedo->m_renderTargetView.Get(), &ClearColor[0]);
+		//pDC->ClearRenderTargetView(m_Albedo->m_renderTargetView.Get(), &ClearColor[0]);
+		//pDC->ClearRenderTargetView(m_Albedo->m_renderTargetView.Get(), &ClearColor[0]);
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		pDC->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView), D3D11_CLEAR_DEPTH, 1.f, 0);
+	}
+
+	bool Resize(int Width, int Height)
+	{
+		Dettach();
+		auto result = Create(Width, Height);
+		if (result.first)
+		{
+			std::swap(*this, result.second);
+		}
+		return result.first;
+	}
+
+	void Dettach()
+	{
+		m_Albedo                    = nullptr;
+		m_DepthStencil->m_pView     = nullptr;
+		m_DepthStencil->m_pResource = nullptr;
+
+		GetDeviceContext()->OMSetRenderTargets(0, 0, 0);
+	}
+
+	void SetDS(std::shared_ptr<CTexture> DepthStencil)
+	{
+		m_DepthStencil = DepthStencil;
+	}
 };
 
 class CD3DRenderer : public CRenderer
@@ -286,36 +380,7 @@ private:
 		GetDeviceContext()->OMSetRenderTargets(0, 0, 0);
 	}
 
-	bool CreateDepthStencil(int w, int h)
-	{
-		auto&                pDepthStencil = m_DepthStencil;
-		D3D11_TEXTURE2D_DESC depthStencilDesc;
-		depthStencilDesc.Width              = w;
-		depthStencilDesc.Height             = h;
-		depthStencilDesc.MipLevels          = 1;
-		depthStencilDesc.ArraySize          = 1;
-		depthStencilDesc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		depthStencilDesc.SampleDesc.Count   = 1; // multisampling must match
-		depthStencilDesc.SampleDesc.Quality = 0; // swap chain values.
-		depthStencilDesc.Usage              = D3D11_USAGE_DEFAULT;
-		depthStencilDesc.BindFlags          = D3D11_BIND_DEPTH_STENCIL;
-		depthStencilDesc.CPUAccessFlags     = 0;
-		depthStencilDesc.MiscFlags          = 0;
-
-		if (FAILED(H(GetDevice()->CreateTexture2D(
-		                 &depthStencilDesc, 0, &pDepthStencil->m_pResource),
-		             "Error Create DS Texture")))
-			return false;
-		ID3D11DepthStencilView* dsv{};
-
-		if (FAILED(H(GetDevice()->CreateDepthStencilView(pDepthStencil->m_pResource, 0, &dsv),
-		             "Error Create DS Texture")))
-		{
-			return false;
-		}
-		pDepthStencil->m_pView = dsv;
-		return true;
-	}
+	bool CreateDepthStencil(int w, int h, std::shared_ptr<CTexture> DepthStencil);
 
 private:
 	std::shared_ptr<CDevice>                                          m_Device;
@@ -325,6 +390,7 @@ private:
 	ComPtr<ID3DRasterizerState>                                       m_pRasterizerState{};
 	ComPtr<ID3DDepthStencilState>                                     m_pDepthStencilState{};
 
+	std::shared_ptr<CTexture>                                         m_ShadowMap;
 	std::shared_ptr<CTexture>                                         m_DepthStencil;
 
 	ComPtr<ID3DBuffer>                                                m_PerFrameConstants;
@@ -338,8 +404,10 @@ private:
 	std::map<int, STexPic>                                            m_TexPics;
 	int                                                               m_NumLoadedTextures{};
 
-	_smart_ptr<RenderTarget>                                          m_RenderTargetScene;
+	//_smart_ptr<RenderTarget>                                          m_RenderTargetScene;
 	_smart_ptr<RenderTarget>                                          m_SceneRenderTargetFinal;
+
+	SGBuffer                                                          m_GBuffer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -13,8 +13,8 @@
 #define PERDRAW_SLOT  b3
 #define MATERIAL_SLOT  b4
 
-#include "FXConstantDefs.fx"
-#include "FXStreamDefs.fx"
+#include "FXConstantDefs.cfi"
+#include "FXStreamDefs.cfi"
 //#include "AuxGeom.cfx"
 //#include "NoDraw.cfx"
 //#include "Common.cfx"
