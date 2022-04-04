@@ -1,4 +1,4 @@
-#include "common.fx"
+#include "common.cfi"
 
 Texture2D RenderedScene : register(t0);
 SamplerState SceneSampler : register(s0);

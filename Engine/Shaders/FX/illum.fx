@@ -1,6 +1,6 @@
-#include "common.fx"
+#include "common.cfi"
 
-#include "shadeLib.fx"
+#include "shadeLib.cfi"
 
 //static float gamma = 2.2;
 #define gamma 2.2f

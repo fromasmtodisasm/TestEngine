@@ -1,4 +1,4 @@
-#include "common.fx"
+#include "common.cfi"
 // Copyright 2001-2019 Crytek GmbH / Crytek Group. All rights reserved.
 
 // Shader global descriptions

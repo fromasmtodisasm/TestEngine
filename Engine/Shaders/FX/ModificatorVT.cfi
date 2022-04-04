@@ -9,7 +9,7 @@ struct app2vertCommon
 	#if ENABLE_TESSELLATION && !_RT_NO_TESSELLATION
 	float3 Normal   : NORMAL;
 	#endif
-	IN_TANG_STREAM
+	//IN_TANG_STREAM
 #else
 	float4 Normal   : NORMAL;
 #endif

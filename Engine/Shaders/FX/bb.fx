@@ -1,4 +1,4 @@
-#include "common.fx"
+#include "common.cfi"
 
 #define TM_UNREAL
 // Unreal 3, Documentation: "Color Grading"

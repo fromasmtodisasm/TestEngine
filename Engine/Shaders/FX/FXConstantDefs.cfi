@@ -39,6 +39,7 @@
 #define REG_PM_PARAM_6  c48
 #define REG_PM_PARAM_7  c49
 
+#if 0
 float4   MatDifColor                 : PM_MatDiffuseColor             < register = REG_PM_DIFFUSE_COL; >;
 float4   MatSpecColor                : PM_MatSpecularColor            < register = REG_PM_SPECULAR_COL; >;
 float4   MatEmissiveColor            : PM_MatEmissiveColor            < register = REG_PM_EMISSIVE_COL; >;
@@ -205,3 +206,4 @@ float4 PS_ScreenSize        : PB_ScreenSize;
 
 float4 PS_ZRange;
 
+#endif

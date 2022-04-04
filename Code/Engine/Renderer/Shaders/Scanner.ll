@@ -158,6 +158,12 @@ FatalError {
 <INITIAL,cstbuffer,function,functionbody,input_layout,pass,technique>{
     void   return yy::parser::make_VOID_TYPE(loc);
     unsigned return yy::parser::make_UNSIGNED(loc);
+
+    half  return yy::parser::make_FLOAT_TYPE(loc);
+    half2 return yy::parser::make_FLOAT2_TYPE(loc);
+    half3 return yy::parser::make_FLOAT3_TYPE(loc);
+    half4 return yy::parser::make_FLOAT4_TYPE(loc);
+
     float  return yy::parser::make_FLOAT_TYPE(loc);
     float2 return yy::parser::make_FLOAT2_TYPE(loc);
     float3 return yy::parser::make_FLOAT3_TYPE(loc);

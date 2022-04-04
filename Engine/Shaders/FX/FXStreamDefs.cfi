@@ -7,9 +7,11 @@
 
 // ==== Additional streams ==================================
 
+/*
 #define IN_TANG_STREAM                                                               \
           float4 Tangent  : TANGENT;                                                 \
           float4 Binormal : BITANGENT;                                               \
+*/
 
 #define OUT_C0   half4 Color     : SV_Target0;
 #define OUT_C1   half4 Color1    : SV_Target1;
@@ -38,10 +40,13 @@ struct pixout_gbuffer
 	half2 VelocityRT  : SV_Target3;
 #endif
 
+/*
 #if (_RT_MSAA_QUALITY || _RT_MSAA_QUALITY1) && _RT_ALPHATEST
 	uint uCoverageMask	: SV_Coverage;
 #endif
+*/
 
+/*
 #if SILHOUETTE_PARALLAX_OCCLUSION_MAPPING
 	#if !_RT_DISSOLVE && !TEMP_VEGETATION && !TEMP_TERRAIN
 		#if !_RT_REVERSE_DEPTH
@@ -51,5 +56,6 @@ struct pixout_gbuffer
 		#endif
 	#endif
 #endif
+*/
 #endif
 };
