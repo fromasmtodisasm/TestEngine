@@ -1,10 +1,11 @@
-//#include "FXConstantDefs.cfi"
-//#include "AuxGeom.cfx"
-//#include "NoDraw.cfx"
-//#include "Common.cfx"
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//  Description: Common include file for ALL shaders 
+//	 - only add when really necessary, this will propagate to ALL shaders
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//typedef float2 vec2;
-//typedef float3 vec3;
+#define PI 3.1415
+#define PI_X2 6.2831
+#define PI_X4 12.5663
 
 #define PERFRAME_SLOT b0
 #define LIGHTS_SLOT   b1
@@ -12,15 +13,17 @@
 #define PERDRAW_SLOT  b3
 #define MATERIAL_SLOT  b4
 
+#include "FXConstantDefs.fx"
+#include "FXStreamDefs.fx"
+//#include "AuxGeom.cfx"
+//#include "NoDraw.cfx"
+//#include "Common.cfx"
+
+
 float global_float <string desc="Test global variable";> = 0.5;
 
 float global_float2 <string desc="Test global variable";> = float(0);
 float2 global_float3 <string desc="Test global variable";> = float2(0,0);
-
-///////////////////////////////////
-//static const float PI= 3.14159265f;
-#define PI 3.14159265f
-///////////////////////////////////
 
 //struct struct_definition
 //{
