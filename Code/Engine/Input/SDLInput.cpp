@@ -55,7 +55,7 @@ bool CLinuxInput::Init()
 		m_pLog->Log("Error: CBaseInput::Init failed");
 		return false;
 	}
-	CSDLMouse* pMouse = new CSDLMouse(*this);
+	CSDLMouse* pMouse = DEBUG_NEW CSDLMouse(*this);
 	if (AddInputDevice(pMouse))
 	{
 		m_pMouse = pMouse;
@@ -66,7 +66,7 @@ bool CLinuxInput::Init()
 		delete pMouse;
 		return false;
 	}
-	CSDLKeyboard* pKeyboard = new CSDLKeyboard(*this);
+	CSDLKeyboard* pKeyboard = DEBUG_NEW CSDLKeyboard(*this);
 	if (!AddInputDevice(pKeyboard))
 	{
 		delete pKeyboard;
@@ -74,7 +74,7 @@ bool CLinuxInput::Init()
 		return false;
 	}
 
-	m_pPadManager = new CSDLPadManager(*this);
+	m_pPadManager = DEBUG_NEW CSDLPadManager(*this);
 	if (!m_pPadManager->Init())
 	{
 		delete m_pPadManager;
@@ -192,7 +192,7 @@ extern "C"
 {
 	INPUT_API IInput* CreateInput(ISystem* pSystem, void* hwnd)
 	{
-		IInput* pInput = new CLinuxInput(pSystem);
+		IInput* pInput = DEBUG_NEW CLinuxInput(pSystem);
 		return pInput;
 	}
 }

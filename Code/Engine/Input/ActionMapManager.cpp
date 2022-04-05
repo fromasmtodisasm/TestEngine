@@ -52,7 +52,7 @@ void CActionMapManager::CreateAction(XACTIONID nActionID, const char* sActionNam
 
 IActionMap* CActionMapManager::CreateActionMap(const char* s)
 {
-	return (m_ActionMaps[string(s)] = new CActionMap(this));
+	return (m_ActionMaps[string(s)] = DEBUG_NEW CActionMap(this));
 }
 
 IActionMap* CActionMapManager::GetActionMap(const char* s)

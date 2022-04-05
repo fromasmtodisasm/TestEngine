@@ -77,7 +77,7 @@ CSystem::CSystem(SSystemInitParams& startupParams)
     , m_pTextModeConsole(nullptr)
 {
 	m_startupParams          = startupParams;
-	m_pSystemEventDispatcher = new CSystemEventDispatcher(); // Must be first.
+	m_pSystemEventDispatcher = DEBUG_NEW CSystemEventDispatcher(); // Must be first.
 	if (m_pSystemEventDispatcher)
 	{
 		m_pSystemEventDispatcher->RegisterListener(this, "CSystem");
@@ -94,7 +94,7 @@ CSystem::CSystem(SSystemInitParams& startupParams)
 
 	m_root         = PathUtil::AddSlash(PathUtil::GetEnginePath());
 
-	m_env.pConsole = new CXConsole(*this);
+	m_env.pConsole = DEBUG_NEW CXConsole(*this);
 	REGISTER_COMMAND("touch", utils::touch, 0, "touch file");
 	if (startupParams.pPrintSync)
 		m_env.pConsole->AddOutputPrintSink(startupParams.pPrintSync);
@@ -443,19 +443,19 @@ bool CSystem::InitScripts()
 {
 	CryLog("Initializing Script Bindings");
 
-	m_ScriptObjectConsole = new CScriptObjectConsole();
+	m_ScriptObjectConsole = DEBUG_NEW CScriptObjectConsole();
 	CScriptObjectConsole::InitializeTemplate(m_env.pScriptSystem);
 
-	m_ScriptObjectSystem = new CScriptObjectSystem(this, Env::ScriptSystem());
+	m_ScriptObjectSystem = DEBUG_NEW CScriptObjectSystem(this, Env::ScriptSystem());
 	//CScriptObjectSystem::InitializeTemplate(m_env.pScriptSystem);
 
-	m_ScriptObjectScript = new CScriptObjectScript();
+	m_ScriptObjectScript = DEBUG_NEW CScriptObjectScript();
 	CScriptObjectScript::InitializeTemplate(m_env.pScriptSystem);
 
-	m_ScriptObjectRenderer = new CScriptObjectRenderer();
+	m_ScriptObjectRenderer = DEBUG_NEW CScriptObjectRenderer();
 	CScriptObjectRenderer::InitializeTemplate(m_env.pScriptSystem);
 
-	m_ScriptObjectSound = new CScriptObjectSound();
+	m_ScriptObjectSound = DEBUG_NEW CScriptObjectSound();
 	CScriptObjectSound::InitializeTemplate(m_env.pScriptSystem);
 
 	m_ScriptObjectConsole->Init(GetIScriptSystem(), m_env.pConsole);

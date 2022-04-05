@@ -256,7 +256,7 @@ void CXGame::ScheduleEvent(int iPhysTime, BaseEvent* pEvent)
 //////////////////////////////////////////////////////////////////////////
 void CXGame::ScheduleEvent(IEntity* pEnt, CXEntityProcessingCmd& cmd)
 {
-	EventPlayerCmd* pEvent = new EventPlayerCmd;
+	EventPlayerCmd* pEvent = DEBUG_NEW EventPlayerCmd;
 	pEvent->idEntity       = pEnt->GetId();
 	pEvent->cmd            = cmd;
 	pEvent->cmd.ResetTimeSlices();
@@ -269,7 +269,7 @@ void CXGame::ScheduleEvent(int iPhysTime, const Legacy::Vec3& pos, float fDamage
                            float fImpactForceMul, float fImpactForceMulFinal, float fImpactForceMulFinalTorso,
                            float rMinOcc, int nOccRes, int nOccGrow, IEntity* pShooter, int shooterSSID, IEntity* pWeapon, float fTerrainDefSize, int nTerrainDecalId)
 {
-	EventExplosion* pEvent            = new EventExplosion;
+	EventExplosion* pEvent            = DEBUG_NEW EventExplosion;
 	pEvent->pos                       = pos;
 	pEvent->damage                    = fDamage;
 	pEvent->rmin                      = rmin;
@@ -296,7 +296,7 @@ void CXGame::ScheduleEvent(int iPhysTime, const Legacy::Vec3& pos, float fDamage
 //////////////////////////////////////////////////////////////////////////
 void CXGame::ScheduleEvent(int iPhysTime, IEntity* pVehicle, float fDamage)
 {
-	EventVehicleDamage* pEvent = new EventVehicleDamage;
+	EventVehicleDamage* pEvent = DEBUG_NEW EventVehicleDamage;
 	pEvent->idVehicle          = pVehicle->GetId();
 	pEvent->damage             = (int)(fDamage * 2 + 0.5f);
 	ScheduleEvent(iPhysTime, pEvent);
@@ -305,7 +305,7 @@ void CXGame::ScheduleEvent(int iPhysTime, IEntity* pVehicle, float fDamage)
 void CXGame::ScheduleEvent(int iPhysTime, IPhysicalEntity* pPhysEnt, pe_action_impulse* pai)
 {
 #if 0
-	EventPhysImpulse *pEvent = new EventPhysImpulse;
+	EventPhysImpulse *pEvent = DEBUG_NEW EventPhysImpulse;
 	pEvent->idPhysEnt = m_pSystem->GetIPhysicalWorld()->GetPhysicalEntityId(pPhysEnt);
 	pEvent->impulse = pai->impulse;
 	if (pEvent->bHasPt = !is_unused(pai->point))
@@ -372,16 +372,16 @@ void CXGame::ReadScheduledEvents(CStream& stm)
 		switch (iType)
 		{
 		case EVENT_MOVECMD:
-			pEvent = new EventPlayerCmd;
+			pEvent = DEBUG_NEW EventPlayerCmd;
 			break;
 		case EVENT_EXPLOSION:
-			pEvent = new EventExplosion;
+			pEvent = DEBUG_NEW EventExplosion;
 			break;
 		case EVENT_IMPULSE:
-			pEvent = new EventPhysImpulse;
+			pEvent = DEBUG_NEW EventPhysImpulse;
 			break;
 		case EVENT_VEHDAMAGE:
-			pEvent = new EventVehicleDamage;
+			pEvent = DEBUG_NEW EventVehicleDamage;
 		}
 		int iPhysTime;
 		pEvent->Read(stm, iPhysTime, pBitStream);

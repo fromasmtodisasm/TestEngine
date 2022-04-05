@@ -497,7 +497,7 @@ void CXSystemBase::LoadXMLNode(XDOM::IXMLDOMNode *pInputNode, bool bSpawn)
 						pThePoints->reset();
 						int sz = pThePoints->length();
 						int	cntr=0;
-						Vec3 *borderPoints = new Vec3[sz];
+						Vec3 *borderPoints = DEBUG_NEW Vec3[sz];
 
 						while(pThePoint=pThePoints->nextNode())
 						{
@@ -1899,7 +1899,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 		//		if (pLog->GetVerbosityLevel()>5)
 		//			pLog->Log("Spawning SPECTATOR CLASS ID container");
 
-		CSpectator *pSpectator=new CSpectator(m_pGame);
+		CSpectator *pSpectator= DEBUG_NEW CSpectator(m_pGame);
 		pSpectator->SetEntity(pEntity);
 
 		EntityClass *pClass=m_pGame->GetClassRegistry()->GetByClassId(ed.ClassId);
@@ -1908,7 +1908,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 
 		ed.className = pClass->strClassName;
 
-		CScriptObjectSpectator *pSSpectator = new CScriptObjectSpectator();
+		CScriptObjectSpectator *pSSpectator = DEBUG_NEW CScriptObjectSpectator();
 		pSSpectator->Create(m_pGame->GetScriptSystem(),pSpectator);
 		pSpectator->SetScriptObject(pSSpectator->GetScriptObject());
 		pEntity->SetContainer(pSpectator);
@@ -1921,7 +1921,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 		//			pLog->Log("Spawning PLAYER CLASS ID container");
 
 		// create player container
-		CPlayer *pPlayer = new CPlayer(m_pGame);
+		CPlayer *pPlayer = DEBUG_NEW CPlayer(m_pGame);
 		pPlayer->SetEntity(pEntity);
 
 		// get the table name from the entity registry (like "Player")
@@ -1932,7 +1932,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 		ed.className = pClass->strClassName;
 
 		// create the containers script object
-		CScriptObjectPlayer *pSPlayer = new CScriptObjectPlayer();
+		CScriptObjectPlayer *pSPlayer = DEBUG_NEW CScriptObjectPlayer();
 		pSPlayer->Create(m_pGame->GetScriptSystem());
 		pSPlayer->SetPlayer(pPlayer);
 		pPlayer->SetScriptObject(pSPlayer->GetScriptObject());
@@ -1960,7 +1960,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 	else if (m_pGame->GetVehicleSystem()->IsVehicleClass(ed.ClassId))  
 	{
 		// create vehicle container
-		CVehicle *pVehicle = new CVehicle(m_pGame);
+		CVehicle *pVehicle = DEBUG_NEW CVehicle(m_pGame);
 
 		// get the script file name from the global table weapon system
 		EntityClass *pClass=m_pGame->GetClassRegistry()->GetByClassId(ed.ClassId);
@@ -1971,7 +1971,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 		ed.className = pClass->strClassName;
 
 		// create the containers script object 
-		CScriptObjectVehicle *pSVehicle = new CScriptObjectVehicle();
+		CScriptObjectVehicle *pSVehicle = DEBUG_NEW CScriptObjectVehicle();
 		pSVehicle->Create(m_pGame->GetScriptSystem(),m_pSystem->GetIEntitySystem());
 		pSVehicle->SetVehicle(pVehicle);  
 		pVehicle->SetScriptObject(pSVehicle->GetScriptObject());
@@ -1981,7 +1981,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 	}
 	else if (ed.ClassId==ADVCAMSYSTEM_CLASS_ID)
 	{
-		CAdvCamSystem *pAdvCamSystem=new CAdvCamSystem(m_pGame);
+		CAdvCamSystem *pAdvCamSystem= DEBUG_NEW CAdvCamSystem(m_pGame);
 		pAdvCamSystem->SetEntity(pEntity);
 
 		EntityClass *pClass=m_pGame->GetClassRegistry()->GetByClassId(ed.ClassId);
@@ -1990,14 +1990,14 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 
 		ed.className = pClass->strClassName;
 
-		CScriptObjectAdvCamSystem *pSAdvCamSystem = new CScriptObjectAdvCamSystem();
+		CScriptObjectAdvCamSystem *pSAdvCamSystem = DEBUG_NEW CScriptObjectAdvCamSystem();
 		pSAdvCamSystem->Create(m_pGame->GetScriptSystem(),pAdvCamSystem);
 		pAdvCamSystem->SetScriptObject(pSAdvCamSystem->GetScriptObject());
 		pEntity->SetContainer(pAdvCamSystem);
 	}
 	else if (ed.ClassId==SYNCHED2DTABLE_CLASS_ID)
 	{
-		CSynched2DTable *pSynched2DTable=new CSynched2DTable(m_pGame);
+		CSynched2DTable *pSynched2DTable= DEBUG_NEW CSynched2DTable(m_pGame);
 		pSynched2DTable->SetEntity(pEntity);
 
 		EntityClass *pClass=m_pGame->GetClassRegistry()->GetByClassId(ed.ClassId);
@@ -2006,7 +2006,7 @@ void CXSystemBase::OnSpawnContainer(CEntityDesc& ed, IEntity* pEntity)
 
 		ed.className = pClass->strClassName;
 
-		CScriptObjectSynched2DTable *pSSynched2DTable = new CScriptObjectSynched2DTable();
+		CScriptObjectSynched2DTable *pSSynched2DTable = DEBUG_NEW CScriptObjectSynched2DTable();
 		pSSynched2DTable->Create(m_pGame->GetScriptSystem(),pSynched2DTable);
 		pSynched2DTable->SetScriptObject(pSSynched2DTable->GetScriptObject());
 		pEntity->SetContainer(pSynched2DTable);

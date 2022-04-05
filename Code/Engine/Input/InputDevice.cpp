@@ -143,7 +143,7 @@ SInputSymbol* CInputDevice::NameToSymbol(const TKeyName& name) const
 
 SInputSymbol* CInputDevice::MapSymbol(uint32_t deviceSpecificId, EKeyId keyId, const TKeyName& name, SInputSymbol::EType type, uint32_t user)
 {
-	SInputSymbol* pSymbol                 = new SInputSymbol(deviceSpecificId, keyId, name, type);
+	SInputSymbol* pSymbol                 = DEBUG_NEW SInputSymbol(deviceSpecificId, keyId, name, type);
 	pSymbol->user                         = user;
 	pSymbol->deviceType                   = m_deviceType;
 	m_idToInfo[keyId]                     = pSymbol;

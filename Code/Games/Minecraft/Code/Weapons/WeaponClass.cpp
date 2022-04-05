@@ -554,7 +554,7 @@ bool CWeaponClass::InitScripts()
 	}
 
 #if 0
-	CScriptObjectWeaponClass* soWC = new CScriptObjectWeaponClass();
+	CScriptObjectWeaponClass* soWC = DEBUG_NEW CScriptObjectWeaponClass();
 
 	if (!soWC->Create(m_rWeaponSystem.GetGame(), this))
 		return false;
@@ -672,7 +672,7 @@ bool CWeaponClass::LoadMuzzleFlash(const string& sGeometryName)
 //! Set parameters of this weapon.
 WeaponParams* CWeaponClass::AddWeaponParams(const WeaponParams& params)
 {
-	WeaponParams* p = new WeaponParams;
+	WeaponParams* p = DEBUG_NEW WeaponParams;
 	*p              = params;
 	m_vFireModes.push_back(p);
 

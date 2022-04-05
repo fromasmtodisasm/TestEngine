@@ -42,7 +42,7 @@ CShader& CShader::operator=(const CShader& src)
 		m_HWTechniques.Create(src.m_HWTechniques.Num());
 		for (i = 0; i < src.m_HWTechniques.Num(); i++)
 		{
-			m_HWTechniques[i]			= new SShaderTechnique(this);
+			m_HWTechniques[i]			= DEBUG_NEW SShaderTechnique(this);
 			*m_HWTechniques[i]			= *src.m_HWTechniques[i];
 			m_HWTechniques[i]->m_shader = this; // copy operator will override m_shader
 		}
@@ -327,7 +327,7 @@ bool CShader::LoadFromEffect(CShader* pSH, PEffect pEffect, int nTechnique, int 
 			continue;
 		if (auto res = LoadFromMemory(code, st, entry.data()); res.first)
 		{
-			auto shader        = new CHWShader(st, entry);
+			auto shader        = DEBUG_NEW CHWShader(st, entry);
 			shader->m_ByteCode = res.first;
 			if (shader->Upload(shader->m_ByteCode, pSH))
 			{

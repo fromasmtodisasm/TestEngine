@@ -222,7 +222,7 @@ private:
 		// accessed from static destructor calls.
 
 		if (ms_table == NULL)
-			ms_table = new CNameTableR();
+			ms_table = DEBUG_NEW CNameTableR();
 		return ms_table;
 	}
 

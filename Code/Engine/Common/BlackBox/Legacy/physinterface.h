@@ -69,7 +69,7 @@ class CMemStream
 public:
 	CMemStream()
 	{
-		m_pBuf     = new char[m_nSize = 0x1000];
+		m_pBuf     = DEBUG_NEW char[m_nSize = 0x1000];
 		m_iPos     = 0;
 		bDeleteBuf = true;
 	}
@@ -113,7 +113,7 @@ public:
 	{
 		int   prevsz  = m_nSize;
 		char* prevbuf = m_pBuf;
-		m_pBuf        = new char[m_nSize = (m_iPos + sz - 1 & ~0xFFF) + 0x1000];
+		m_pBuf        = DEBUG_NEW char[m_nSize = (m_iPos + sz - 1 & ~0xFFF) + 0x1000];
 		memcpy(m_pBuf, prevbuf, (unsigned int)prevsz);
 	}
 

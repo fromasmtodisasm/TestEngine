@@ -15,14 +15,14 @@ bool CXGame::StartupServer(bool listen, const char* szName)
 
 	// set port and create server
 	if (!m_pServer)
-		m_pServer = new CXServer(this, nPort, szName, listen);
+		m_pServer = DEBUG_NEW CXServer(this, nPort, szName, listen);
 
 	if (!m_pServer || !m_pServer->IsOK()) // Check if the server has been created
 	{
 		// failed, lets try a different port
 		m_pLog->Log("Server creation failed ! Try with another port");
 		SAFE_DELETE(m_pServer);
-		m_pServer = new CXServer(this, nPort + 1, szName, listen);
+		m_pServer = DEBUG_NEW CXServer(this, nPort + 1, szName, listen);
 		sv_port->Set(nPort + 1);
 		if (!m_pServer || !m_pServer->IsOK()) // Check if the server has been created
 		{
@@ -65,7 +65,7 @@ bool CXGame::StartupClient()
 
 	ShutdownClient(); // to be sure
 
-	m_pClient = new CXClient;
+	m_pClient = DEBUG_NEW CXClient;
 
 	if (!m_pClient->Init(this)) // Check if the client has been created
 	{
@@ -87,7 +87,7 @@ bool CXGame::StartupLocalClient()
 {
 	m_pLog->Log("Creating the LocalClient");
 
-	m_pClient = new CXClient;
+	m_pClient = DEBUG_NEW CXClient;
 
 	if (!m_pClient->Init(this, true)) // Check if the client has been created
 	{

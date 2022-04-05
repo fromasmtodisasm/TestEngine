@@ -117,15 +117,14 @@ _inline void __cdecl __DLL_TRACE(const char *sFormat, ... )
 #include <string>
 #include <vector>
 
-#if 0
-#if defined USE_DEBUG_NEW
-    #if defined(_DEBUG) && !defined(LINUX)
-        #include <crtdbg.h>
-        #define DEBUG_CLIENTBLOCK new( _NORMAL_BLOCK, __FILE__, __LINE__) 
-        #define new DEBUG_CLIENTBLOCK
-    #endif
-#endif
-#endif
+//#if defined(_DEBUG) && !defined(LINUX)
+//	#undef _CRTDBG_MAP_ALLOC
+//	#define _CRTDBG_MAP_ALLOC
+//	#include <stdlib.h>
+//	#include <crtdbg.h>
+//	#define DEBUG_CLIENTBLOCK new (_NORMAL_BLOCK, __FILE__, __LINE__)
+//	#define new DEBUG_CLIENTBLOCK
+//#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Interfaces ///////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
    IZLibDeflateStream	*pStream=pComp->CreateDeflateStream(2,eZMeth_Deflated,24,3,eZStrat_Default,eZFlush_NoFlush);
 
    //! Arbitrary size.
-   char								*pOutput=new char[512];
+   char								*pOutput= DEBUG_NEW char[512];
 
    const char					*pInputData="This is an example piece of data that is to be compressed. It can be any arbitrary block of binary data - not just text";
 

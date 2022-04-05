@@ -66,7 +66,7 @@ namespace Assimp
 					std::vector<char> buf(file.GetLength());
 					file.Read(buf.data(), file.GetLength());
 
-					_smart_ptr<IMemoryBlob> mapping = new CMemoryBlob((void*)buf.data(), file.GetLength());
+					_smart_ptr<IMemoryBlob> mapping = DEBUG_NEW CMemoryBlob((void*)buf.data(), file.GetLength());
 					CContentCGF             contentCGF(pFile.c_str());
 					CLoaderCGF              loader(mapping, pScene, &contentCGF);
 					loader.Load(pFile.c_str());

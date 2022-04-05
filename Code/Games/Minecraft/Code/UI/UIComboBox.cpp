@@ -795,7 +795,7 @@ UIComboItem* CUIComboBox::GetItem(const wstring& szItemText, CUIComboItemItor* p
 //////////////////////////////////////////////////////////////////////////
 int CUIComboBox::AddItem(const wstring& szText, UISkinTexture pTexture, const color4f& cColor)
 {
-	UIComboItem* pItem = new UIComboItem();
+	UIComboItem* pItem = DEBUG_NEW UIComboItem();
 
 	pItem->szText      = szText;
 	pItem->pTexture    = pTexture;
@@ -817,7 +817,7 @@ int CUIComboBox::InsertItem(int iPosition, const wstring& szText, const UISkinTe
 		return 0;
 	}
 
-	UIComboItem* pItem = new UIComboItem();
+	UIComboItem* pItem = DEBUG_NEW UIComboItem();
 
 	pItem->szText      = szText;
 	pItem->pTexture    = pTexture;

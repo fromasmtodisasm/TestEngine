@@ -114,10 +114,10 @@ bool CXClient::Init(CXGame* pGame, bool bLocal)
 	m_nGameState            = CGS_INTERMISSION; // until we get first update from the mod
 	m_nGameLastTime         = 0;
 	m_fGameLastTimeReceived = 0;
-	m_pScriptObjectClient   = new CScriptObjectClient;
+	m_pScriptObjectClient   = DEBUG_NEW CScriptObjectClient;
 	m_pScriptObjectClient->Create(pGame->GetScriptSystem(), pGame, this);
 
-	m_CameraParams       = new SCameraParams;
+	m_CameraParams       = DEBUG_NEW SCameraParams;
 	m_pClientStuff       = m_pScriptSystem->CreateEmptyObject();
 	m_iPhysicalWorldTime = 0;
 	m_bIgnoreSnapshot    = false;
@@ -413,7 +413,7 @@ void CXClient::OnXContextSetup(CStream& stm)
 
 		if (!stm.EOS())
 		{
-			m_pSavedConsoleVars = new CStream(1024, &sa); // saved console variable state (to restore the VF_REQUIRE_NET_SYNC marked vars)
+			m_pSavedConsoleVars = DEBUG_NEW CStream(1024, &sa); // saved console variable state (to restore the VF_REQUIRE_NET_SYNC marked vars)
 
 			string varname, val;
 			while (!stm.EOS() && stm.Read(varname))
@@ -1464,13 +1464,13 @@ void CXClient::UpdateISystem()
 	// create the system interface
 	if (m_pGame->IsServer())
 	{
-		m_pISystem = new CXSystemDummy(m_pGame, m_pGame->m_pLog); // Dummy interface if this game is client/server
+		m_pISystem = DEBUG_NEW CXSystemDummy(m_pGame, m_pGame->m_pLog); // Dummy interface if this game is client/server
 		TRACE("DUMMY SYSTEM");
 		m_bLocalHost = true;
 	}
 	else
 	{
-		m_pISystem = new CXSystemClient(m_pGame, m_pGame->m_pLog); // Client interface if this game is only client
+		m_pISystem = DEBUG_NEW CXSystemClient(m_pGame, m_pGame->m_pLog); // Client interface if this game is only client
 		TRACE("CLIENT SYSTEM");
 		m_bLocalHost = false;
 		m_pGame->GetSystem()->GetIEntitySystem()->SetSink(this);

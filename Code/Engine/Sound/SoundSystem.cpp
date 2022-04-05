@@ -224,7 +224,7 @@ void CSoundSystem::DeleteThis()
 
 ISoundSystem* CreateSoundSystem(struct ISystem*, void* pInitData)
 {
-	auto AudioSystem = new CSoundSystem;
+	auto AudioSystem = DEBUG_NEW CSoundSystem;
 	if (!AudioSystem->Init())
 	{
 		AudioSystem->Release();

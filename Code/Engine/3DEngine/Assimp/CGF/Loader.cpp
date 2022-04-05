@@ -1409,7 +1409,7 @@ void CLoaderCGF::LoadChunkNode(const NODE_CHUNK_DESC* pChunk, int nSize)
 	PRINT_LOG("\"%s\"\n", pChunk->name);
 	PRINT_LOG("ObjectID: 0x%08X\tParentID: 0x%08X\n", pChunk->ObjectID, pChunk->ParentID);
 
-	auto pNodeCGF = new CNodeCGF(pChunk->name);
+	auto pNodeCGF = DEBUG_NEW CNodeCGF(pChunk->name);
 	m_pCGF->AddNode(pNodeCGF);
 
 	pNodeCGF->mParent = nullptr;
@@ -1426,18 +1426,18 @@ void CLoaderCGF::LoadChunkNode(const NODE_CHUNK_DESC* pChunk, int nSize)
 	{
 		auto meshChunk       = (MESH_CHUNK_DESC*)m_pChunkFile->getChunkData(pChunk->ObjectID);
 
-		m_pScene->mMeshes    = new CMesh*[1];
+		m_pScene->mMeshes    = DEBUG_NEW CMesh*[1];
 		m_pScene->mNumMeshes = 1;
 		{
 			pNodeCGF->mNumMeshes     = 1;
-			pNodeCGF->mMeshes        = new unsigned int[1];
+			pNodeCGF->mMeshes        = DEBUG_NEW unsigned int[1];
 
-			auto assimpMesh          = new CMesh;
+			auto assimpMesh          = DEBUG_NEW CMesh;
 			assimpMesh->mName        = getObjectName(pChunk->ObjectID);
 
 			assimpMesh->mNumVertices = meshChunk->nVerts;
-			assimpMesh->mVertices    = new aiVector3D[assimpMesh->mNumVertices];
-			assimpMesh->mNormals     = new aiVector3D[assimpMesh->mNumVertices];
+			assimpMesh->mVertices    = DEBUG_NEW aiVector3D[assimpMesh->mNumVertices];
+			assimpMesh->mNormals     = DEBUG_NEW aiVector3D[assimpMesh->mNumVertices];
 
 			auto verts               = (CryVertex*)(meshChunk + 1);
 
@@ -1448,14 +1448,14 @@ void CLoaderCGF::LoadChunkNode(const NODE_CHUNK_DESC* pChunk, int nSize)
 			}
 
 			assimpMesh->mNumFaces = meshChunk->nFaces;
-			assimpMesh->mFaces    = new aiFace[assimpMesh->mNumFaces];
+			assimpMesh->mFaces    = DEBUG_NEW aiFace[assimpMesh->mNumFaces];
 
 			auto faces            = (CryFace*)(verts + meshChunk->nVerts);
 			for (size_t i = 0; i < assimpMesh->mNumFaces; i++)
 			{
 				auto& face       = assimpMesh->mFaces[i];
 				face.mNumIndices = 3;
-				face.mIndices    = new unsigned int[3];
+				face.mIndices    = DEBUG_NEW unsigned int[3];
 
 				memcpy(face.mIndices, &faces[i], 3 * sizeof(unsigned int));
 			}
@@ -1463,7 +1463,7 @@ void CLoaderCGF::LoadChunkNode(const NODE_CHUNK_DESC* pChunk, int nSize)
 			if (meshChunk->nTVerts != 0)
 			{
 				assimpMesh->mNumUVComponents[0] = 2;
-				assimpMesh->mTextureCoords[0]   = new aiVector3D[assimpMesh->mNumVertices];
+				assimpMesh->mTextureCoords[0]   = DEBUG_NEW aiVector3D[assimpMesh->mNumVertices];
 				auto* uvs                       = (CryUV*)(faces + meshChunk->nFaces);
 				auto* tfaces                    = (CryTexFace*)(uvs + meshChunk->nTVerts);
 
@@ -1980,7 +1980,7 @@ void CLoaderCGF::Load(const char* filename)
 
 	// create the object that reads the file
 	//
-	m_pChunkFile           = new FileReader();
+	m_pChunkFile           = DEBUG_NEW FileReader();
 	if (!m_pChunkFile->open(m_FileMapping))
 	{
 		PRINT_LOG("Cannot open %s: unrecognized file format or corrupted file\n", szFileName);

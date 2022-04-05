@@ -391,7 +391,7 @@ public:
 		if (m_pPropertiesTable == NULL)
 		{
 			m_pPropertiesTable   = pSS->CreateObject();
-			m_pvPropertiesVector = new PropertiesVec;
+			m_pvPropertiesVector = DEBUG_NEW PropertiesVec;
 		}
 	}
 
@@ -399,7 +399,7 @@ public:
 	{
 	#if 0
     USER_DATA ud;
-    Property* p = new Property;
+    Property* p = DEBUG_NEW Property;
     m_pvPropertiesVector->push_back(p);
     *p = prop;
     ud = m_pSS->CreateUserData((INT_PTR)p, -1);

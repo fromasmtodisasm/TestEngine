@@ -37,7 +37,7 @@ bool C3DEngine::Init()
 	//MakeObject("res/geom/cnek.obj", nullptr);
 	//MakeObject("res/geom/doggy.fbx", nullptr);
 
-	m_pTerrain = new CTerrain;
+	m_pTerrain = DEBUG_NEW CTerrain;
 
 	return true;
 }

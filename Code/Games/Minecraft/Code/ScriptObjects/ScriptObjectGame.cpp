@@ -1328,7 +1328,7 @@ int CScriptObjectGame::GetVersionString(IFunctionHandler* pH)
 
 	if (dwVersionSize)
 	{
-		unsigned char* pData = new unsigned char[dwVersionSize + 1];
+		unsigned char* pData = DEBUG_NEW unsigned char[dwVersionSize + 1];
 
 		if (!pData)
 		{
@@ -3493,7 +3493,7 @@ int CScriptObjectGame::LoadScript(IFunctionHandler* pH)
 int CScriptObjectGame::CreateRenderer(IFunctionHandler* pH)
 {
 #if 0
-	CScriptObjectRenderer *p=new CScriptObjectRenderer();
+	CScriptObjectRenderer *p= DEBUG_NEW CScriptObjectRenderer();
 	m_vRenderersObjs.push_back(p);
 	return pH->EndFunction(p->Create(m_pScriptSystem,m_pRenderer));
 #else

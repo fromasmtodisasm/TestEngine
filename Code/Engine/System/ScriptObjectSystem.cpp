@@ -109,7 +109,7 @@ int CScriptObjectSystem::EnumDisplayFormats(IFunctionHandler* pH)
 	unsigned int      numFormats = m_pRenderer->EnumDisplayFormats(NULL);
 	if (numFormats)
 	{
-		Formats = new SDispFormat[numFormats];
+		Formats = DEBUG_NEW SDispFormat[numFormats];
 		m_pRenderer->EnumDisplayFormats(Formats);
 	}
 

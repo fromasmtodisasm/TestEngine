@@ -19,7 +19,7 @@ void SRenderThread::Start()
 	#if 0
 	gEnv->pThreadManager->SpawnThread(m_pThread, "RenderThread");
 	#else
-	m_pThread.rt  = new CRenderThread;
+	m_pThread.rt  = DEBUG_NEW CRenderThread;
 	m_pThread.std = std::thread(&CRenderThread::ThreadEntry, m_pThread.rt);
 	#endif
 

@@ -9,7 +9,7 @@ CEntity::CEntity(CEntityDesc& desc)
     : m_pEntitySystem((CEntitySystem*)Env::EntitySystem())
     , m_Desc(desc)
 {
-	m_EntityCharacter = new CEntityCharacter;
+	m_EntityCharacter = DEBUG_NEW CEntityCharacter;
 	m_Pos             = desc.pos;
 	m_Angles          = desc.angles;
 	m_ClassName       = desc.className;
@@ -841,7 +841,7 @@ void CEntity::SinkRebind(IEntitySystemSink* pSink)
 
 void CEntity::Physicalize(bool bInstant)
 {
-	m_pPhysics = new CPhysicalEntity(this);
+	m_pPhysics = DEBUG_NEW CPhysicalEntity(this);
 	m_pEntitySystem->AddToPhysicalWorld(m_pPhysics);
 }
 

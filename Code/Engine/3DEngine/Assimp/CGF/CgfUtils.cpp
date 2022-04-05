@@ -446,7 +446,7 @@ void ConstructReversePermutation (const unsigned* pIn, unsigned* pOut, unsigned 
 // the permutation is perm[new index] == old index
 void RemapMatEntities (MAT_ENTITY* pMtls, unsigned numMtls, unsigned* pPerm)
 {
-	MAT_ENTITY* pOldMtls = new MAT_ENTITY[numMtls];
+	MAT_ENTITY* pOldMtls = DEBUG_NEW MAT_ENTITY[numMtls];
 	memcpy (pOldMtls, pMtls, sizeof(MAT_ENTITY)*numMtls);
 
 	for (unsigned nNewMtl = 0; nNewMtl < numMtls; ++nNewMtl)

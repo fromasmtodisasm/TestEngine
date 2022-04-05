@@ -201,7 +201,7 @@ IWindow* CRenderer::Init(int x, int y, int width, int height, unsigned int cbpp,
 	if (!InitOverride())
 		return false;
 	CryLog("Init override after");
-	g_FxParser      = new FxParser;
+	g_FxParser      = DEBUG_NEW FxParser;
 #if 0
 	if (!InitResourceManagers())
 		return nullptr;
@@ -211,12 +211,12 @@ IWindow* CRenderer::Init(int x, int y, int width, int height, unsigned int cbpp,
 	m_pSystem->GetIConsole()->AddConsoleVarSink(this);
 	m_pSystem->GetISystemEventDispatcher()->RegisterListener(this, "Renderer");
 #ifndef VK_RENDERER
-	m_BufferManager = new CBufferManager();
+	m_BufferManager = DEBUG_NEW CBufferManager();
 #endif
 #if 0
 	CreateQuad();
 #endif
-	gShMan = new ShaderMan;
+	gShMan = DEBUG_NEW ShaderMan;
 	//=======================
 	//pd.vs.macro["STORE_TEXCOORDS"] = "1";
 #if 0
@@ -229,9 +229,9 @@ IWindow* CRenderer::Init(int x, int y, int width, int height, unsigned int cbpp,
 
 #if 1
 	_CrtCheckMemory();
-	m_RenderAuxGeom = new CRenderAuxGeom();
+	m_RenderAuxGeom = DEBUG_NEW CRenderAuxGeom();
 #else
-	m_RenderAuxGeom = new CRenderAuxGeomNull();
+	m_RenderAuxGeom = DEBUG_NEW CRenderAuxGeomNull();
 #endif
 	Env::Get()->pAuxGeomRenderer = m_RenderAuxGeom;
 

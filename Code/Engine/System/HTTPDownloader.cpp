@@ -201,7 +201,7 @@ void CHTTPDownloader::PrepareBuffer()
 {
 	if (!m_pBuffer)
 	{
-		m_pBuffer = new unsigned char[HTTP_BUFFER_SIZE];
+		m_pBuffer = DEBUG_NEW unsigned char[HTTP_BUFFER_SIZE];
 	}
 }
 

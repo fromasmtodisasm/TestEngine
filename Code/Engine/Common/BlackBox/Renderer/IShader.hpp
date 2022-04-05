@@ -448,7 +448,7 @@ struct SShaderParam
 				{
 					char*  str           = pr.m_String;
 					size_t len           = strlen(str) + 1;
-					sp->m_Value.m_String = new char[len];
+					sp->m_Value.m_String = DEBUG_NEW char[len];
 					strcpy(sp->m_Value.m_String, str);
 				}
 				break;
@@ -1178,7 +1178,7 @@ struct SShaderTexUnit
 		memcpy(dtl, this, sizeof(SShaderTexUnit));
 		if (m_AnimInfo)
 		{
-			dtl->m_AnimInfo  = new STexAnim;
+			dtl->m_AnimInfo  = DEBUG_NEW STexAnim;
 			*dtl->m_AnimInfo = *m_AnimInfo;
 		}
 		if (m_GTC)
@@ -1514,7 +1514,7 @@ struct SRenderShaderResources : SBaseShaderResources
 	void           AddTextureMap(int Id)
 	{
 		assert(Id >= 0 && Id < EFTT_MAX);
-		m_Textures[Id] = new SEfResTexture;
+		m_Textures[Id] = DEBUG_NEW SEfResTexture;
 	}
 	int Size()
 	{
@@ -2289,7 +2289,7 @@ struct CMatInfo : public IMatInfo
 	{
 		assert(pMtl);
 		if (!pSubMtls)
-			pSubMtls = new SubMtls;
+			pSubMtls = DEBUG_NEW SubMtls;
 		pSubMtls->push_back(pMtl);
 
 		pMtl->SetFlags(pMtl->GetFlags() | MIF_CHILD);

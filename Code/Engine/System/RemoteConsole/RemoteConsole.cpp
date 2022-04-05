@@ -36,7 +36,7 @@ CRemoteConsole::CRemoteConsole()
 //: m_listener(1)
 {
 #ifdef USE_REMOTE_CONSOLE
-	m_pServer = new SRemoteServer;
+	m_pServer = DEBUG_NEW SRemoteServer;
 #endif
 }
 

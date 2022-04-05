@@ -101,7 +101,7 @@ bool CWeaponSystemEx::AddWeaponClass(CWeaponClass* weaponClass)
 //////////////////////////////////////////////////////////////////////
 INameIterator* CWeaponSystemEx::GetAvailableWeapons()
 {
-	CNameIterator* pIterator = new CNameIterator;
+	CNameIterator* pIterator = DEBUG_NEW CNameIterator;
 	for (TWeaponClasses::iterator it = m_vWeaponClasses.begin(); it != m_vWeaponClasses.end(); it++)
 		pIterator->AddNameString((*it)->GetName().c_str());
 	return (INameIterator*)pIterator;
@@ -110,7 +110,7 @@ INameIterator* CWeaponSystemEx::GetAvailableWeapons()
 //////////////////////////////////////////////////////////////////////
 INameIterator* CWeaponSystemEx::GetAvailableProjectiles()
 {
-	CNameIterator* pIterator = new CNameIterator;
+	CNameIterator* pIterator = DEBUG_NEW CNameIterator;
 	for (TProjectileClasses::iterator it = m_vProjectileClasses.begin(); it != m_vProjectileClasses.end(); it++)
 		pIterator->AddNameString((*it)->m_sName.c_str());
 	return (INameIterator*)pIterator;
@@ -158,7 +158,7 @@ bool CWeaponSystemEx::Init(CXGame* pGame, bool bRaiseError)
 		m_soWeaponClassesTable->GetCurrentKey(sWeaponClassName);
 
 		// create a new weapon class
-		CWeaponClass* pWeaponClass = new CWeaponClass(*this);
+		CWeaponClass* pWeaponClass = DEBUG_NEW CWeaponClass(*this);
 		if (pWeaponClass->Init(sWeaponClassName))
 		{
 			//TRACE("WeaponSystemEx: ADDING %s", sWeaponClassName);
@@ -385,7 +385,7 @@ void CWeaponSystemEx::Read(CStream& stm)
 	// get weapon classes
 	for (int i = 0; i < n; ++i)
 	{
-		CWeaponClass* pWeaponClass = new CWeaponClass(*this);
+		CWeaponClass* pWeaponClass = DEBUG_NEW CWeaponClass(*this);
 		pWeaponClass->Read(stm);
 
 		AddWeaponClass(pWeaponClass);

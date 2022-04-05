@@ -286,7 +286,7 @@ CSound* CSound::Load(const char* path, int nFlags)
 {
 	SampleType Data{};
 	CSound*    pSound{};
-	CCryFile* file = new CCryFile;
+	CCryFile* file = DEBUG_NEW CCryFile;
 	if (file->Open(path, "rb"))
 	{
 		if (nFlags & FLAG_SOUND_MUSIC)
@@ -299,7 +299,7 @@ CSound* CSound::Load(const char* path, int nFlags)
 		}
 		else
 		{
-			pSound         = new CSound(Data);
+			pSound         = DEBUG_NEW CSound(Data);
 			pSound->nFlags = nFlags;
 		}
 	}

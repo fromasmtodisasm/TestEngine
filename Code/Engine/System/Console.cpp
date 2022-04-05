@@ -738,7 +738,7 @@ ICVar* CXConsole::CreateVariable(const char* sName, const char* sValue, int nFla
 	}
 
 	const string name(sName);
-	pCVar = new CXConsoleVariableString(this, name, sValue, nFlags, help, true);
+	pCVar = DEBUG_NEW CXConsoleVariableString(this, name, sValue, nFlags, help, true);
 	RegisterVar(name, pCVar /*, pChangeFunc*/);
 	return pCVar;
 }
@@ -758,7 +758,7 @@ ICVar* CXConsole::CreateVariable(const char* sName, int iValue, int nFlags, cons
 	}
 
 	const string name(sName);
-	pCVar = new CXConsoleVariableInt(this, name.data(), iValue, nFlags, help, true);
+	pCVar = DEBUG_NEW CXConsoleVariableInt(this, name.data(), iValue, nFlags, help, true);
 	RegisterVar(name, pCVar /*, pChangeFunc*/);
 	return pCVar;
 }
@@ -778,7 +778,7 @@ ICVar* CXConsole::CreateVariable(const char* sName, float fValue, int nFlags, co
 	}
 
 	const string name(sName);
-	pCVar = new CXConsoleVariableFloat(this, name.data(), fValue, nFlags, help, true);
+	pCVar = DEBUG_NEW CXConsoleVariableFloat(this, name.data(), fValue, nFlags, help, true);
 	RegisterVar(name, pCVar /*, pChangeFunc*/);
 	return pCVar;
 }
@@ -1056,7 +1056,7 @@ ICVar* CXConsole::RegisterCVarGroup(const char* szName, const char* szFileName)
 
 	#if 0
 	const string name(szName);
-	CXConsoleVariableCVarGroup* pCVarGroup = new CXConsoleVariableCVarGroup(this, name, szFileName, VF_COPYNAME);
+	CXConsoleVariableCVarGroup* pCVarGroup = DEBUG_NEW CXConsoleVariableCVarGroup(this, name, szFileName, VF_COPYNAME);
 
 	pCVar = pCVarGroup;
 
@@ -1094,7 +1094,7 @@ ICVar* CXConsole::RegisterInternal(const char* sName, int* src, int iValue, int 
 		nFlags |= VF_CONST_CVAR;
 	*src = iValue; // Needs to be done before creating the CVar due to default overriding
 	const string name(sName);
-	pCVar = new CXConsoleVariableIntRef(this, name.data(), *src, nFlags, help, true);
+	pCVar = DEBUG_NEW CXConsoleVariableIntRef(this, name.data(), *src, nFlags, help, true);
 	RegisterVar(name, pCVar, pChangeFunc);
 	return pCVar;
 }
@@ -1115,7 +1115,7 @@ ICVar* CXConsole::RegisterCVarGroup(const char* szName, const char* szFileName)
 		return pCVar; // Already registered, this is expected when loading engine specs after game specs.
 
 	const string name(szName);
-	CXConsoleVariableCVarGroup* pCVarGroup = new CXConsoleVariableCVarGroup(this, name, szFileName, VF_COPYNAME);
+	CXConsoleVariableCVarGroup* pCVarGroup = DEBUG_NEW CXConsoleVariableCVarGroup(this, name, szFileName, VF_COPYNAME);
 
 	pCVar = pCVarGroup;
 
@@ -1148,7 +1148,7 @@ ICVar* CXConsole::RegisterInternal(const char* sName, float* src, float fValue, 
 		nFlags |= VF_CONST_CVAR;
 	*src = fValue; // Needs to be done before creating the CVar due to default overriding
 	const string name(sName);
-	pCVar = new CXConsoleVariableFloatRef(this, name.data(), *src, nFlags, help, true);
+	pCVar = DEBUG_NEW CXConsoleVariableFloatRef(this, name.data(), *src, nFlags, help, true);
 	RegisterVar(name, pCVar, pChangeFunc);
 	return pCVar;
 }
@@ -1177,7 +1177,7 @@ ICVar* CXConsole::RegisterInternal(const char* sName, const char** src, const ch
 		nFlags |= VF_CONST_CVAR;
 	const string name(sName);
 	//FIXME:
-	pCVar = new CXConsoleVariableStringRef(this, name, *src, defaultValue, nFlags, help, true);
+	pCVar = DEBUG_NEW CXConsoleVariableStringRef(this, name, *src, defaultValue, nFlags, help, true);
 	RegisterVar(name, pCVar, pChangeFunc);
 	return pCVar;
 }
@@ -3223,7 +3223,7 @@ IFont* CXConsole::GetFont(const char* name, float w, float h)
 {
 	#if 0
 	if (Env::Get()->IsDedicated())
-		m_pFont = new CNullFont();
+		m_pFont = DEBUG_NEW CNullFont();
 	else
 	{
 		m_pFont   = Env::Renderer()->GetIFont();

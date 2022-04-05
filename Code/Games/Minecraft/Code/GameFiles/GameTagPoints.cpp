@@ -5,7 +5,7 @@
 ITagPoint* CXGame::CreateTagPoint(const string& name, const Legacy::Vec3& pos, const Legacy::Vec3& angles)
 {
 	// create new one
-	CTagPoint* pNewPoint = new CTagPoint(this);
+	CTagPoint* pNewPoint = DEBUG_NEW CTagPoint(this);
 	pNewPoint->OverrideName(name.c_str());
 	pNewPoint->SetPos(pos);
 	pNewPoint->SetAngles(angles);

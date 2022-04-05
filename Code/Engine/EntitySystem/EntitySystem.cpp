@@ -79,7 +79,7 @@ inline CEntitySystem::CEntitySystem(ISystem* pSystem)
 	auto                rigidFloor = new btRigidBody(0.f, new btDefaultMotionState, floorShape);
 	m_pPhysicalWorld->addRigidBody(rigidFloor);
 
-	auto debugger = new CPhysicsDebugger;
+	auto debugger = DEBUG_NEW CPhysicsDebugger;
 	m_pPhysicalWorld->setDebugDrawer(debugger);
 }
 

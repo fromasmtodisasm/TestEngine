@@ -306,7 +306,7 @@ public:
 
 	bool ConnectTo(CTmpNetworkClient* pClient)
 	{
-		auto ss = new CTmpServerSlot;
+		auto ss = DEBUG_NEW CTmpServerSlot;
 		m_pFactory->CreateServerSlot(ss);
 		return true;
 	}
@@ -492,7 +492,7 @@ bool CNetwork::Init(ISystem* pSystem)
 		res = false;
 	}
 
-	m_pCompressionHelper = new CCompressionHelper(this);
+	m_pCompressionHelper = DEBUG_NEW CCompressionHelper(this);
 	return res;
 }
 
@@ -508,14 +508,14 @@ void CNetwork::SetLocalIP(const char* szLocalIP)
 
 IClient* CNetwork::CreateClient(IClientSink* pSink, bool bLocal)
 {
-	auto result = new CTmpNetworkClient(this);
+	auto result = DEBUG_NEW CTmpNetworkClient(this);
 	m_Clients.push_back(result);
 	return result;
 }
 
 IServer* CNetwork::CreateServer(IServerSlotFactory* pFactory, uint16_t nPort, bool local)
 {
-	auto result = new CTmpNetworkServer(pFactory, nPort, local);
+	auto result = DEBUG_NEW CTmpNetworkServer(pFactory, nPort, local);
 	if (!result->Init())
 		return nullptr;
 	m_Servers.push_back(result);

@@ -4,13 +4,13 @@
 #include <BlackBox/Core/Platform/Platform.hpp>
 #include <BlackBox/Core/Platform/Windows.hpp>
 
-#if defined(_DEBUG) && !defined(LINUX) && 0
+#if defined(_DEBUG) && !defined(LINUX)
 	#undef _CRTDBG_MAP_ALLOC
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
 	#include <crtdbg.h>
 	#define DEBUG_CLIENTBLOCK new (_NORMAL_BLOCK, __FILE__, __LINE__)
-	#define new DEBUG_CLIENTBLOCK
+	//#define new DEBUG_CLIENTBLOCK
 #endif
 
 

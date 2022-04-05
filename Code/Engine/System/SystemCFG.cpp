@@ -325,7 +325,7 @@ bool CSystemConfiguration::ParseSystemConfig()
 		CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't get length for Config file %s", filename.c_str());
 		return false;
 	}
-	char* szFullText = new char[nLen + 16];
+	char* szFullText = DEBUG_NEW char[nLen + 16];
 	if (file.ReadRaw(szFullText, nLen) < (size_t)nLen)
 	{
 		CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't read Config file %s", filename.c_str());

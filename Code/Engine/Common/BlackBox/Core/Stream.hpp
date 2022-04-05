@@ -162,7 +162,7 @@ public:
 		else
 		{
 			//m_dwAllocatedBitSize = s.GetAllocatedSize();
-			//m_pBuffer=new BYTE[BITS2BYTES(m_dwAllocatedBitSize)];
+			//m_pBuffer= DEBUG_NEW BYTE[BITS2BYTES(m_dwAllocatedBitSize)];
 			CryError("CStream:CStream");
 		}
 

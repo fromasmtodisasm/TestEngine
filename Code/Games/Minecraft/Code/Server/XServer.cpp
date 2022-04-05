@@ -159,7 +159,7 @@ CXServer::CXServer(CXGame* pGame, WORD nPort, const char* szName, bool listen)
 	m_pGame->GetSystem()->GetIEntitySystem()->SetSink(this);
 
 	// create the system interface
-	m_pISystem = new CXSystemServer(this, m_pGame, m_pGame->m_pLog);
+	m_pISystem = DEBUG_NEW CXSystemServer(this, m_pGame, m_pGame->m_pLog);
 
 #if 0
 	// get this info before we set the server
@@ -432,7 +432,7 @@ bool CXServer::CreateServerSlot(IServerSlot* pIServerSlot)
 		}
 	}
 
-	CXServerSlot* pSlot = new CXServerSlot(this, pIServerSlot);
+	CXServerSlot* pSlot = DEBUG_NEW CXServerSlot(this, pIServerSlot);
 	NET_TRACE("<<NET>>REGISTERING SERVER SLOT");
 	RegisterSlot(pSlot);
 	return true;

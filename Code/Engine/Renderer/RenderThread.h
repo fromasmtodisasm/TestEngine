@@ -26,7 +26,7 @@ struct SRenderThread
 
 	SRenderThread()
 	{
-		//m_pThread = new CRenderThread();
+		//m_pThread = DEBUG_NEW CRenderThread();
 	}
 
 	void Start();

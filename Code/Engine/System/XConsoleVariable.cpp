@@ -23,7 +23,7 @@ void CXConsoleVariableCVarGroup::OnLoadConfigurationEntry(const char* szKey, con
 
 			// if default state is not part of the mentioned states generate this state, so GetIRealVal() can return this state as well
 			if (m_CVarGroupStates.find(groupValue) == m_CVarGroupStates.end())
-				m_CVarGroupStates[groupValue] = new SCVarGroup;
+				m_CVarGroupStates[groupValue] = DEBUG_NEW SCVarGroup;
 
 			return;
 		}
@@ -34,7 +34,7 @@ void CXConsoleVariableCVarGroup::OnLoadConfigurationEntry(const char* szKey, con
 		if (sscanf(szGroup, "%d", &group) == 1)
 		{
 			if (m_CVarGroupStates.find(group) == m_CVarGroupStates.end())
-				m_CVarGroupStates[group] = new SCVarGroup;
+				m_CVarGroupStates[group] = DEBUG_NEW SCVarGroup;
 
 			pGroup = m_CVarGroupStates[group];
 			checkIfInDefault = true;

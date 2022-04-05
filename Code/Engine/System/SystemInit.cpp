@@ -220,7 +220,7 @@ void CSystem::PreprocessCommandLine()
 		output = left + " " + output;
 		std::cout << "output:::: " << output << std::endl;
 		system("pause");
-		m_pCmdLine = new CCmdLine(
+		m_pCmdLine = DEBUG_NEW CCmdLine(
 		    output.data());
 		/////////////////////////////////////////////////////////////////
 	}
@@ -243,7 +243,7 @@ bool CSystem::Init()
 {
 	m_env.SetIsDedicated(m_startupParams.bDedicatedServer);
 	/////////////////////////////////////////////
-	m_pCmdLine = new CCmdLine(m_startupParams.szSystemCmdLine);
+	m_pCmdLine = DEBUG_NEW CCmdLine(m_startupParams.szSystemCmdLine);
 	PreprocessCommandLine();
 	ProcessCommandLine();
 #ifdef ENABLE_PROFILER
@@ -265,7 +265,7 @@ bool CSystem::Init()
 	bool isDaemonMode = false;
 	#endif // !defined(_RELEASE)
 
-	m_env.pFrameProfileSystem = new ProfilingSystem;
+	m_env.pFrameProfileSystem = DEBUG_NEW ProfilingSystem;
 
 	#if defined(USE_DEDICATED_SERVER_CONSOLE)
 
@@ -276,19 +276,19 @@ bool CSystem::Init()
 	{
 		string headerName;
 		#if defined(USE_UNIXCONSOLE)
-		//CUNIXConsole* pConsole = pUnixConsole = new CUNIXConsole();
-		CNULLConsole* pConsole = new CNULLConsole(false);
+		//CUNIXConsole* pConsole = pUnixConsole = DEBUG_NEW CUNIXConsole();
+		CNULLConsole* pConsole = DEBUG_NEW CNULLConsole(false);
 		headerName             = "Unix ";
 		#elif defined(USE_IOSCONSOLE)
-		CIOSConsole* pConsole = new CIOSConsole();
+		CIOSConsole* pConsole = DEBUG_NEW CIOSConsole();
 		headerName            = "iOS ";
 		#elif defined(USE_WINDOWSCONSOLE)
-		CWindowsConsole* pConsole = new CWindowsConsole();
+		CWindowsConsole* pConsole = DEBUG_NEW CWindowsConsole();
 		#elif defined(USE_ANDROIDCONSOLE)
-		CAndroidConsole* pConsole = new CAndroidConsole();
+		CAndroidConsole* pConsole = DEBUG_NEW CAndroidConsole();
 		headerName                = "Android "
 		#else
-		CNULLConsole* pConsole = new CNULLConsole(false);
+		CNULLConsole* pConsole = DEBUG_NEW CNULLConsole(false);
 		#endif
 		m_pTextModeConsole = static_cast<ITextModeConsole*>(pConsole);
 
@@ -333,7 +333,7 @@ bool CSystem::Init()
 
 	#if !(defined(USE_DEDICATED_SERVER_CONSOLE) && defined(_RELEASE))
 	{
-		CNULLConsole* pConsole = new CNULLConsole(isDaemonMode);
+		CNULLConsole* pConsole = DEBUG_NEW CNULLConsole(isDaemonMode);
 		m_pTextModeConsole     = pConsole;
 
 		if (m_pUserCallback == NULL && m_env.IsDedicated())
@@ -349,7 +349,7 @@ bool CSystem::Init()
 		return false;
 
 	// Load project directory early, since it relies on overriding current working folder
-	m_env.pProjectManager = new CProjectManager();
+	m_env.pProjectManager = DEBUG_NEW CProjectManager();
 	{
 		//////////////////////////////////////////////////////////////////////////
 		// File system, must be very early
@@ -396,7 +396,7 @@ bool CSystem::Init()
 		//////////////////////////////////////////////////////////////////////////
 	}
 	#ifdef DOWNLOAD_MANAGER
-	m_pDownloadManager = new CDownloadManager;
+	m_pDownloadManager = DEBUG_NEW CDownloadManager;
 	m_pDownloadManager->Create(this);
 	#endif //DOWNLOAD_MANAGER
 	LogCommandLine();
@@ -433,7 +433,7 @@ bool CSystem::Init()
 
 	//////////////////////////////////////////////////////////////////////////
 	// Zlib decompressor
-	m_pIZLibDecompressor = new CZLibDecompressor();
+	m_pIZLibDecompressor = DEBUG_NEW CZLibDecompressor();
 
 	InlineInitializationProcessing("CSystem::Init ZLibDecompressor");
 
@@ -506,7 +506,7 @@ bool CSystem::Init()
 	m_env.pHardwareMouse = NULL;
 #else
 	if (!m_env.IsDedicated())
-		m_env.pHardwareMouse = new CHardwareMouse(true);
+		m_env.pHardwareMouse = DEBUG_NEW CHardwareMouse(true);
 	else
 		m_env.pHardwareMouse = NULL;
 #endif
@@ -598,7 +598,7 @@ bool CSystem::InitLog()
 {
 	if (m_startupParams.pLog == nullptr)
 	{
-		m_env.pLog                      = new CLog(this);
+		m_env.pLog                      = DEBUG_NEW CLog(this);
 		string             sLogFileName = m_startupParams.sLogFileName != nullptr ? m_startupParams.sLogFileName : DEFAULT_LOG_FILENAME;
 
 		const ICmdLineArg* logfile      = m_pCmdLine->FindArg(eCLAT_Pre, "logfile");
@@ -1169,7 +1169,7 @@ bool CSystem::InitFileSystem()
 #endif // !defined(_RELEASE)
 
 	CCryPak* pCryPak;
-	pCryPak = new CCryPak(m_env.pLog, &g_cvars.pakVars, bLvlRes);
+	pCryPak = DEBUG_NEW CCryPak(m_env.pLog, &g_cvars.pakVars, bLvlRes);
 //TODO:
 #if 0
 	pCryPak->SetGameFolderWritable(m_bGameFolderWritable);

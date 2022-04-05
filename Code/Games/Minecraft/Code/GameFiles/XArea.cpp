@@ -72,7 +72,7 @@ unsigned CXArea::MemStat()
 //adds segment to area, calculates line parameters y=kx+b, sets horizontal/vertical flags
 void CXArea::AddSegment(const a2DPoint& p0, const a2DPoint& p1)
 {
-	a2DSegment* newSegment = new a2DSegment;
+	a2DSegment* newSegment = DEBUG_NEW a2DSegment;
 
 	//if this is horizontal line set flag. This segment is needed only for distance calculations
 	if (p1.y == p0.y)
@@ -683,7 +683,7 @@ CXArea* CXAreaMgr::AddArea(const Legacy::Vec3& min, const Legacy::Vec3& max, con
 {
 	CXArea* newArea;
 
-	newArea = new CXArea;
+	newArea = DEBUG_NEW CXArea;
 
 	newArea->SetMin(min);
 	newArea->SetMax(max);
@@ -714,7 +714,7 @@ CXArea* CXAreaMgr::AddArea(const Legacy::Vec3& center, const float radius, const
 	if (radius <= 0)
 		return NULL;
 
-	newArea = new CXArea;
+	newArea = DEBUG_NEW CXArea;
 
 	newArea->SetCenter(center);
 	newArea->SetRadius(radius);
@@ -747,7 +747,7 @@ CXArea* CXAreaMgr::AddArea(const Legacy::Vec3* const vPoints, const int count, c
 	if (count < 3)
 		return NULL;
 
-	newArea    = new CXArea;
+	newArea    = DEBUG_NEW CXArea;
 
 	//find the lowest point - to use for vertical origin in 3D area
 	float minZ = vPoints[0].z;

@@ -23,9 +23,9 @@ struct SPhysicsInitParams
 
 	void                      Create()
 	{
-		collisionConfiguration = new btDefaultCollisionConfiguration();
-		dispatcher             = new btCollisionDispatcher(collisionConfiguration);
-		broadPhase             = new btDbvtBroadphase();
+		collisionConfiguration = DEBUG_NEW btDefaultCollisionConfiguration();
+		dispatcher             = DEBUG_NEW btCollisionDispatcher(collisionConfiguration);
+		broadPhase             = DEBUG_NEW btDbvtBroadphase();
 		constraintSolver       = new btSequentialImpulseConstraintSolver;
 	}
 };

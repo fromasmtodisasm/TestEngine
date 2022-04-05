@@ -276,12 +276,12 @@ CXGame::CXGame()
 	m_bMenuInitialized   = false;
 	m_pCurrentUI         = 0;
 	m_pIActionMapManager = NULL;
-	m_pIngameDialogMgr   = new CIngameDialogMgr();
+	m_pIngameDialogMgr   = DEBUG_NEW CIngameDialogMgr();
 	m_pUISystem          = 0;
 	mp_model             = 0;
 #if !defined(LINUX)
 	// to avoid all references to movie user in this file
-	m_pMovieUser = new CMovieUser(this);
+	m_pMovieUser = DEBUG_NEW CMovieUser(this);
 #endif
 	m_nPlayerIconTexId   = -1;
 	m_nVehicleIconTexId  = -1;
@@ -312,7 +312,7 @@ CXGame::CXGame()
 	m_bAllowQuicksave                                                  = true;
 
 	m_sGameName                                                        = "FarCry";
-	m_pTagPointManager                                                 = new CTagPointManager(this);
+	m_pTagPointManager                                                 = DEBUG_NEW CTagPointManager(this);
 	m_nDEBUG_TIMING                                                    = 0;
 	m_fDEBUG_STARTTIMER                                                = 0;
 }
@@ -461,7 +461,7 @@ CXGame::~CXGame()
 		m_pRenderer->RemoveTexture(m_nUnknownIconTexId);
 
 	SAFE_DELETE(m_pUIHud);
-#if 0
+#if 1
 	SAFE_DELETE(m_pWeaponSystemEx);
 	SAFE_DELETE(m_pVehicleSystem);
 #endif
@@ -677,7 +677,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 	// Setup the system and 3D Engine pointers
 	m_pSystem          = pSystem;
 
-	m_pGameMods        = new CGameMods(this);
+	m_pGameMods        = DEBUG_NEW CGameMods(this);
 
 	m_bDedicatedServer = bDedicatedSrv;
 	m_XAreaMgr.Init(pSystem);
@@ -699,7 +699,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 		pMovieSystem->SetUser(m_pMovieUser);
 #endif
 	if (!m_pTimeDemoRecorder)
-		m_pTimeDemoRecorder = new CTimeDemoRecorder(pSystem);
+		m_pTimeDemoRecorder = DEBUG_NEW CTimeDemoRecorder(pSystem);
 
 	m_pUIHud        = NULL;
 	m_pNetwork      = m_pSystem->GetINetwork();
@@ -718,27 +718,27 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 	m_pNETServerSnooper = m_pNetwork->CreateNETServerSnooper(this);
 	m_pRConSystem       = m_pNetwork->CreateRConSystem();
 #endif
-	m_pWeaponSystemEx = new CWeaponSystemEx();
-	m_pVehicleSystem  = new CVehicleSystem();
-	m_pPlayerSystem   = new CPlayerSystem();
+	m_pWeaponSystemEx = DEBUG_NEW CWeaponSystemEx();
+	m_pVehicleSystem  = DEBUG_NEW CVehicleSystem();
+	m_pPlayerSystem   = DEBUG_NEW CPlayerSystem();
 #if 0
-	m_pFlockManager	  = new CFlockManager(m_pSystem);
+	m_pFlockManager	  = DEBUG_NEW CFlockManager(m_pSystem);
 #endif
 
 	CScriptObjectUI::InitializeTemplate(m_pScriptSystem);
 
 	// init is not necessary for now, but add here if it later is
-	m_pScriptObjectGame = new CScriptObjectGame;
+	m_pScriptObjectGame = DEBUG_NEW CScriptObjectGame;
 	m_pScriptObjectGame->InitializeTemplate(m_pScriptSystem);
 
-	m_pScriptObjectInput = new CScriptObjectInput;
+	m_pScriptObjectInput = DEBUG_NEW CScriptObjectInput;
 	CScriptObjectInput::InitializeTemplate(m_pScriptSystem);
-	m_pScriptObjectLanguage = new CScriptObjectLanguage;
+	m_pScriptObjectLanguage = DEBUG_NEW CScriptObjectLanguage;
 	CScriptObjectLanguage::InitializeTemplate(m_pScriptSystem);
 #if 0
-	m_pScriptObjectBoids = new CScriptObjectBoids;
+	m_pScriptObjectBoids = DEBUG_NEW CScriptObjectBoids;
 	CScriptObjectBoids::InitializeTemplate(m_pScriptSystem);
-	m_pScriptObjectAI = new CScriptObjectAI;
+	m_pScriptObjectAI = DEBUG_NEW CScriptObjectAI;
 	CScriptObjectAI::InitializeTemplate(m_pScriptSystem);
 #endif
 	CScriptObjectServer::InitializeTemplate(m_pScriptSystem);
@@ -767,7 +767,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 	CScriptObjectClient::InitializeTemplate(m_pScriptSystem);
 	CScriptObjectStream::InitializeTemplate(m_pScriptSystem);
 
-	m_pScriptTimerMgr = new CScriptTimerMgr(m_pScriptSystem, m_pSystem->GetIEntitySystem(), this);
+	m_pScriptTimerMgr = DEBUG_NEW CScriptTimerMgr(m_pScriptSystem, m_pSystem->GetIEntitySystem(), this);
 
 	// making some constants accessable to the script
 	m_pScriptSystem->SetGlobalValue("FireActivation_OnPress", ePressing);
@@ -804,7 +804,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 	// init key-bindings
 	if (!m_bDedicatedServer)
 	{
-		m_pLegacyInput = new Legacy::CInput(Env::Input());
+		m_pLegacyInput = DEBUG_NEW Legacy::CInput(Env::Input());
 		InitInputMap();
 	}
 
@@ -817,7 +817,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 
 	// creating HUD interface
 	m_pLog->Log("Initializing UI");
-	m_pUIHud = new CUIHud(this, m_pSystem);
+	m_pUIHud = DEBUG_NEW CUIHud(this, m_pSystem);
 
 	LoadConfiguration("", "game.cfg");
 
@@ -833,7 +833,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 		if (!bInEditor && 0)
 		{
 			//////////////////////////////////////////////////////////////////////
-			m_pUISystem = new CUISystem;
+			m_pUISystem = DEBUG_NEW CUISystem;
 
 			if (m_pUISystem)
 			{
@@ -886,7 +886,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 #ifdef EDITOR_IMPLEMENT_LOAD_LEVEL
 	if (!m_bDedicatedServer)
 	{
-		minecraft = new Minecraft;
+		minecraft = DEBUG_NEW Minecraft;
 		minecraft->init();
 		minePlayer = &minecraft->player;
 	}
@@ -1416,7 +1416,7 @@ void CXGame::SaveScene(std::string name, std::string as)
 #endif
 IGAME_API IGame* CreateGameInstance()
 {
-	CXGame* game = new CXGame();
+	CXGame* game = DEBUG_NEW CXGame();
 	return (game);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1849,7 +1849,7 @@ bool CXGame::SteamInit()
 	// создаем объект SteamAchievements, если инициализация Steam удалась
 	if (bRet)
 	{
-		g_SteamAchievements = new CSteamAchievements(g_Achievements, 1);
+		g_SteamAchievements = DEBUG_NEW CSteamAchievements(g_Achievements, 1);
 		// Получить имена профилей Steam текущих пользователей.
 		const char* name = SteamFriends()->GetPersonaName();
 		Env::Log()->Log("person name: %s", name);

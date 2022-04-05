@@ -28,7 +28,7 @@ void CDownloadManager::Create(ISystem* pSystem)
 //-------------------------------------------------------------------------------------------------
 CHTTPDownloader* CDownloadManager::CreateDownload()
 {
-	CHTTPDownloader* pDL = new CHTTPDownloader;
+	CHTTPDownloader* pDL = DEBUG_NEW CHTTPDownloader;
 
 	m_lDownloadList.push_back(pDL);
 

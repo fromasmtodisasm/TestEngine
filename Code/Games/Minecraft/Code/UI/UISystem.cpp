@@ -253,7 +253,7 @@ int CUISystem::Create(IGame* pGame, ISystem* pSystem, IScriptSystem* pScriptSyst
 
 	CreateCVars();
 
-	m_pScriptObjectUI = new CScriptObjectUI;
+	m_pScriptObjectUI = DEBUG_NEW CScriptObjectUI;
 
 	if (!m_pScriptObjectUI)
 	{
@@ -906,7 +906,7 @@ int CUISystem::Reload(int iFrameDelta)
 	CreateCVars();
 
 	m_pLog->LogToConsole("\001  Creating UI script object...");
-	m_pScriptObjectUI = new CScriptObjectUI;
+	m_pScriptObjectUI = DEBUG_NEW CScriptObjectUI;
 
 	if (!m_pScriptObjectUI)
 	{
@@ -2813,7 +2813,7 @@ int CUISystem::DrawToolTip()
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateStatic(CUIStatic** pStatic, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle, const wstring& szText)
 {
-	*pStatic = new CUIStatic;
+	*pStatic = DEBUG_NEW CUIStatic;
 
 	if (!(*pStatic))
 	{
@@ -2835,7 +2835,7 @@ int CUISystem::CreateStatic(CUIStatic** pStatic, CUIWidget* pParent, const strin
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateButton(CUIButton** pButton, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle, const wstring& szText)
 {
-	*pButton = new CUIButton;
+	*pButton = DEBUG_NEW CUIButton;
 
 	if (!(*pButton))
 	{
@@ -2853,7 +2853,7 @@ int CUISystem::CreateButton(CUIButton** pButton, CUIWidget* pParent, const strin
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateEditBox(CUIEditBox** pEditBox, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle, const wstring& szText)
 {
-	*pEditBox = new CUIEditBox;
+	*pEditBox = DEBUG_NEW CUIEditBox;
 
 	if (!(*pEditBox))
 	{
@@ -2872,7 +2872,7 @@ int CUISystem::CreateEditBox(CUIEditBox** pEditBox, CUIWidget* pParent, const st
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateScrollBar(CUIScrollBar** pScrollBar, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle, int iType)
 {
-	*pScrollBar = new CUIScrollBar;
+	*pScrollBar = DEBUG_NEW CUIScrollBar;
 
 	if (!(*pScrollBar))
 	{
@@ -2901,7 +2901,7 @@ int CUISystem::CreateScrollBar(CUIScrollBar** pScrollBar, CUIWidget* pParent, co
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateListView(CUIListView** pListView, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle)
 {
-	*pListView = new CUIListView;
+	*pListView = DEBUG_NEW CUIListView;
 
 	if (!(*pListView))
 	{
@@ -2918,7 +2918,7 @@ int CUISystem::CreateListView(CUIListView** pListView, CUIWidget* pParent, const
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateCheckBox(CUICheckBox** pCheckBox, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle)
 {
-	*pCheckBox = new CUICheckBox;
+	*pCheckBox = DEBUG_NEW CUICheckBox;
 
 	if (!(*pCheckBox))
 	{
@@ -2935,7 +2935,7 @@ int CUISystem::CreateCheckBox(CUICheckBox** pCheckBox, CUIWidget* pParent, const
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateComboBox(CUIComboBox** pComboBox, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle)
 {
-	*pComboBox = new CUIComboBox;
+	*pComboBox = DEBUG_NEW CUIComboBox;
 
 	if (!(*pComboBox))
 	{
@@ -2956,7 +2956,7 @@ int CUISystem::CreateComboBox(CUIComboBox** pComboBox, CUIWidget* pParent, const
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateVideoPanel(CUIVideoPanel** pVideoPanel, CUIWidget* pParent, const string& szName, const UIRect& pRect, int iFlags, int iStyle)
 {
-	*pVideoPanel = new CUIVideoPanel;
+	*pVideoPanel = DEBUG_NEW CUIVideoPanel;
 
 	if (!(*pVideoPanel))
 	{
@@ -2973,7 +2973,7 @@ int CUISystem::CreateVideoPanel(CUIVideoPanel** pVideoPanel, CUIWidget* pParent,
 //////////////////////////////////////////////////////////////////////
 int CUISystem::CreateScreen(CUIScreen** pScreen, const string& szName)
 {
-	*pScreen = new CUIScreen;
+	*pScreen = DEBUG_NEW CUIScreen;
 
 	if (!(*pScreen))
 	{

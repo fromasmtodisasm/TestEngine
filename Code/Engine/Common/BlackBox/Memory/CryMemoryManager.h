@@ -44,7 +44,7 @@
 		#endif
 	#endif
 
-	#if defined(_DEBUG) && CRY_PLATFORM_WINAPI
+	#if defined(_DEBUG) && BB_PLATFORM_WINAPI
 		#include <crtdbg.h>
 	#endif
 
@@ -178,12 +178,16 @@ inline void __cdecl  operator delete[](void* p) noexcept { CryModuleFree(p); };
 	#endif // USE_NEWPOOL
 
 #endif // _DEBUG
+#define USE_DEBUG_NEW
 #if defined USE_DEBUG_NEW
 	#if defined(_DEBUG) && !defined(LINUX)
 		#include <crtdbg.h>
 		#define DEBUG_CLIENTBLOCK new (_NORMAL_BLOCK, __FILE__, __LINE__)
-		#define new DEBUG_CLIENTBLOCK
+		//#define new DEBUG_CLIENTBLOCK
+		#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__) 
 	#endif
+#else
+		#define DEBUG_NEW new 
 #endif
 
 //#endif // CRYSYSTEM_EXPORTS

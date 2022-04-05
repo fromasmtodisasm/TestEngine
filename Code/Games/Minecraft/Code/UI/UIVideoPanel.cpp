@@ -186,7 +186,7 @@ int CUIVideoPanel::LoadVideo(const string& szFileName, bool bSound)
 	}
 
 	// create swap buffer
-	m_pSwapBuffer = new int[m_hBink->Width * m_hBink->Height];
+	m_pSwapBuffer = DEBUG_NEW int[m_hBink->Width * m_hBink->Height];
 
 	if (!m_pSwapBuffer)
 	{

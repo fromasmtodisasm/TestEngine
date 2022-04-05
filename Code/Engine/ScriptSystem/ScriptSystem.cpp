@@ -9,14 +9,6 @@
 #undef realloc
 #undef free
 
-#if defined(_DEBUG) && !defined(LINUX)
-	#undef _CRTDBG_MAP_ALLOC
-	#define _CRTDBG_MAP_ALLOC
-	#include <stdlib.h>
-	#include <crtdbg.h>
-	#define DEBUG_CLIENTBLOCK new (_NORMAL_BLOCK, __FILE__, __LINE__)
-	#define new DEBUG_CLIENTBLOCK
-#endif
 #include <BlackBox/System/File/CryFile.h>
 
 #if !defined(SUPPORT_LOG_IDENTER)
@@ -123,7 +115,7 @@ bool CScriptSystem::Init(ISystem* pSystem)
 	luaL_openlibs(L);
 	CScriptObject::L     = L; // Set lua state for script table class.
 	CScriptObject::m_pSS = this;
-	m_pH                 = new CFunctionHandler(this, L);
+	m_pH                 = DEBUG_NEW CFunctionHandler(this, L);
 
 	m_stdScriptBinds.Init(pSystem, this);
 
@@ -437,14 +429,14 @@ IScriptObject* CScriptSystem::GetGlobalObject()
 
 IScriptObject* CScriptSystem::CreateEmptyObject()
 {
-	auto o = new CScriptObject;
+	auto o = DEBUG_NEW CScriptObject;
 	o->AddRef();
 	return o;
 }
 
 IScriptObject* CScriptSystem::CreateObject()
 {
-	CScriptObject* result = new CScriptObject;
+	CScriptObject* result = DEBUG_NEW CScriptObject;
 	result->CreateNew();
 	return result;
 }
@@ -717,7 +709,7 @@ USER_DATA CScriptSystem::CreateUserData(INT_PTR nVal, int nCookie)
 
 	auto          size = sizeof(UserDataInfo);
 	UserDataInfo* ud   = (UserDataInfo*)lua_newuserdata(L, size);
-	ud                 = new UserDataInfo;
+	ud                 = DEBUG_NEW UserDataInfo;
 	ud->ptr            = nVal;
 	ud->cookie         = nCookie;
 	lua_pop(L, 1);
@@ -1256,7 +1248,7 @@ void              CScriptSystem::PrintStack()
 
 SCRIPTSYSTEM_API IScriptSystem* CreateScriptSystem(ISystem* pSystem, bool bStdLibs)
 {
-	auto ss             = new CScriptSystem();
+	auto ss             = DEBUG_NEW CScriptSystem();
 	Env::Get()->pScriptSystem = ss;
 	if (ss->Init(pSystem))
 	{

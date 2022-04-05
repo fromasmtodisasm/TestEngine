@@ -20,7 +20,7 @@ struct SRenderThread;
 //template <class T, class... Types>
 //_smart_ptr<T> make_smart_ptr(Types&&... _Args)
 //{
-//    const auto _Rx = new T(std::forward<Types>(_Args)...);
+//    const auto _Rx = DEBUG_NEW T(std::forward<Types>(_Args)...);
 //    return _smart_ptr<T>(_Rx);
 //}
 template<class T, class Inst>
@@ -69,10 +69,20 @@ struct STexPic : _reference_target_t, public ITexPic, public CD3D11_TEXTURE2D_DE
 
 	{
 	}
+	~STexPic()
+	{
+		puts("");
+	}
 
-	virtual void        AddRef() override { _reference_target_t::AddRef(); }
-	virtual void        Release(int bForce) override { _reference_target_t::Release(); }
-	void                Release() { _reference_target_t::Release(); }
+	virtual void AddRef() override { _reference_target_t::AddRef(); }
+	virtual void Release(int bForce) override
+	{
+		_reference_target_t::Release();
+	}
+	void Release()
+	{
+		_reference_target_t::Release();
+	}
 	virtual const char* GetName() override { return m_Name.c_str(); }
 	virtual int         GetWidth() override { return Width; }
 	virtual int         GetHeight() override { return Height; }
@@ -128,7 +138,7 @@ struct RenderTarget : _reference_target_t
 
 		D3D11_TEXTURE2D_DESC textureDesc;
 		ZeroMemory(&textureDesc, sizeof(textureDesc));
-		DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		DXGI_FORMAT format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		//switch (targetType)
 		//{
 		//case RenderTarget::Albedo:
@@ -349,8 +359,8 @@ public:
 
 private:
 	int          NextTextureIndex();
-	int          AddTextureResource(string name, ID3DShaderResourceView* pSRView, STexPic* pic);
-	unsigned int LoadTextureInternal(STexPic* pix, string filename, int* tex_type = NULL, unsigned int def_tid = 0, bool compresstodisk = true, bool bWarn = true);
+	int          AddTextureResource(string name, ID3DShaderResourceView* pSRView, _smart_ptr<STexPic>& pic);
+	unsigned int LoadTextureInternal(_smart_ptr<STexPic> pix, string filename, int* tex_type = NULL, unsigned int def_tid = 0, bool compresstodisk = true, bool bWarn = true);
 
 	void         UpdateConstants();
 	template<class Data, class T, class B>
@@ -401,7 +411,7 @@ private:
 
 	std::map<string, int>                                             m_LoadedTextureNames;
 	std::map<int, std::pair<ID3DTexture2D*, ID3DShaderResourceView*>> m_TexturesMap;
-	std::map<int, STexPic>                                            m_TexPics;
+	std::map<int, _smart_ptr<STexPic>>                                m_TexPics;
 	int                                                               m_NumLoadedTextures{};
 
 	//_smart_ptr<RenderTarget>                                          m_RenderTargetScene;

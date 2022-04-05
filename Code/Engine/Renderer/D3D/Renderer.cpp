@@ -538,14 +538,14 @@ ITexPic* CD3DRenderer::EF_GetTextureByID(int Id)
 	auto     it = m_TexPics.find(Id);
 	if (it != m_TexPics.end())
 	{
-		result = &it->second;
+		result = it->second;
 	}
 	return result;
 }
 
 ITexPic* CD3DRenderer::EF_LoadTexture(const char* nameTex, uint flags, uint flags2, byte eTT, float fAmount1, float fAmount2, int Id, int BindId)
 {
-	//_smart_ptr<STexPic> TexPic = new STexPic;
+	//_smart_ptr<STexPic> TexPic = DEBUG_NEW STexPic;
 	//m_RenderThread->ExecuteRenderThreadCommand([=]
 	//										   { LoadTextureInternal(TexPic, nameTex); });
 	//return TexPic;
@@ -639,7 +639,7 @@ ID3DShaderResourceView* CD3DRenderer::CreateTexture(std::vector<uint8_t>& blob)
 	    &pSRView);
 	return pSRView;
 }
-unsigned int CD3DRenderer::LoadTextureInternal(STexPic* pix, string fn, int* tex_type, unsigned int def_tid, bool compresstodisk, bool bWarn)
+unsigned int CD3DRenderer::LoadTextureInternal(_smart_ptr<STexPic> pix, string fn, int* tex_type, unsigned int def_tid, bool compresstodisk, bool bWarn)
 {
 	auto& filename = pix->m_Name;
 	if (auto it = m_LoadedTextureNames.find(filename); it != m_LoadedTextureNames.end())
@@ -675,7 +675,7 @@ unsigned int CD3DRenderer::LoadTextureInternal(STexPic* pix, string fn, int* tex
 
 unsigned int CD3DRenderer::LoadTexture(const char* filename, int* tex_type, unsigned int def_tid, bool compresstodisk, bool bWarn)
 {
-	_smart_ptr<STexPic> TexPic = new STexPic;
+	_smart_ptr<STexPic> TexPic = DEBUG_NEW STexPic;
 	TexPic->m_Id               = NextTextureIndex();
 	TexPic->m_Name             = filename;
 	m_RenderThread->ExecuteRenderThreadCommand([=]
@@ -683,7 +683,7 @@ unsigned int CD3DRenderer::LoadTexture(const char* filename, int* tex_type, unsi
 	return TexPic->GetTextureID();
 }
 
-int CD3DRenderer::AddTextureResource(string name, ID3DShaderResourceView* pSRView, STexPic* pic)
+int CD3DRenderer::AddTextureResource(string name, ID3DShaderResourceView* pSRView, _smart_ptr<STexPic>& pic)
 {
 	//auto texture_index = NextTextureIndex();
 	auto texture_index = pic->GetTextureID();
@@ -696,14 +696,11 @@ int CD3DRenderer::AddTextureResource(string name, ID3DShaderResourceView* pSRVie
 
 		D3D11_TEXTURE2D_DESC desc;
 		pTexture2D->GetDesc(&desc);
-		auto d                   = CD3D11_TEXTURE2D_DESC(desc);
-		pic                      = new STexPic(d, texture_index, name.c_str());
-		//pic->m_Desc	  = CD3D11_TEXTURE2D_DESC(desc);
-		//pic->m_Id	  = (texture_index);
-		//pic->m_Name	  = (name);
-		//pic->m_Loaded = (true);
+		auto d = CD3D11_TEXTURE2D_DESC(desc);
 
-		m_TexPics[texture_index] = *pic;
+		auto  pic_desc = static_cast<D3D11_TEXTURE2D_DESC*>(*pic.GetAddressOf());
+		memcpy(pic_desc, &desc, sizeof desc);
+		auto& it = m_TexPics[texture_index] = pic;
 	}
 	return texture_index;
 }
@@ -813,7 +810,7 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, ID3D11ShaderRe
 	Legacy::Vec2 uv_pos	 = Legacy::Vec2(x, y) / screen_size;
 	Legacy::Vec2 uv_size = Legacy::Vec2(w, h) / screen_size;
 #else
-	Legacy::Vec2 uv_pos  = Legacy::Vec2(s0, t0);
+	Legacy::Vec2 uv_pos = Legacy::Vec2(s0, t0);
 	Legacy::Vec2 uv_size = Legacy::Vec2(s1, t1);
 #endif
 
@@ -849,7 +846,7 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, ID3D11ShaderRe
 
 	auto vertex_cnt = 6;
 	// Activate corresponding render state
-	auto VB = CreateBuffer(vertex_cnt, VERTEX_FORMAT_P3F_C4B_T2F, "Font", false);
+	auto VB         = CreateBuffer(vertex_cnt, VERTEX_FORMAT_P3F_C4B_T2F, "Font", false);
 
 	// Render glyph texture over quad
 	// Update content of VBO memory

@@ -277,7 +277,7 @@ bool CGameMods::ParseModDescription(const char* szFolder, SGameModDescription* p
 	}
 
 	char* pBuffer;
-	pBuffer = new char[nSize + 1];
+	pBuffer = DEBUG_NEW char[nSize + 1];
 	if (pIPak->FRead(pBuffer, nSize, 1, pFile) == 0)
 	{
 		delete[] pBuffer;
@@ -288,7 +288,7 @@ bool CGameMods::ParseModDescription(const char* szFolder, SGameModDescription* p
 	pBuffer[nSize]    = 0; // null terminate the string
 
 	// extract info
-	char* pBufferTemp = new char[nSize + 1];
+	char* pBufferTemp = DEBUG_NEW char[nSize + 1];
 
 	if (GetValue("_Title_", pBuffer, pBufferTemp))
 		pMod->sTitle = string(pBufferTemp);
@@ -339,7 +339,7 @@ void CGameMods::ScanMods()
 			if (stricmp(c_file.name, THISGAME) == 0)
 				continue;
 
-			SGameModDescription* pGameMod = new SGameModDescription;
+			SGameModDescription* pGameMod = DEBUG_NEW SGameModDescription;
 
 			pGameMod->sName               = c_file.name;
 			pGameMod->sFolder             = string("Mods/") + c_file.name;

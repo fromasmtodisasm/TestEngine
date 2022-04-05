@@ -261,7 +261,7 @@ void CWindowsConsole::OnInit(ISystem* pSystem)
 
 		DrawCommand();
 
-		m_pInputThread = new CWindowsConsoleInputThread(*this);
+		m_pInputThread = DEBUG_NEW CWindowsConsoleInputThread(*this);
 
 	#if 0
 		if (!gEnv->pThreadManager->SpawnThread(m_pInputThread, "WindowsConsoleInput"))

@@ -600,7 +600,7 @@ bool CSDLPadManager::AddGamePad(int deviceIndex)
 	}
 	else
 	{
-		CSDLPad* pPad = new CSDLPad(m_rLinuxInput, deviceIndex);
+		CSDLPad* pPad = DEBUG_NEW CSDLPad(m_rLinuxInput, deviceIndex);
 		if (!pPad->Init())
 		{
 			GetISystem()->GetILog()->LogError("CSDLPadManager - Failed to init Gamepad [%d]", deviceIndex);

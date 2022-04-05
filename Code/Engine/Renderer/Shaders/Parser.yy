@@ -10,7 +10,6 @@
 %define parse.assert
 
 %code requires {
-	#undef new
     #include <string>
 #ifdef VULKAN_SUPPORT
     #include <vulkan/vulkan.h>

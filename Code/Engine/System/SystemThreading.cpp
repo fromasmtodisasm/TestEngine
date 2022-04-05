@@ -67,7 +67,7 @@ bool CThreadManager::SpawnThreadImpl(IThread* pThreadTask, const char* sThreadNa
 	}
 
 	// Init thread meta data
-	SThreadMetaData* pThreadMetaData = new SThreadMetaData();
+	SThreadMetaData* pThreadMetaData = DEBUG_NEW SThreadMetaData();
 	pThreadMetaData->m_pThreadTask   = pThreadTask;
 	pThreadMetaData->m_pThreadMngr   = this;
 	pThreadMetaData->m_threadName    = sThreadName;

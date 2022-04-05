@@ -360,7 +360,7 @@ bool FreeTypeFont::Init(const char* font, unsigned int w, unsigned int h)
 		m_Shader = (CShader*)Env::Renderer()->Sh_Load("auxgeom.Font", 0, 0);
 	}
 
-	m_IB = new SVertexStream;
+	m_IB = DEBUG_NEW SVertexStream;
 	Env::Renderer()->CreateIndexBuffer(m_IB, indices, sizeof(indices));
 	static bool UB_created         = false;
 
@@ -445,6 +445,7 @@ FreeTypeFont::~FreeTypeFont()
 	FT_Done_FreeType(ft);
 	#endif
 	Env::Renderer()->ReleaseIndexBuffer(m_IB);
+	SAFE_DELETE(m_IB);
 	Env::Renderer()->ReleaseBuffer(m_VB);
 }
 

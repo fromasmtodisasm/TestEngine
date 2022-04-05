@@ -131,7 +131,7 @@ CVertexBuffer* CBufferManager::Create(int vertexcount, int vertexformat, const c
 {
 	bDynamic = true;
 	assert(vertexformat >= VERTEX_FORMAT_P3F && vertexformat < VERTEX_FORMAT_NUMS);
-	auto           buffer     = new CVertexBuffer;
+	auto           buffer     = DEBUG_NEW CVertexBuffer;
 	SVertexStream& stream     = buffer->m_VS[VSF_GENERAL];
 	buffer->m_VS[VSF_GENERAL] = stream;
 	stream.m_bDynamic         = bDynamic;
@@ -192,7 +192,8 @@ void CBufferManager::Create(SVertexStream* dest, const void* src, int indexcount
 	assert(dest != nullptr);
 	assert(src != nullptr);
 
-	auto stream            = new SVertexStream;
+	SVertexStream _stream     ;
+	SVertexStream* stream      = &_stream;
 	stream->m_bDynamic     = false;
 	stream->m_nBufOffset   = 0;
 	stream->m_nItems       = indexcount;

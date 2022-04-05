@@ -33,7 +33,7 @@ CommandLineToArgvA(
 	BOOLEAN in_TEXT;
 	BOOLEAN in_SPACE;
 
-	PCHAR   szFileName = new CHAR[MAX_PATH + 1];
+	PCHAR   szFileName = DEBUG_NEW CHAR[MAX_PATH + 1];
 	GetModuleFileName(NULL, szFileName, MAX_PATH + 1);
 
 	len = strlen(CmdLine) + strlen(szFileName);

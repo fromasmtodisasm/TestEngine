@@ -1052,7 +1052,7 @@ UIListItem* CUIListView::GetItem(const wstring& szText, CUIListItemItor* pItemIt
 //////////////////////////////////////////////////////////////////////
 int CUIListView::AddItem(const wstring& szText)
 {
-	UIListItem*   pItem = new UIListItem;
+	UIListItem*   pItem = DEBUG_NEW UIListItem;
 
 	UIListSubItem pSubItem;
 
@@ -1089,7 +1089,7 @@ int CUIListView::AddItem(const wstring& szText)
 //////////////////////////////////////////////////////////////////////
 int CUIListView::AddItem(const std::vector<wstring>& vszText)
 {
-	UIListItem*   pItem = new UIListItem;
+	UIListItem*   pItem = DEBUG_NEW UIListItem;
 
 	UIListSubItem pSubItem;
 
@@ -1143,7 +1143,7 @@ int CUIListView::InsertItem(int iPosition, const wstring& szText)
 		return 0;
 	}
 
-	UIListItem*   pItem = new UIListItem;
+	UIListItem*   pItem = DEBUG_NEW UIListItem;
 
 	UIListSubItem pSubItem;
 
@@ -1185,7 +1185,7 @@ int CUIListView::InsertItem(int iPosition, const std::vector<wstring>& vszText)
 		return 0;
 	}
 
-	UIListItem*   pItem = new UIListItem;
+	UIListItem*   pItem = DEBUG_NEW UIListItem;
 
 	UIListSubItem pSubItem;
 

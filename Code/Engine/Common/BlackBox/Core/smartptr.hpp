@@ -53,6 +53,13 @@ public:
 		if (p)
 			p->AddRef();
 	}
+
+	_smart_ptr(_smart_ptr&& p_) noexcept
+	{
+		p = p_.p;
+		p_.p = nullptr;
+	}
+
 	~_smart_ptr()
 	{
 		if (p)

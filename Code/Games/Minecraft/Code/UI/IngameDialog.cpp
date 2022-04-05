@@ -170,8 +170,8 @@ int CIngameDialogMgr::AddDialog(ISystem* pSystem, int nFillId, const char* pszFo
 	if (nFillId < 0)
 		nFillId = m_nDefaultFillId;
 	// create dialog and put in list
-	SIGDId* pIGDId  = new SIGDId();
-	pIGDId->pDialog = new CIngameDialog();
+	SIGDId* pIGDId  = DEBUG_NEW SIGDId();
+	pIGDId->pDialog = DEBUG_NEW CIngameDialog();
 	pIGDId->nId     = m_nNextId++;
 	pIGDId->pDialog->Init(this, pIGDId->nId, pSystem, nFillId, sFontName.c_str(), sEffectName.c_str(), nSize, sText, swText, fTimeout);
 	m_lstDialogs.push_back(pIGDId);

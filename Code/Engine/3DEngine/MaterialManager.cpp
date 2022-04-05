@@ -26,7 +26,7 @@ MaterialManager* MaterialManager::instance()
 {
   if (manager == nullptr)
   {
-    manager = new MaterialManager(GetISystem());
+    manager = DEBUG_NEW MaterialManager(GetISystem());
   }
   return manager;
 }
@@ -34,7 +34,7 @@ MaterialManager* MaterialManager::instance()
 bool MaterialManager::init(ISystem* pSystem)
 {
   if (manager == nullptr)
-    manager = new MaterialManager(pSystem);
+    manager = DEBUG_NEW MaterialManager(pSystem);
   return manager != nullptr;
 }
 
@@ -76,7 +76,7 @@ bool MaterialManager::init(std::string materialLib)
   if (status)
   {
     /*
-    defaultMaterial = new Material();
+    defaultMaterial = DEBUG_NEW Material();
     defaultMaterial->diffuse = TextureManager::instance()->getTexture("check.jpg");
     defaultMaterial->program = defaultProgram;
     */
@@ -140,7 +140,7 @@ void MaterialManager::getShaderAttributes(tinyxml2::XMLElement* shader, ProgramD
 
 bool MaterialManager::loadMaterial(XMLElement* material)
 {
-  Material* result = new Material();
+  Material* result = DEBUG_NEW Material();
 
   const char* materialName = nullptr;
   isSkyBox = false;

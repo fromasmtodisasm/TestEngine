@@ -199,7 +199,7 @@ short CryGetAsyncKeyState(int vKey)
 //////////////////////////////////////////////////////////////////////////
 void* CryCreateCriticalSection()
 {
-	CRITICAL_SECTION* pCS = new CRITICAL_SECTION;
+	CRITICAL_SECTION* pCS = DEBUG_NEW CRITICAL_SECTION;
 	InitializeCriticalSection(pCS);
 	return pCS;
 }

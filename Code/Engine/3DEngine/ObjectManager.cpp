@@ -20,7 +20,7 @@ IStatObj* CObjectManager::LoadStatObj(const char* szFileName, const char* szGeom
 			CIndexedMesh im;
 			if (im.LoadCGF(szFileName, szGeomName))
 			{
-				obj                                 = new CStatObj(im);
+				obj                                 = DEBUG_NEW CStatObj(im);
 				m_nameToObjectMap[AdjastedFileName] = obj;
 				obj->SetBBoxMin(obj->m_IndexedMesh.m_vBoxMin);
 				obj->SetBBoxMax(obj->m_IndexedMesh.m_vBoxMax);

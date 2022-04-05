@@ -951,7 +951,7 @@ bool CScriptObject::AddSetGetHandlers(SCRIPT_FUNCTION pSetThunk, SCRIPT_FUNCTION
 
 	if (!lua_istable(L, -1))
 		return false;
-	CScriptObject* metaObject = new CScriptObject;
+	CScriptObject* metaObject = DEBUG_NEW CScriptObject;
 	metaObject->Attach();
 
 	metaObject->AddFunction("__newindex", pSetThunk, -1);

@@ -228,6 +228,11 @@ bool CCryPak::OpenPackCommon(const char* szBindRoot, const char* szFullPath, uns
 
 	for (auto& entry : ar)
 	{
+		auto name       = string_view((char*)ar.header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
+		if (name.find("loadscreen") != string::npos)
+		{
+			printf("here");
+		}
 		File file{create_file(entry, ar.header)};
 
 		if (auto it = m_Files.find(file.name); it != m_Files.end()) printf("Eroror, file %s already mapped\n", file.name.data());
