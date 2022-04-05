@@ -4,6 +4,7 @@
 #include <BlackBox/System/ConsoleRegistration.h>
 
 #include "Common/Include_HLSL_CPP_Shared.h"
+#include <BlackBox/Renderer/IFont.hpp>
 
 const UINT NUM_MAT = 4;
 
@@ -207,7 +208,7 @@ CRenderAuxGeom::CRenderAuxGeom()
 	m_BoundingBox = Env::Renderer()->CreateBuffer(36, BB_VERTEX_FORMAT, "BoundingBox", false);
 	///////////////////////////////////////////////////////////////////////////////
 	m_HardwareVB  = Env::Renderer()->CreateBuffer(INIT_VB_SIZE, VERTEX_FORMAT_P3F_C4B_T2F, "AuxGeom", true);
-	if (!(m_AuxGeomShader = Env::Renderer()->Sh_Load("auxgeom", 0)))
+	if (!(m_AuxGeomShader = Env::Renderer()->Sh_Load("auxgeom.AuxGeometry", 0)))
 	{
 		Env::Log()->Log("Error of loading auxgeom shader");
 	}
@@ -338,7 +339,7 @@ void CRenderAuxGeom::DrawAABBs()
 		// V_RETURN(m_BBVerts.size() > 0 && !m_Meshes.size());
 		// m_BoundingBoxShader->Bind();
 
-		::GetDeviceContext()->PSSetSamplers(0, 1, &GlobalResources::LinearSampler);
+		::GetDeviceContext()->PSSetSamplers(0, 1, CGlobalResources::Get().LinearSampler.GetAddressOf());
 		::GetDeviceContext()->OMSetDepthStencilState(CRenderAuxGeom::m_pDSStateZPrePass, 0);
 		::GetDeviceContext()->RSSetState(g_pRasterizerStateWire);
 		::GetDeviceContext()->OMSetBlendState(m_pBlendState, 0, 0xffffffff);
@@ -465,6 +466,33 @@ void CRenderAuxGeom::AddPrimitive(SAuxVertex*& pVertices, uint32 numVertices, Re
 	AuxVertexBuffer::size_type oldVBSize(auxVertexBuffer.size());
 	auxVertexBuffer.resize(oldVBSize + numVertices);
 	pVertices = &auxVertexBuffer[oldVBSize];
+}
+#include <IFont.h>
+
+void CRenderAuxGeom::RenderTextQueued(Vec3 pos, const SDrawTextInfo& ti, const char* text)
+{
+	if (!Env::Get()->IsDedicated())
+	{
+		auto    colf = ColorF(ti.color[0], ti.color[1], ti.color[2], ti.color[3]);
+		ColorB  col(colf);
+		IFFont* pFont = ti.font;
+
+		if (!pFont)
+		{
+			if (Env::System() && Env::System()->GetICryFont())
+				pFont = Env::System()->GetICryFont()->GetFont("default");
+
+			if (!pFont)
+				return;
+		}
+
+		#if 0
+		m_rawData->m_TextMessages.PushEntry_Text(pos, col, pFont, ti.scale, ti.flags, text);
+		#endif
+		//pFont->RenderText(text, pos.x, pos.y, 1, (float*)ti.color);
+		pFont->SetColor(&colf[0]);
+		pFont->DrawString(pos.x, pos.y, text);
+	}
 }
 
 void CRenderAuxGeom::DrawMesh(CVertexBuffer* pVertexBuffer, SVertexStream* pIndices, glm::mat4 transform, int texture)

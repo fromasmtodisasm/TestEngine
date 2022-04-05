@@ -191,6 +191,7 @@ add_sources(
 		System/IProjectManager.hpp
 		System/IStreamEngine.h
 		System/ISystem.hpp
+		System/IResourceCollector.h
 		System/ITextModeConsole.h
 		System/ITimer.hpp
 		System/IValidator.hpp

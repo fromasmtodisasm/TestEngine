@@ -168,7 +168,13 @@ IWindow* CRenderer::Init(int x, int y, int width, int height, unsigned int cbpp,
 		gRenDev = this;
 	m_pSystem = Env::System();
 	InitCVars();
+	#if 0
 	IWindow* result = m_Window = window;
+	#else
+	std::unique_ptr<IWindow> result;
+	m_Window = window;
+	result.reset(m_Window);
+	#endif
 	bInFullScreen              = fullscreen;
 	if (window == nullptr)
 		return nullptr;
@@ -195,11 +201,7 @@ IWindow* CRenderer::Init(int x, int y, int width, int height, unsigned int cbpp,
 	if (!InitOverride())
 		return false;
 	CryLog("Init override after");
-#if 0
-	g_FxParser = &s_FxParser;
-#else
 	g_FxParser      = new FxParser;
-#endif
 #if 0
 	if (!InitResourceManagers())
 		return nullptr;
@@ -266,15 +268,11 @@ IWindow* CRenderer::Init(int x, int y, int width, int height, unsigned int cbpp,
 	}
 	///////////////////////////////////////////////////////
 	using color = Legacy::Vec3;
-	using pos = Legacy::Vec3;
-	//m_LigthsList = {
-	//    {color{}, pos{}},
-	//    {color{}, pos{}},
-	//    {color{}, pos{}},
-	//    {color{}, pos{}},
-	//};
+	using pos   = Legacy::Vec3;
 
-	return result;
+	if (!CGlobalResources::Get().Valid())
+		return nullptr;
+	return result.release();
 }
 
 int CRenderer::EnumDisplayFormats(SDispFormat* formats)
@@ -404,11 +402,14 @@ void CRenderer::CreateQuad()
 
 void CRenderer::Draw2dText(float posX, float posY, const char* szText, const SDrawTextInfo& info)
 {
+	assert(0);
+	#if 0
 	if (info.font)
 	{
 		info.font->RenderText(szText, posX, posY, 1.f, (float*)info.color);
 		info.font->Submit();
 	}
+	#endif
 }
 
 void CRenderer::DrawImage(float xpos, float ypos, float w, float h, uint64 texture_id, float s0, float t0, float s1, float t1, float r, float g, float b, float a)
@@ -530,7 +531,8 @@ int CRenderer::GetFrameID(bool bIncludeRecursiveCalls /* = true*/)
 
 void CRenderer::PrintLine(const char* szText, SDrawTextInfo& info)
 {
-	Draw2dText(info.font->GetXPos(), info.font->GetYPos(), szText, info);
+	assert(0);
+	//Draw2dText(info.font->GetXPos(), info.font->GetYPos(), szText, info);
 }
 
 void CRenderer::SetCamera(const CCamera& cam)
@@ -571,12 +573,9 @@ IFont* CreateIFont()
 
 IFont* CRenderer::GetIFont()
 {
-	_CrtCheckMemory();
 	m_Fonts.push_back(CreateIFont());
-	_CrtCheckMemory();
 	FreeTypeFont* font = static_cast<FreeTypeFont*>(m_Fonts.back());
 	auto          map  = font->Characters;
-	map.insert(std::pair<char, FreeTypeFont::Character>(41, {}));
 	return m_Fonts.back();
 }
 

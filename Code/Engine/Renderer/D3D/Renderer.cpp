@@ -10,24 +10,8 @@
 
 #define EDITOR (Env::Get()->IsEditing())
 // Globals
-ID3DShaderResourceView* GlobalResources::FontAtlasRV{};
-ID3D11SamplerState*     GlobalResources::LinearSampler{};
-
-ID3DShaderResourceView* GlobalResources::WiteTextureRV;
-ID3DShaderResourceView* GlobalResources::GreyTextureRV;
-
-static CD3DRenderer     _gcpRendD3D;
-CD3DRenderer*           gcpRendD3D = _gcpRendD3D;
-
-//ID3D10EffectTechnique* GlobalResources::BoxTechnique;
-//ID3D10EffectTechnique* GlobalResources::MeshTechnique;
-
-ID3DInputLayout*        GlobalResources::VERTEX_FORMAT_P3F_C4B_T2F_Layout;
-
-ID3D11BlendState*       GlobalResources::FontBlendState;
-
-_smart_ptr<CShader>     GlobalResources::TexturedQuadShader;
-_smart_ptr<CShader>     GlobalResources::SpriteShader;
+static CD3DRenderer _gcpRendD3D;
+CD3DRenderer*       gcpRendD3D = _gcpRendD3D;
 
 namespace util
 {
@@ -231,7 +215,7 @@ void CD3DRenderer::Update(void)
 			::GetDeviceContext()->OMSetDepthStencilState(m_pDepthStencilState.Get(), 0);
 			{
 				{
-					m_Device->Get<ID3D11DeviceContext>()->OMSetBlendState(GlobalResources::FontBlendState, 0, 0xffffffff);
+					m_Device->Get<ID3D11DeviceContext>()->OMSetBlendState(CGlobalResources::Get().FontBlendState.Get(), 0, 0xffffffff);
 					D3DPERF_BeginEvent(D3DC_Blue, L"DrawConsole");
 					if (IConsole* pConsole = Env::Console())
 						pConsole->Draw();
@@ -863,17 +847,7 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, ID3D11ShaderRe
 	    P3F_T2F{Legacy::Vec3(projection * pA), UCol((cur_c)), tA},
 	};
 
-	if (!GlobalResources::TexturedQuadShader)
-	{
-		GlobalResources::TexturedQuadShader = (CShader*)Env::Renderer()->Sh_Load("sprite.TexturedQuad", 0, 0);
-		//auto GrayScaleShader = (CShader*)Env::Renderer()->Sh_Load("PostProcess.GrayScale", 0, 0);
-	}
-
 	auto vertex_cnt = 6;
-	if (!GlobalResources::TexturedQuadShader || !vertex_cnt)
-	{
-		return;
-	}
 	// Activate corresponding render state
 	auto VB = CreateBuffer(vertex_cnt, VERTEX_FORMAT_P3F_C4B_T2F, "Font", false);
 
@@ -881,14 +855,14 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, ID3D11ShaderRe
 	// Update content of VBO memory
 	UpdateBuffer(VB, vertices.data(), vertex_cnt, false);
 
-	GlobalResources::TexturedQuadShader->Bind();
-	m_Device->Get<ID3D11DeviceContext>()->PSSetSamplers(0, 1, &GlobalResources::LinearSampler);
+	CGlobalResources::Get().TexturedQuadShader->Bind();
+	m_Device->Get<ID3D11DeviceContext>()->PSSetSamplers(0, 1, CGlobalResources::Get().LinearSampler.GetAddressOf());
 	m_Device->Get<ID3D11DeviceContext>()->PSSetShaderResources(0, 1, &view);
 #if 0
 	m_Device->Get<ID3D11DeviceContext>()->IASetInputLayout(GlobalResources::VERTEX_FORMAT_P3F_C4B_T2F_Layout);
 #endif
 	m_Device->Get<ID3D11DeviceContext>()->RSSetState(m_pRasterizerState.Get());
-	m_Device->Get<ID3D11DeviceContext>()->OMSetBlendState(GlobalResources::FontBlendState, 0, 0xffffffff);
+	m_Device->Get<ID3D11DeviceContext>()->OMSetBlendState(CGlobalResources::Get().FontBlendState.Get(), 0, 0xffffffff);
 	//m_pd3dDevice->OMSetDepthStencilState(m_pDSState, 0);
 
 	Env::Renderer()->DrawBuffer(VB, 0, 0, 0, static_cast<int>(RenderPrimitive::TRIANGLES), 0, vertex_cnt);

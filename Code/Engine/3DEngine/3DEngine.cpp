@@ -13,6 +13,9 @@
 
 #include "Terrain/Terrain.h"
 
+#include <IFont.h> // legacy!!!
+#include <BlackBox/Utils/Text.hpp>
+
 void loadModel(string path);
 C3DEngine::C3DEngine(ISystem* pSystem, const char* szInterfaceVersion)
     : m_pSystem(pSystem)
@@ -674,20 +677,23 @@ const char* C3DEngine::GetLevelFilePath(const char* szFileName)
 	return nullptr;
 }
 
-inline void PrintRightAlignedText(float posY, const char* szText, IFont* pFont = nullptr)
-{
-	SDrawTextInfo info;
-	float         rightMargin = 20;
-	info.font                 = pFont;
-#if 0
-		auto& color = info.color;
-		color[0]	= 1.0; //green
-		color[1]	= 1.0;
-		color[2]	= 1.0; //alpha
-		color[3]	= 0.0; //red
-#endif
-	Env::Renderer()->Draw2dText(Env::Renderer()->GetWidth() - info.font->TextWidth(szText) - rightMargin, posY, szText, info);
-}
+//inline void PrintRightAlignedText(float posY, const char* szText, IFont* pFont = nullptr)
+//{
+//	using Legacy::Vec3;
+//	SDrawTextInfo info;
+//	float         rightMargin = 20;
+//	info.font                 = pFont;
+//#if 0
+//		auto& color = info.color;
+//		color[0]	= 1.0; //green
+//		color[1]	= 1.0;
+//		color[2]	= 1.0; //alpha
+//		color[3]	= 0.0; //red
+//#endif
+//	auto x = Env::Renderer()->GetWidth() - info.font->TextWidth(szText) - rightMargin;
+//	IRenderAuxText::DrawText(Vec3(x, posY, 0), info, szText);
+//	//Env::Renderer()->Draw2dText(, posY, szText, info);
+//}
 
 void C3DEngine::DisplayInfo(float& fTextPosX, float& fTextPosY, float& fTextStepY)
 {
@@ -697,12 +703,8 @@ void C3DEngine::DisplayInfo(float& fTextPosX, float& fTextPosY, float& fTextStep
 	auto  dy = fTextStepY;
 	dy       = 15;
 
-	static IFont* pFont{};
-	if (!pFont)
-	{
-		pFont = Env::Renderer()->GetIFont();
-		pFont->Init("VeraMono.ttf", 16, 16);
-	}
+	static auto* pFont = Env::CryFont()->GetFont("default");
+
 	auto PRINT = [=, &py](float y, const char* szFormat, ...)
 	{
 		char    temp[256];

@@ -14,13 +14,6 @@
 	#include <BlackBox\System\ConsoleRegistration.h>
 	#include <stb_image_write.h>
 
-bool                     FreeTypeFont::first_init = true;
-ID3D11SamplerState*      FreeTypeFont::m_Sampler;
-ID3D11InputLayout*       FreeTypeFont::m_pFontLayout;
-ID3D11RasterizerState*   FreeTypeFont::m_pRasterizerState;
-ID3D11DepthStencilState* FreeTypeFont::m_pDSState;
-ID3D11BlendState*        FreeTypeFont::m_pBlendState;
-
 struct ColorTable
 {
 	ColorB color;
@@ -274,48 +267,12 @@ bool FreeTypeFont::Init(const char* font, unsigned int w, unsigned int h)
 
 	glm::uvec2 t_size(atlas_size);
 	glm::uvec2 cur_pos(0, 0);
-	if (first_init)
+	//if (first_init)
 	{
-		D3D11_SAMPLER_DESC desc;
-		ZeroStruct(desc);
-		desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		desc.Filter   = D3D11_FILTER(D3D11_FILTER_ANISOTROPIC | D3D11_FILTER_MIN_MAG_MIP_LINEAR);
-		auto hr       = GetDevice()->CreateSamplerState(&desc, &m_Sampler);
-		if (FAILED(hr))
-		{
-			CryError("Error create sampler for font");
-			return false;
-		}
-		{
-	#if 0
-			//VERTEX_FORMAT_P3F_C4B_T2F
-			D3D11_INPUT_ELEMENT_DESC layout[] = {
-				{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-				{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-				//{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
-				{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0}
-			};
-			UINT numElements = sizeof(layout) / sizeof(layout[0]);
-			auto hr = GetDevice()->CreateInputLayout(
-				layout,
-				numElements,
-				shader->m_Shaders[IShader::Type::E_VERTEX]->m_Bytecode->GetBufferPointer(),
-				shader->m_Shaders[IShader::Type::E_VERTEX]->m_Bytecode->GetBufferSize(),
-				&m_pFontLayout);
-			if (FAILED(hr))
-			{
-				CryError("Error create input layout for font");
-				return false;
-			}
-			GlobalResources::VERTEX_FORMAT_P3F_C4B_T2F_Layout = m_pFontLayout;
-	#endif
-		}
 		CreateRasterState();
 		CreateDSState();
 		CreateBlendState();
-		first_init = false;
+		//first_init = false;
 	}
 
 	D3D10_MAPPED_TEXTURE2D mappedTex;
@@ -350,7 +307,7 @@ bool FreeTypeFont::Init(const char* font, unsigned int w, unsigned int h)
 			srd.pSysMem     = image.data();
 			srd.SysMemPitch = mappedTex.RowPitch;
 
-			GetDevice()->CreateTexture2D(&desc, &srd, &m_pTexture);
+			GetDevice()->CreateTexture2D(&desc, &srd, m_pTexture.GetAddressOf());
 		}
 
 		struct Texel
@@ -359,93 +316,6 @@ bool FreeTypeFont::Init(const char* font, unsigned int w, unsigned int h)
 			//DXGI_FORMAT Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		};
 
-		{
-			std::vector<Texel::Type> image(16 * 16);
-			D3D11_TEXTURE2D_DESC     desc;
-			ZeroMemory(&desc, sizeof(desc));
-			desc.Width            = 16;
-			desc.Height           = 16;
-			desc.MipLevels        = 1;
-			desc.ArraySize        = 1;
-			desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
-			desc.SampleDesc.Count = 1;
-			desc.Usage            = D3D11_USAGE_DEFAULT;
-			desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
-			desc.CPUAccessFlags   = 0; //D3D11_CPU_ACCESS_WRITE;
-
-			D3D11_MAPPED_SUBRESOURCE mappedTex;
-			mappedTex.RowPitch = 16 * sizeof(Texel::Type);
-
-			for (auto& texel : image)
-			{
-				texel = Texel::Type(1.f, 1.f, 1.f, 1.f);
-			}
-
-			D3D11_SUBRESOURCE_DATA srd;
-			srd.pSysMem     = image.data();
-			srd.SysMemPitch = mappedTex.RowPitch;
-
-			GetDevice()->CreateTexture2D(&desc, &srd, &m_pWightTexture);
-			{
-				// SEND TO SHADER
-				D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-				D3D11_TEXTURE2D_DESC            desc;
-				m_pWightTexture->GetDesc(&desc);
-				srvDesc.Format                    = DXGI_FORMAT_R32G32B32A32_FLOAT;
-				srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
-				srvDesc.Texture2D.MipLevels       = desc.MipLevels;
-				srvDesc.Texture2D.MostDetailedMip = desc.MipLevels - 1;
-				auto hr                           = GetDevice()->CreateShaderResourceView(m_pWightTexture, &srvDesc, &GlobalResources::WiteTextureRV);
-				if (FAILED(hr))
-				{
-					CryError("Failed to create texture view");
-				}
-			}
-		}
-		{
-			std::vector<Texel::Type> image(16 * 16);
-			D3D11_TEXTURE2D_DESC     desc;
-			ZeroMemory(&desc, sizeof(desc));
-			desc.Width            = 16;
-			desc.Height           = 16;
-			desc.MipLevels        = 1;
-			desc.ArraySize        = 1;
-			desc.Format           = DXGI_FORMAT_R32G32B32A32_FLOAT;
-			desc.SampleDesc.Count = 1;
-			desc.Usage            = D3D11_USAGE_DEFAULT;
-			desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
-			desc.CPUAccessFlags   = 0; //D3D11_CPU_ACCESS_WRITE;
-
-			D3D10_MAPPED_TEXTURE2D mappedTex;
-			mappedTex.RowPitch = 16 * sizeof(Texel::Type);
-
-			for (auto& texel : image)
-			{
-				texel   = Texel::Type(1.f, 1.f, 1.f, 1.f) * 0.3f;
-				texel.a = 1.f;
-			}
-
-			D3D11_SUBRESOURCE_DATA srd;
-			srd.pSysMem     = image.data();
-			srd.SysMemPitch = mappedTex.RowPitch;
-
-			GetDevice()->CreateTexture2D(&desc, &srd, &m_pWightTexture);
-			{
-				// SEND TO SHADER
-				D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-				D3D11_TEXTURE2D_DESC            desc;
-				m_pWightTexture->GetDesc(&desc);
-				srvDesc.Format                    = DXGI_FORMAT_R32G32B32A32_FLOAT;
-				srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
-				srvDesc.Texture2D.MipLevels       = desc.MipLevels;
-				srvDesc.Texture2D.MostDetailedMip = desc.MipLevels - 1;
-				auto hr                           = GetDevice()->CreateShaderResourceView(m_pWightTexture, &srvDesc, &GlobalResources::GreyTextureRV);
-				if (FAILED(hr))
-				{
-					CryError("Failed to create texture view");
-				}
-			}
-		}
 		// SEND TO SHADER
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		D3D11_TEXTURE2D_DESC            desc;
@@ -454,13 +324,10 @@ bool FreeTypeFont::Init(const char* font, unsigned int w, unsigned int h)
 		srvDesc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels       = desc.MipLevels;
 		srvDesc.Texture2D.MostDetailedMip = desc.MipLevels - 1;
-		auto hr                           = GetDevice()->CreateShaderResourceView(m_pTexture, &srvDesc, &m_pTextureRV);
+		auto hr                           = GetDevice()->CreateShaderResourceView(m_pTexture.Get(), &srvDesc, m_pTextureRV.GetAddressOf());
 		if (FAILED(hr))
 		{
 			CryError("Failed to create texture view");
-		}
-		//GetDevice()->PSSetShaderResources(0, 1, &m_pTextureRV);
-		{
 		}
 	}
 
@@ -485,35 +352,20 @@ bool FreeTypeFont::Init(const char* font, unsigned int w, unsigned int h)
 	    1, 2, 3  // Second Triangle
 	};
 
-	#if 1
 	m_VB = Env::Renderer()->CreateBuffer(6, VERTEX_FORMAT_P3F_C4B_T2F, "Font", false);
-	#else
-	m_VB = Env::Renderer()->CreateBuffer(6, VERTEX_FORMAT_P3F_T2F, "Font", false);
-	#endif
-	#if 0
-    Legacy::Vec3 vertices[] =
-    {
-        Legacy::Vec3( 0.0f, 0.5f, 0.5f ),
-        Legacy::Vec3( 0.5f, -0.5f, 0.5f ),
-        Legacy::Vec3( -0.5f, -0.5f, 0.5f ),
-    };
-	Env::Renderer()->UpdateBuffer(m_VB, vertices, 3, false);
-	#endif
 
-	_smart_ptr<CShader> shader;
-	if (!shader)
+	m_Shader;
+	if (!m_Shader)
 	{
-		shader = GlobalResources::SpriteShader = (CShader*)Env::Renderer()->Sh_Load("sprite.Font", 0, 0);
+		m_Shader = (CShader*)Env::Renderer()->Sh_Load("auxgeom.Font", 0, 0);
 	}
 
 	m_IB = new SVertexStream;
 	Env::Renderer()->CreateIndexBuffer(m_IB, indices, sizeof(indices));
 	static bool UB_created         = false;
 
-	first_init                     = false;
+	//first_init                     = false;
 
-	GlobalResources::FontAtlasRV   = m_pTextureRV;
-	GlobalResources::LinearSampler = m_Sampler;
 	return true;
 }
 
@@ -555,7 +407,7 @@ void RegisterColorTable()
 void FreeTypeFont::Submit()
 {
 	auto vertex_cnt = 6 * m_CharBuffer.size();
-	if (!GlobalResources::SpriteShader || !vertex_cnt)
+	if (!vertex_cnt)
 	{
 		m_CharBuffer.clear();
 		return;
@@ -574,15 +426,12 @@ void FreeTypeFont::Submit()
 	// Update content of VBO memory
 	Env::Renderer()->UpdateBuffer(m_VB, m_CharBuffer.data(), vertex_cnt, false);
 
-	GlobalResources::SpriteShader->Bind();
-	GetDeviceContext()->PSSetSamplers(0, 1, &m_Sampler);
-	GetDeviceContext()->PSSetShaderResources(0, 1, &m_pTextureRV);
-	#if 0
-	GetDeviceContext()->IASetInputLayout(m_pFontLayout);
-	#endif
-	GetDeviceContext()->RSSetState(m_pRasterizerState);
-	GetDeviceContext()->OMSetBlendState(m_pBlendState, 0, 0xffffffff);
-	GetDeviceContext()->OMSetDepthStencilState(m_pDSState, 0);
+	m_Shader->Bind();
+	GetDeviceContext()->PSSetSamplers(0, 1, CGlobalResources::Get().LinearSampler.GetAddressOf());
+	GetDeviceContext()->PSSetShaderResources(0, 1, m_pTextureRV.GetAddressOf());
+	GetDeviceContext()->RSSetState(m_pRasterizerState.Get());
+	GetDeviceContext()->OMSetBlendState(CGlobalResources::Get().FontBlendState.Get(), 0, 0xffffffff);
+	GetDeviceContext()->OMSetDepthStencilState(m_pDSState.Get(), 0);
 
 	Env::Renderer()->DrawBuffer(m_VB, 0, 0, 0, static_cast<int>(RenderPrimitive::TRIANGLES), 0, vertex_cnt);
 
@@ -618,8 +467,8 @@ void FreeTypeFont::CreateRasterState()
 	rasterizerDesc.MultisampleEnable     = false;
 	rasterizerDesc.AntialiasedLineEnable = true;
 
-	GetDevice()->CreateRasterizerState(&rasterizerDesc, &m_pRasterizerState);
-	GetDeviceContext()->RSSetState(m_pRasterizerState);
+	GetDevice()->CreateRasterizerState(&rasterizerDesc, m_pRasterizerState.GetAddressOf());
+	//GetDeviceContext()->RSSetState(m_pRasterizerState);
 }
 void FreeTypeFont::CreateDSState()
 {
@@ -634,19 +483,6 @@ void FreeTypeFont::CreateDSState()
 }
 void FreeTypeFont::CreateBlendState()
 {
-	D3D11_BLEND_DESC BlendState;
-	ZeroMemory(&BlendState, sizeof(D3D11_BLEND_DESC));
-
-	BlendState.RenderTarget[0].BlendEnable           = TRUE;
-	BlendState.RenderTarget[0].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
-	BlendState.RenderTarget[0].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
-	BlendState.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
-	BlendState.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_ONE;
-	BlendState.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_ZERO;
-	BlendState.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
-	BlendState.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	GetDevice()->CreateBlendState(&BlendState, &m_pBlendState);
-	GlobalResources::FontBlendState = m_pBlendState;
 }
+
 #endif

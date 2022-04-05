@@ -37,7 +37,9 @@
 #define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
 
 struct IWindow;
+struct IResourceCollector;
 
+class CrySizerImpl;
 class CScriptObjectConsole;
 class CScriptObjectSystem;
 class CScriptObjectScript;
@@ -107,6 +109,33 @@ struct SSystemCVars
 };
 extern SSystemCVars g_cvars;
 
+struct SmallModuleInfo
+{
+	string              name;
+	CryModuleMemoryInfo memInfo;
+};
+
+struct SCryEngineStatsModuleInfo
+{
+	string              name;
+	CryModuleMemoryInfo memInfo;
+	uint32              moduleStaticSize;
+	uint32              usedInModule;
+	uint32              SizeOfCode;
+	uint32              SizeOfInitializedData;
+	uint32              SizeOfUninitializedData;
+};
+
+struct SCryEngineStatsGlobalMemInfo
+{
+	int    totalUsedInModules;
+	int    totalCodeAndStatic;
+	int    countedMemoryModules;
+	uint64 totalAllocatedInModules;
+	int    totalNumAllocsInModules;
+	std::vector<SCryEngineStatsModuleInfo> modules;
+};
+
 class CSystem;
 class CDownloadManager;
 
@@ -175,7 +204,7 @@ public:
 	}
 	IZLibDecompressor*           GetIZLibDecompressor() { return m_pIZLibDecompressor; }
 	virtual ICryCharManager*     GetIAnimationSystem() { NOT_IMPLEMENTED_V; }
-	virtual ICryFont*            GetICryFont() { return &m_Font; }
+	virtual ICryFont*            GetICryFont() { return m_env.pCryFont; }
 	virtual ICryPak*             GetIPak() override;
 	virtual IEntitySystem*       GetIEntitySystem() override;
 	virtual IFont*               GetIFont() override;
@@ -275,7 +304,22 @@ public:
 	virtual bool                    IsCVarWhitelisted(const char* szName, bool silent) const override;
 
 public:
-	void              RunMainLoop();
+	void RunMainLoop();
+	// this enumeration describes the purpose for which the statistics is gathered.
+	// if it's gathered to be dumped, then some different rules may be applied
+	enum MemStatsPurposeEnum
+	{
+		nMSP_ForDisplay,
+		nMSP_ForDump,
+		nMSP_ForCrashLog,
+		nMSP_ForBudget
+	};
+	// collects the whole memory statistics into the given sizer object
+	void              CollectMemStats(ICrySizer* pSizer, MemStatsPurposeEnum nPurpose = nMSP_ForDisplay, std::vector<SmallModuleInfo>* pStats = 0);
+	void              GetExeSizes(ICrySizer* pSizer, MemStatsPurposeEnum nPurpose = nMSP_ForDisplay);
+	//! refreshes the m_pMemStats if necessary; creates it if it's not created
+	void              TickMemStats(MemStatsPurposeEnum nPurpose = nMSP_ForDisplay, IResourceCollector* pResourceCollector = 0);
+
 	void              SleepIfNeeded();
 
 	void              InitResourceCacheFolder();
@@ -466,19 +510,12 @@ public:
 	};
 
 	template<class T>
-	void PrintMemoryUsageForName(const char* name, typename Sizer<T>::Func fn, T* This, float px, float py)
-	{
-		static char  stats[256];
-		CrySizerImpl sizer;
-		SIZER_COMPONENT_NAME(&sizer, name);
-		(This->*fn)(&sizer);
-		auto len   = sprintf(stats, "%s memory usage: %d", name, sizer.GetTotalSize());
-		stats[len] = 0;
-
-		PrintRightAlignedText(py, stats, m_pFont);
-	}
+	void PrintMemoryUsageForName(const char* name, IFFont* pFont, typename Sizer<T>::Func fn, T* This, float px, float py);
 
 	void RenderStats();
+	//////////////////////////////////////////////////////////////////////////
+	// Helper functions.
+	//////////////////////////////////////////////////////////////////////////
 #if BB_PLATFORM_WINDOWS
 	bool GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize);
 #endif
@@ -540,6 +577,11 @@ private:
 	CScriptObjectScript*                                                   m_ScriptObjectScript   = nullptr;
 	CScriptObjectRenderer*                                                 m_ScriptObjectRenderer = nullptr;
 
+	// this is the memory statistics that is retained in memory between frames
+	// in which it's not gathered
+	//CrySizerStats*               m_pMemStats;
+	CrySizerImpl*                                                          m_pSizer;
+
 public:
 	//! Pointer to the download manager
 	CDownloadManager* m_pDownloadManager;
@@ -590,9 +632,9 @@ private:
 	ICVar*               m_sysNoUpdate{};
 
 	// DLL names
-	ICVar* m_sys_dll_ai;
-	ICVar* m_sys_dll_response_system;
-	ICVar* m_sys_user_folder;
+	ICVar*               m_sys_dll_ai;
+	ICVar*               m_sys_dll_response_system;
+	ICVar*               m_sys_user_folder;
 #if !defined(_RELEASE)
 	ICVar* m_sys_resource_cache_folder;
 #endif

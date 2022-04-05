@@ -2371,7 +2371,7 @@ void CXConsole::DrawBuffer(int nScrollPos, const char* szEffect)
 {
 	if (m_pFont && m_pRenderer)
 	{
-		//const int flags = eDrawText_Monospace | eDrawText_CenterV | eDrawText_2D;
+		const int flags = eDrawText_Monospace | eDrawText_CenterV | eDrawText_2D;
 		const float fontSize   = con_font_size;
 		const float fontScale  = 0.5;
 		//const float csize = 1.16f * fontSize;
@@ -2384,6 +2384,7 @@ void CXConsole::DrawBuffer(int nScrollPos, const char* szEffect)
 		//Draw the input line
 		if (m_bConsoleActive && !m_nProgressRange)
 		{
+#if 0
 			m_pFont->RenderText(
 			    ">",
 			    //xPos - fCharWidth, yPos, fontScale * 1.16f / 14, &glm::vec4(1)[0]);
@@ -2392,7 +2393,7 @@ void CXConsole::DrawBuffer(int nScrollPos, const char* szEffect)
 			    m_sInputBuffer.c_str(),
 			    //xPos, yPos, fontScale * 1.16f / 14, &glm::vec4(1)[0]);
 			    xPos, yPos, fontScale, &glm::vec4(1)[0]);
-#if 0
+#else
 			IRenderAuxText::DrawText(Legacy::Vec3(xPos - fCharWidth, yPos, 1), fontScale * 1.16f / 14, nullptr, flags, ">");
 			IRenderAuxText::DrawText(Legacy::Vec3(xPos, yPos, 1), fontScale * 1.16f / 14, nullptr, flags, m_sInputBuffer.c_str());
 #endif

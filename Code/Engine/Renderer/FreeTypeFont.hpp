@@ -67,7 +67,7 @@ public:
 
 	~FreeTypeFont();
 
-	void Release() override;
+	void                            Release() override;
 
 	FT_Library                      ft;
 	FT_Face                         face;
@@ -75,30 +75,27 @@ public:
 	uint8*                          m_FaceData;
 	size_t                          m_FaceDataSize;
 
-	CVertexBuffer*                  m_VB            = nullptr;
-	SVertexStream*                  m_IB            = nullptr;
-	ID3DTexture2D*                  m_pTexture      = NULL;
+	CVertexBuffer*                  m_VB = nullptr;
+	SVertexStream*                  m_IB = nullptr;
+	ComPtr<ID3DTexture2D>           m_pTexture;
 
-	ID3DTexture2D*                  m_pWightTexture = NULL;
-	ID3DTexture2D*                  m_pGreyTexture  = NULL;
+	ComPtr<ID3DTexture2D>           m_pWightTexture = NULL;
+	ComPtr<ID3DTexture2D>           m_pGreyTexture  = NULL;
 
-	ID3DShaderResourceView*         m_pTextureRV    = NULL;
+	ComPtr<ID3DShaderResourceView>  m_pTextureRV    = NULL;
 
-	ID3DBuffer*                     m_pConstantBuffer;
+	ComPtr<ID3DBuffer>              m_pConstantBuffer;
 
-	static ID3D11SamplerState*      m_Sampler;
-	static ID3D11InputLayout*       m_pFontLayout;
-	static ID3D11RasterizerState*   m_pRasterizerState;
-	static ID3D11DepthStencilState* m_pDSState;
-	static ID3D11BlendState*        m_pBlendState;
-	static bool                     first_init;
+	ComPtr<ID3D11SamplerState>      m_Sampler;
+	ComPtr<ID3D11InputLayout>       m_pFontLayout;
+	ComPtr<ID3D11RasterizerState>   m_pRasterizerState;
+	ComPtr<ID3D11DepthStencilState> m_pDSState;
+	ComPtr<ID3D11BlendState>        m_pBlendState;
 
-	#if 1
+	_smart_ptr<CShader>             m_Shader;
+
+public:
 	std::vector<std::array<SVF_P3F_C4B_T2F, 6>> m_CharBuffer;
-	#else
-	std::vector<std::array<SVF_P3F_T2F, 6>> m_CharBuffer;
-	#endif
-
-	static bool printColorTableRegistered;
+	static bool                                 printColorTableRegistered;
 };
 #endif

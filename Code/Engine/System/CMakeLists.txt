@@ -33,6 +33,8 @@ add_sources(
 		"NullLog.cpp"
 		"RemoteConsole/RemoteConsole.cpp"
 		"System.cpp"
+		"System.hpp"
+		"System.inl"
 		"SystemCFG.cpp"
 		"SystemEventDispatcher.cpp"
 		"SystemInit.cpp"

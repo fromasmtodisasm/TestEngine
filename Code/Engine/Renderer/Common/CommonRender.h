@@ -6,26 +6,26 @@ extern CRenderer* gRenDev;
 
 class CShader;
 
-struct GlobalResources
+class CGlobalResources
 {
-	static ID3DShaderResourceView* FontAtlasRV;
+public:
+	~CGlobalResources();
+	bool                     Valid();
+	static CGlobalResources& Get()
+	{
+		static CGlobalResources s_Resources;
+		return s_Resources;
+	}
 
-	static ID3DShaderResourceView* WiteTextureRV;
-	static ID3DShaderResourceView* GreyTextureRV;
+public:
+	ComPtr<ID3D11SamplerState> LinearSampler;
+	_smart_ptr<CShader>        TexturedQuadShader;
+	ComPtr<ID3D11BlendState>   FontBlendState;
 
-	static ID3D11SamplerState*     LinearSampler;
-
-	static ID3D10EffectTechnique*  BoxTechnique;
-	static ID3D10EffectTechnique*  MeshTechnique;
-
-	static ID3DInputLayout*        VERTEX_FORMAT_P3F_C4B_T2F_Layout;
-
-	static _smart_ptr<CShader>     SpriteShader;
-	static _smart_ptr<CShader>     TexturedQuadShader;
-
-	//static _smart_ptr<CShader> GrayScale
-
-	static ID3D11BlendState*       FontBlendState;
+private:
+	bool m_Valid = false;
+	bool Init();
+	CGlobalResources();
 };
 
 namespace DeviceFormats

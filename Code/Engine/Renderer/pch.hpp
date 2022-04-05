@@ -142,6 +142,22 @@ inline D3DXMATRIX* D3DXMatrixTranspose(D3DXMATRIX* pOut, CONST D3DXMATRIX* pM)
 #include <array>
 #include <sstream>
 
+#include <wrl.h>
+
+template<class T>
+using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+#define H(exp, fmt, ...) \
+[&] { \
+	auto hr = exp;        \
+	if (FAILED(hr)){     \
+		CryError("[Render] " fmt, __VA_ARGS__);\
+	} \
+	return hr; \
+}()
+
+
+
 #include "Common\CommonRender.h"
 #include "Common\CryNameR.h"
 
@@ -192,21 +208,6 @@ inline void SetDebugName(ID3D11DeviceChild* pNativeResource, const char* name)
 	pNativeResource->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(name) + 1, name);
 #endif
 }
-
-#include <wrl.h>
-
-template<class T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-#define H(exp, fmt, ...) \
-[&] { \
-	auto hr = exp;        \
-	if (FAILED(hr)){     \
-		CryError("[Render] " fmt, __VA_ARGS__);\
-	} \
-	return hr; \
-}()
-
 
 
 // Types

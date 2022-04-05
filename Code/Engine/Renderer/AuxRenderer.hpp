@@ -70,6 +70,7 @@ class CRenderAuxGeom : public IRenderAuxGeom
 	void PushImage(const SRender2DImageDescription& image) override;
 	void Flush() override;
 	void DrawMesh(CVertexBuffer* pVertexBuffer, SVertexStream* pIndices, glm::mat4 transform, int texture) override;
+	void RenderTextQueued(Vec3 pos, const SDrawTextInfo& ti, const char* text) override; 
 
   private:
 	void AddPrimitive(SAuxVertex*& pVertices, uint32 numVertices, RenderPrimitive primitive);

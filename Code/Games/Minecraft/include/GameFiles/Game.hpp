@@ -64,6 +64,7 @@ class CPlayerSystem;
 class CVehicleSystem;
 class CPlayer;
 
+#if 0
 struct TextRenderInfo
 {
 	IFont*                   m_Font;
@@ -91,6 +92,7 @@ struct TextRenderInfo
 		return dti;
 	}
 };
+#endif
 
 class CScriptObjectGame;
 class CScriptObjectInput;

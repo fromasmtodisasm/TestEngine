@@ -49,6 +49,7 @@ struct IWindow
 		bool          fullscreen;
 		RenderBackend backend;
 	};
+	virtual ~IWindow() {}
 	virtual void        Release()                      = 0;
 	virtual bool        create(Params params)          = 0;
 	virtual bool        init(SInitParams* pInitParams) = 0;

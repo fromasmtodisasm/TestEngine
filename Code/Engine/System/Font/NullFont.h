@@ -102,6 +102,9 @@ public:
 	}
 	virtual void DrawString(float x, float y, const char* szMsg, const bool bASCIIMultiLine = true) override
 	{
+		std::string_view  str(szMsg);
+
+		m_pFont->RenderText(str, x, y, 1.f, m_Color.v);
 	}
 	virtual vector2f GetTextSize(const char* szMsg, const bool bASCIIMultiLine = true) override
 	{

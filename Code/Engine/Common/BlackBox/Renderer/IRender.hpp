@@ -48,7 +48,8 @@ struct CMatInfo;
 struct IMatInfo;
 struct IRenderAuxGeom;
 struct ITechniqueManager;
-struct IFont;
+//struct IFont;
+struct IFFont;
 struct IShader;
 struct ISystem;
 struct IWindow;
@@ -359,6 +360,30 @@ struct ISammplerState
 {
 };
 
+//! Flags used in DrawText function.
+enum EDrawTextFlags : uint32
+{
+	eDrawText_Default,
+	eDrawText_Center         = BIT32(0),  //!< Centered alignment, otherwise right or left.
+	eDrawText_Right          = BIT32(1),  //!< Right alignment, otherwise center or left.
+	eDrawText_CenterV        = BIT32(2),  //!< Center vertically, otherwise top.
+	eDrawText_Bottom         = BIT32(3),  //!< Bottom alignment.
+
+	eDrawText_2D             = BIT32(4),  //!< 3-component vector is used for xy screen position, otherwise it's 3d world space position.
+
+	eDrawText_FixedSize      = BIT32(5),  //!< Font size is defined in the actual pixel resolution, otherwise it's in the virtual 800x600.
+	eDrawText_800x600        = BIT32(6),  //!< Position are specified in the virtual 800x600 resolution, otherwise coordinates are in pixels.
+
+	eDrawText_Monospace      = BIT32(7),  //!< Non proportional font rendering (Font width is same for all characters).
+
+	eDrawText_Framed         = BIT32(8),  //!< Draw a transparent, rectangular frame behind the text to ease readability independent from the background.
+
+	eDrawText_DepthTest      = BIT32(9),  //!< Text should be occluded by world geometry using the depth buffer.
+	eDrawText_IgnoreOverscan = BIT32(10), //!< Ignore the overscan borders, text should be drawn at the location specified.
+	eDrawText_LegacyBehavior = BIT32(11)  //!< Reserved for internal system use.
+};
+
+
 //////////////////////////////////////////////////////////////////////////
 //! This structure used in DrawText method of renderer.
 //! It provide all necesarry information of how to render text on screen.
@@ -372,7 +397,7 @@ struct SDrawTextInfo
 	float  color[4];
 	float  xscale;
 	float  yscale;
-	IFont* font;
+	IFFont* font;
 
 	SDrawTextInfo()
 	    : xscale(1.0)
@@ -654,9 +679,11 @@ struct IRenderer : public IRendererCallbackServer
 	//! Chenge viewport size
 	virtual void           ChangeViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)                                                                                                                         = 0;
 
+	#if 0
 	//! Write a message on the screen with additional flags.
 	//! for flags @see
 	virtual void           Draw2dText(float posX, float posY, const char* szText, const SDrawTextInfo& info)                                                                                                                               = 0;
+	#endif
 
 	//! Draw a 2d image on the screen (Hud etc.)
 	virtual void           Draw2dImage(float xpos, float ypos, float w, float h, int texture_id, float s0 = 0, float t0 = 0, float s1 = 1, float t1 = 1, float angle = 0, float r = 1, float g = 1, float b = 1, float a = 1, float z = 1) = 0;
