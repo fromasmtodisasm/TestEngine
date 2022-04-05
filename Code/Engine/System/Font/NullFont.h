@@ -132,7 +132,11 @@ public:
 	}
 	virtual int GetTextLength(const char* szMsg, const bool bASCIIMultiLine = true) override
 	{
+		#if 0
 		return 0;
+		#else
+		return GetTextSize(szMsg).x;
+		#endif
 	}
 	virtual int GetTextLengthW(const wchar_t* szwMsg, const bool bASCIIMultiLine = true) override
 	{

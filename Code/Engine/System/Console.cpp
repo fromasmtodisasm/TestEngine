@@ -595,7 +595,9 @@ void CXConsole::PreProjectSystemInit()
 
 void CXConsole::PostRendererInit()
 {
+	#if 0
 	m_pFont     = GetFont("VeraMono.ttf", con_font_size, con_font_size);
+	#endif
 	m_pRenderer = m_system.GetIRenderer();
 	m_pNetwork  = Env::Network(); // EvenBalance - M. Quinn
 	m_pInput    = m_system.GetIInput();
@@ -1367,13 +1369,11 @@ void CXConsole::Draw()
 
 	if (!m_pFont)
 	{
-#if 0
 		// For Editor.
 		ICryFont* pICryFont = m_system.GetICryFont();
 
 		if (pICryFont)
 			m_pFont = m_system.GetICryFont()->GetFont("default");
-#endif
 	}
 
 	ScrollConsole();
@@ -2401,15 +2401,21 @@ void CXConsole::DrawBuffer(int nScrollPos, const char* szEffect)
 			if (m_bDrawCursor)
 			{
 				string szCursorLeft(m_sInputBuffer.c_str(), m_sInputBuffer.c_str() + m_nCursorPos);
-				//int n = m_pFont->GetTextLength(szCursorLeft.c_str(), false);
+				auto n = m_pFont->GetTextLength(szCursorLeft.c_str(), false);
 				//float n = 1.16f * m_pFont->TextWidth(szCursorLeft);
-				float  n = fontScale * m_pFont->TextWidth(szCursorLeft);
+				//float  n = fontScale * m_pFont->TextWidth(szCursorLeft);
 
-				//IRenderAuxText::DrawText(Legacy::Vec3(xPos + (fCharWidth * n), yPos, 1), fontScale * 1.16f / 14, nullptr, flags, "_");
+				#if 0
+				IRenderAuxText::DrawText(Legacy::Vec3(xPos + (fCharWidth * n), yPos, 1), fontScale * 1.16f / 14, nullptr, flags, "_");
+				#else
+				IRenderAuxText::DrawText(Legacy::Vec3(xPos + (/*fCharWidth * */n), yPos, 1), fontScale * 1.16f / 14, nullptr, flags, "_");
+				#endif
+				#if 0
 				m_pFont->RenderText(
 				    "_",
 				    //xPos + (/*fCharWidth **/ n), yPos, fontScale * 1.16f / 14, &glm::vec4(1)[0]);
 				    xPos + (/*fCharWidth **/ n), yPos, fontScale, &glm::vec4(1)[0]);
+				#endif
 			}
 		}
 
@@ -2429,7 +2435,7 @@ void CXConsole::DrawBuffer(int nScrollPos, const char* szEffect)
 
 				if (yPos + csize > 0)
 				{
-#if 0
+#if 1
 					IRenderAuxText::DrawText(Legacy::Vec3(xPos, yPos, 1), fontScale * 1.16f / 14, nullptr, flags, buf);
 #else
 					m_pFont->RenderText(
@@ -3213,6 +3219,7 @@ void CXConsole::SplitCommands(const char* line, std::list<string>& split)
 
 IFont* CXConsole::GetFont(const char* name, float w, float h)
 {
+	#if 0
 	if (Env::Get()->IsDedicated())
 		m_pFont = new CNullFont();
 	else
@@ -3226,6 +3233,8 @@ IFont* CXConsole::GetFont(const char* name, float w, float h)
 		//return m_pFont;
 	}
 	return m_pFont;
+	#endif
+	return nullptr;
 }
 
 #pragma endregion

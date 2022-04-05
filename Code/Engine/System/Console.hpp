@@ -722,7 +722,7 @@ private:
 	uint64                        m_nCheatHash;
 
 	CSystem&                      m_system;
-	IFont*                        m_pFont;
+	IFFont*                       m_pFont;
 	IRenderer*                    m_pRenderer;
 	IInput*                       m_pInput;
 	ITimer*                       m_pTimer;
