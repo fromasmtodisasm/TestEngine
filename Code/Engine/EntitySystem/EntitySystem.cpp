@@ -252,7 +252,7 @@ void CEntitySystem::ResetEntities()
 
 void CEntitySystem::GetMemoryUsage(ICrySizer* pSizer) const
 {
-	LOG_FUNCTION();
+	//LOG_FUNCTION();
 	pSizer->AddObject(this, sizeof(*this));
 	pSizer->AddObject(m_Entities);
 }

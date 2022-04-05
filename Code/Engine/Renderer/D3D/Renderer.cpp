@@ -233,7 +233,7 @@ void CD3DRenderer::Update(void)
 				{
 					m_Device->Get<ID3D11DeviceContext>()->OMSetBlendState(GlobalResources::FontBlendState, 0, 0xffffffff);
 					D3DPERF_BeginEvent(D3DC_Blue, L"DrawConsole");
-					if (IConsole* pConsole = Env::System()->GetIConsole())
+					if (IConsole* pConsole = Env::Console())
 						pConsole->Draw();
 					D3DPERF_EndEvent();
 				}

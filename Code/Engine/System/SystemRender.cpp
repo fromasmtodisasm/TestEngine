@@ -40,18 +40,23 @@ void CSystem::RenderStats()
 	{
 		if (sys_dump_memstats)
 		{
-#if 0
-			auto PrintMemoryUsage = [&,this](const char* name, typename auto fn, auto This) {
+			static int lastFrame = Env::Renderer()->GetFrameID();
+#if 1
+			float px               = 100;
+			float py               = 200;
+			float dy               = 18;
+			auto  PrintMemoryUsage = [&, this](const char* name, typename auto fn, auto This)
+			{
 				py += dy;
 				PrintMemoryUsageForName(name, fn, This, px, py);
 			};
 
-			PrintMemoryUsage("Game", &IGame::GetMemoryStatistics, m_pGame);
+			//PrintMemoryUsage("Game", &IGame::GetMemoryStatistics, m_pGame);
 			PrintMemoryUsage("System", &CSystem::GetMemoryUsage, this);
 			PrintMemoryUsage("Renderer", &IRenderer::GetMemoryUsage, m_env.pRenderer);
 			PrintMemoryUsage("ScriptSsystem", &IScriptSystem::GetMemoryUsage, m_env.pScriptSystem);
 			PrintMemoryUsage("3DEngine", &I3DEngine::GetMemoryUsage, m_env.p3DEngine);
-			PrintMemoryUsage("EntitySystem", &IEntitySystem::GetMemoryUsage, m_env.pEntitySystem) ;
+			PrintMemoryUsage("EntitySystem", &IEntitySystem::GetMemoryUsage, m_env.pEntitySystem);
 #endif
 		}
 		//PrintRightAlignedText(Env::Renderer()->GetHeight() - 64.f, "$1BLACKBOX $8ENGINE", m_pBlackBoxFont);

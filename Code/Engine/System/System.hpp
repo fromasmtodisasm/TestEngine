@@ -30,6 +30,8 @@
 
 #include <Legacy\System.h>
 
+#include <BlackBox/Utils/Text.hpp>
+
 #define DEFAULT_APP_NAME        "BlackBox"
 
 #define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
@@ -473,7 +475,7 @@ public:
 		auto len   = sprintf(stats, "%s memory usage: %d", name, sizer.GetTotalSize());
 		stats[len] = 0;
 
-		PrintRightAlignedText(py, stats);
+		PrintRightAlignedText(py, stats, m_pFont);
 	}
 
 	void RenderStats();
