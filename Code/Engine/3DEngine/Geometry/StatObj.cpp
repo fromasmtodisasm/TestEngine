@@ -438,6 +438,7 @@ public:
 		}
 		~IOStreamImpl()
 		{
+			printf("sldkfj");
 		}
 		// Inherited via IOStream
 		virtual size_t Read(void* pvBuffer, size_t pSize, size_t pCount) override
@@ -472,7 +473,6 @@ public:
 		CCryFile file;
 		if (file.Open(pFile, "r"))
 		{
-			file.Close();
 			return true;
 		}
 		return false;

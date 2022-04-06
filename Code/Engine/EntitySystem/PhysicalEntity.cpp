@@ -161,4 +161,6 @@ IPhysicalWorld* CPhysicalEntity::GetWorld()
 
 void CPhysicalEntity::GetMemoryStatistics(ICrySizer* pSizer)
 {
+	pSizer->AddObject(this, sizeof(this));
+	pSizer->AddObject(m_pRigidBody, sizeof btRigidBody);
 }

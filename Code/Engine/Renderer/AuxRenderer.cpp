@@ -495,6 +495,12 @@ void CRenderAuxGeom::RenderTextQueued(Vec3 pos, const SDrawTextInfo& ti, const c
 	}
 }
 
+void CRenderAuxGeom::GetMemoryUsage(ICrySizer* Sizer) const
+{
+	Sizer->AddObject(this, sizeof(*this));
+	Sizer->AddContainer(m_auxPushBuffer);
+}
+
 void CRenderAuxGeom::DrawMesh(CVertexBuffer* pVertexBuffer, SVertexStream* pIndices, glm::mat4 transform, int texture)
 {
 	m_Meshes.push_back({pVertexBuffer, pIndices, transform, texture});

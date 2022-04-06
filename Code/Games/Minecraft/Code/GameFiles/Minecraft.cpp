@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <array>
 #include <BlackBox/System/File/CryFile.h>
+#include <BlackBox/System/ConsoleRegistration.h>
 
 Minecraft* minecraft;
 
@@ -39,7 +40,6 @@ void MineWorld::init()
 		//auto grass = Env::I3DEngine()->MakeObject("objects/editor/mtlbox.cgf");
 
 		types.push_back(obj.ReleaseOwnership());
-		
 	};
 
 	auto generateLevel = [this]()
@@ -114,7 +114,7 @@ void MineWorld::init()
 		auto camera = Env::System()->GetViewCamera();
 		auto box    = SpawnBox({5, 5, 5}, {0, 0, 0});
 		Env::I3DEngine()->RegisterEntity(box);
-		#if 1
+#if 1
 		{
 			auto        object = Env::I3DEngine()->MakeObject(objects[1]);
 
@@ -139,7 +139,7 @@ void MineWorld::init()
 			CEntityDesc desc(nextEntity(), 0);
 			desc.name       = "Hero";
 			minecraft->Jack = Env::EntitySystem()->SpawnEntity(desc);
-			auto Jack      = minecraft->Jack;
+			auto Jack       = minecraft->Jack;
 
 			Jack->SetIStatObj(object);
 			Jack->SetPos({-5, 50, -5});
@@ -148,7 +148,7 @@ void MineWorld::init()
 			Jack->Physicalize();
 			Env::I3DEngine()->RegisterEntity(Jack);
 		}
-		#endif
+#endif
 		//{
 		//	auto object = types[0];
 		//	//Env::I3DEngine()->MakeObject(objects[0]);
@@ -201,6 +201,11 @@ void Minecraft::init()
 	ui.init();
 	player.init();
 	debug.init();
+
+	REGISTER_COMMAND(
+	    "reset_ents", [](IConsoleCmdArgs*)
+	    { MineWorld::ClearEntities(); },
+	    0, "clear all entityes");
 }
 
 void Minecraft::update()
@@ -249,6 +254,11 @@ IEntity* MineWorld::SpawnBox(const Legacy::Vec3& pos, const Legacy::Vec3& veloci
 	Env::I3DEngine()->RegisterEntity(Box);
 
 	return Box;
+}
+
+void MineWorld::ClearEntities()
+{
+	Env::EntitySystem()->ResetEntities();
 }
 
 void MineWorld::destroy(glm::ivec3 pos)
@@ -572,10 +582,10 @@ void MinePlayer::update()
 	applyMovement();
 	//getCamera()->SetPos(entity->GetPos());
 	getCamera()->SetPos(myPos);
-	movement = glm::vec3(0.0f);
+	movement          = glm::vec3(0.0f);
 
 	///////////////////////////////////////////////////////////
-	auto       camera      = Env::System()->GetViewCamera();
+	auto       camera = Env::System()->GetViewCamera();
 	EntityList entities;
 	Env::EntitySystem()->GetEntitiesInRadius(camera.GetPos(), 25, entities);
 	for each (const auto& e in entities)
@@ -586,7 +596,6 @@ void MinePlayer::update()
 		if (auto p = e->GetPhysics(); p)
 			p->Action(&impulse);
 	}
-
 }
 
 bool timingAction(float& prevTime, float interval)
@@ -617,9 +626,9 @@ void MinePlayer::destroyBlockOnCursor()
 		m_pDestroyBlockSound->Play();
 	}
 
-	auto       camera      = Env::System()->GetViewCamera();
-	auto       testEntity3 = Env::EntitySystem()->GetEntity(2);
-	auto       testEntity2 = Env::EntitySystem()->GetEntity(2);
+	auto camera      = Env::System()->GetViewCamera();
+	auto testEntity3 = Env::EntitySystem()->GetEntity(2);
+	auto testEntity2 = Env::EntitySystem()->GetEntity(2);
 	if (testEntity3 && (m_ClickFrame < (Env::Renderer()->GetFrameID() - 5)))
 	{
 		//auto p          = testEntity3->GetPhysics();
@@ -637,7 +646,6 @@ void MinePlayer::destroyBlockOnCursor()
 		Env::I3DEngine()->RegisterEntity(box);
 	}
 
-
 	m_ClickFrame = Env::Renderer()->GetFrameID();
 }
 
@@ -653,7 +661,6 @@ void MinePlayer::placeBlockOnCursor()
 		minecraft->world.set(side, MineWorld::Grass);
 		m_pSetBlockSound->Play();
 	}
-
 }
 
 void MinePlayer::move(glm::vec3 direction, float value)

@@ -798,7 +798,8 @@ void CEntity::SetCommonCallbacks(IScriptSystem* pScriptSystem)
 void CEntity::GetMemoryUsage(ICrySizer* pSizer) const
 {
 	pSizer->AddObject(this, sizeof(this));
-	pSizer->AddObject(m_Desc);
+	if (m_pPhysics)
+		m_pPhysics->GetMemoryStatistics(pSizer);
 }
 
 void CEntity::SetWaterDensity(float fWaterDensity)

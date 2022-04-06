@@ -7,7 +7,8 @@ public:
 	{
 		Grass,
 	};
-	~MineWorld() {
+	~MineWorld()
+	{
 		printf("sldfkj");
 	}
 
@@ -38,6 +39,8 @@ public:
 	std::vector<_smart_ptr<IStatObj>>        types;
 
 	_smart_ptr<IStatObj>                     m_pMtlBox;
+
+	static void                              ClearEntities();
 };
 
 class MineDebug

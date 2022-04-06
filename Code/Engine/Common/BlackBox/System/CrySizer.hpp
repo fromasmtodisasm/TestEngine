@@ -265,6 +265,7 @@ public:
 		if (!this->AddObject(&rVector[0], rVector.capacity() * sizeof(T)))
 			return;
 
+		//FIXME:
 		for (typename std::vector<T, Alloc>::const_iterator it = rVector.begin(); it != rVector.end(); ++it)
 		{
 			this->AddObject(*it);
