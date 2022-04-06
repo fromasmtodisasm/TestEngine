@@ -15,8 +15,7 @@ CShader::~CShader()
 	{
 		if (s)
 		{
-			auto sh = s->m_D3DShader;
-			SAFE_RELEASE(sh);
+			SAFE_DELETE(s);
 		}
 	}
 }
@@ -95,11 +94,11 @@ void CShader::Bind()
 
 	if (!WaitUntilLoaded())
 		return;
-	if (auto s = m_Shaders[E_VERTEX]->m_D3DShader; s) { d->VSSetShader((PVertexShader)s, nullptr, 0); }
+	if (auto s = m_Shaders[E_VERTEX]->m_D3DShader; s) { d->VSSetShader((PVertexShader)s.Get(), nullptr, 0); }
 	//if (auto s = m_Shaders[E_GEOMETRY]->m_D3DShader; s) { d->VSSetShader((PVertexShader)s); }
-	if (auto s = m_Shaders[E_FRAGMENT]->m_D3DShader; s) { d->PSSetShader((PPixelShader)s, nullptr, 0); }
+	if (auto s = m_Shaders[E_FRAGMENT]->m_D3DShader; s) { d->PSSetShader((PPixelShader)s.Get(), nullptr, 0); }
 
-	d->IASetInputLayout(m_pInputLayout);
+	d->IASetInputLayout(m_pInputLayout.Get());
 }
 
 int CShader::GetFlags()
@@ -287,7 +286,7 @@ void CShader::CreateInputLayout()
 	    t_InputElementDescVec.size(),
 	    pVSBuf->GetBufferPointer(),
 	    pVSBuf->GetBufferSize(),
-	    &m_pInputLayout);
+	    m_pInputLayout.GetAddressOf());
 	if (FAILED(hr))
 	{
 		CryError("Error create input layout for font");
@@ -302,7 +301,7 @@ void CShader::ReflectShader()
 
 	auto    pVSBuf = (ID3DBlob*)m_Shaders[IShader::Type::E_VERTEX]->m_ByteCode;
 	//ID3D11ShaderReflection* pIShaderReflection1 = NULL;
-	hr             = D3DReflect((void*)pVSBuf->GetBufferPointer(), pVSBuf->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_pReflection);
+	hr             = D3DReflect((void*)pVSBuf->GetBufferPointer(), pVSBuf->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)m_pReflection.GetAddressOf());
 	if (m_pReflection)
 	{
 		m_pReflection->GetDesc(&m_Desc);
@@ -497,7 +496,7 @@ bool CHWShader::Upload(ID3DBlob* pBlob, CShader* pSH)
 
 	#if BB_PLATFORM_WINDOWS
 		#if BB_RENDERER_DIRECT3D
-		auto pObject = (ID3D11DeviceChild*)m_D3DShader;
+		auto pObject = (ID3D11DeviceChild*)m_D3DShader.Get();
 		::SetDebugName(pObject, name);
 		#elif BB_RENDERER_VULKAN
 		auto pObject = reinterpret_cast<NCryVulkan::CShader*>(pInst->m_Handle.m_pShader->GetHandle());

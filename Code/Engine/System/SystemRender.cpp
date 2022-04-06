@@ -59,8 +59,10 @@ void CSystem::RenderStats()
 		{
 			auto pFont = m_env.pCryFont->GetFont("default");
 
+			#if 0
 			if (m_env.pRenderer->GetFrameID(false) % 1000)
 				return;
+			#endif
 			static int lastFrame = Env::Renderer()->GetFrameID();
 #if 1
 			float px               = 100;

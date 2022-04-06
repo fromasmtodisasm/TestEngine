@@ -31,15 +31,19 @@ IMusicSystem* CSoundSystem::CreateMusicSystem()
 
 ISound* CSoundSystem::LoadSound(const char* szFile, int nFlags)
 {
-	std::string_view sv;
-	auto Sound = CSound::Load(szFile, nFlags);
-	if (Sound)
+	//std::string_view sv;
+	auto Sound = stl::find_in_map(m_SoundList, szFile, nullptr);
+	if (!Sound)
 	{
-		//FIXME:
-		#if 0
+		Sound = CSound::Load(szFile, nFlags);
+		if (Sound)
+		{
+//FIXME:
+#if 0
 		CryLog("[SoundSystem] %s loaded", szFile);
-		#endif
-		m_SoundList.push_back(Sound);
+#endif
+			m_SoundList[szFile] = Sound;
+		}
 	}
 	return Sound;
 }
@@ -204,8 +208,7 @@ bool CSoundSystem::Init()
 	                 {
 		                 //s_SFXVolume * MIX_MAX_VOLUME
 		                 Mix_VolumeMusic(int(s_MusicVolume * MIX_MAX_VOLUME));
-		                 CryLog("Music Volume changed");
-	                 });
+		                 CryLog("Music Volume changed"); });
 
 	return true;
 }

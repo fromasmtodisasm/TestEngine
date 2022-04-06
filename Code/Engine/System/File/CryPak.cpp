@@ -184,6 +184,34 @@ CCryPak::CCryPak(IMiniLog* pLog, PakVars* pPakVars, const bool bLvlRes)
 
 CCryPak::~CCryPak()
 {
+	unsigned numFilesForcedToClose = 0;
+	// scan through all open files and close them
+	{
+		//AUTO_MODIFYLOCK(m_csOpenFiles);
+		for (auto& itFile : m_arrOpenFiles)
+		{
+			if (itFile.GetFile())
+			{
+				itFile.Destruct();
+				++numFilesForcedToClose;
+			}
+		}
+	}
+
+	if (numFilesForcedToClose)
+		m_pLog->LogWarning("%u files were forced to close", numFilesForcedToClose);
+
+	{
+		const TAliasList::iterator cAliasEnd = m_arrAliases.end();
+		for (TAliasList::iterator it = m_arrAliases.begin(); it != cAliasEnd; ++it)
+		{
+			tNameAlias* tTemp = (*it);
+			SAFE_DELETE_ARRAY(tTemp->szName);
+			SAFE_DELETE_ARRAY(tTemp->szAlias);
+			delete tTemp;
+		}
+	}
+
 }
 
 bool CCryPak::Init(const char* szBasePath)
@@ -230,13 +258,14 @@ bool CCryPak::OpenPackCommon(const char* szBindRoot, const char* szFullPath, uns
 
 	for (auto& entry : ar)
 	{
-		_smart_ptr<File> file = DEBUG_NEW File(entry, ar.header);
-
-		if (auto it = m_Files.find(file->name); it != m_Files.end()) printf("Eroror, file %s already mapped\n", file->name.data());
-		if (file->name.find("loadscreen") != string::npos)
+		auto name = string_view((char*)ar.header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
+		if (name.find("loadscreen") != string::npos)
 		{
 			printf("here");
 		}
+		_smart_ptr<File> file = DEBUG_NEW File(entry, ar.header);
+
+		if (auto it = m_Files.find(file->name); it != m_Files.end()) printf("Eroror, file %s already mapped\n", file->name.data());
 
 		m_Files[file->name] = file;
 	}
@@ -841,12 +870,12 @@ FILE* CCryPak::FOpen(const char* pName, const char* szMode, unsigned nInputFlags
 
 	if (File* pFileData = (File*)GetFileData(pName); pFileData)
 	{
-		INT_PTR nFile         = m_arrOpenFiles.size() + CCryPak::g_nPseudoFileIdxOffset;
+		size_t nFile;
 
 		//////////////////////////////////////////////////////////////////////////////////////
 		// try to open the pseudofile from one of the zips, make sure there is no user alias
 		// find the empty slot and open the file there; return the handle
-		bool    foundFileSlot = false;
+		bool   foundFileSlot = false;
 		{
 			// fast path: try to find empty file slot
 			//AUTO_READLOCK(m_csOpenFiles);
@@ -894,7 +923,8 @@ FILE* CCryPak::FOpen(const char* pName, const char* szMode, unsigned nInputFlags
 	#endif
 
 		RecordFile(pName);
-		return (FILE*)nFile;
+		FILE* ret = (FILE*)(nFile + g_nPseudoFileIdxOffset);
+		return ret;
 	}
 	else
 	{
@@ -1201,7 +1231,7 @@ ZipFile::File CCryPak::create_file(ZipFile::CentralDirectory& entry, void* heade
 	#endif
 	bool  compressed = entry.desc.lSizeCompressed != entry.desc.lSizeUncompressed;
 	auto& lfh        = *(LocalFileHeader*)((char*)header + entry.lLocalHeaderOffset);
-	File  file(entry.lLocalHeaderOffset + sizeof LocalFileHeader + lfh.nFileNameLength + lfh.nExtraFieldLength, entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed);
+	File  file{entry.lLocalHeaderOffset + sizeof LocalFileHeader + lfh.nFileNameLength + lfh.nExtraFieldLength, entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed, false};
 	return file;
 }
 

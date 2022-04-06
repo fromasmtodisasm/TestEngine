@@ -125,6 +125,23 @@ public:
 	{
 		return p > p2;
 	};
+	//! Assigns a pointer without increasing ref count.
+	void Assign_NoAddRef(_I* ptr)
+	{
+		CRY_ASSERT(!p, "Assign_NoAddRef should only be used on a default-constructed, not-yet-assigned smart_ptr instance");
+		p = ptr;
+	}
+	//! Set our contained pointer to null, but don't call Release().
+	//! Useful for when we want to do that ourselves, or when we know that
+	//! the contained pointer is invalid.
+	_I* ReleaseOwnership()
+	{
+		_I* ret = p;
+		p = 0;
+		return ret;
+	}
+
+	AUTO_STRUCT_INFO;
 };
 
 template<class _I>

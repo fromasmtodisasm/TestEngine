@@ -153,18 +153,24 @@ extern "C"
 			#include <new>
 		#endif
 
-		#undef malloc
-		#undef realloc
-		#undef free
-
-		#define malloc       CryModuleMalloc
-		#define realloc      CryModuleRealloc
-		#define free         CryModuleFree
-		#define realloc_size CryModuleReallocSize
-		#define free_size    CryModuleFreeSize
-
 		#ifdef __cplusplus
 			#ifndef GAMECUBE //I don't know how to compile this on GC
+				#ifdef _DEBUG
+					#define USE_DEBUG_NEW
+
+				#endif // !_RELEASE
+
+				#ifndef USE_DEBUG_NEW
+					#undef malloc
+					#undef realloc
+					#undef free
+
+					#define malloc       CryModuleMalloc
+					#define realloc      CryModuleRealloc
+					#define free         CryModuleFree
+					#define realloc_size CryModuleReallocSize
+					#define free_size    CryModuleFreeSize
+
 inline void* __cdecl operator new(size_t size)
 {
 	return CryModuleMalloc(size);
@@ -172,23 +178,34 @@ inline void* __cdecl operator new(size_t size)
 inline void* __cdecl operator new[](size_t size) { return CryModuleMalloc(size); };
 inline void __cdecl  operator delete(void* p) noexcept { CryModuleFree(p); };
 inline void __cdecl  operator delete[](void* p) noexcept { CryModuleFree(p); };
-			#endif           //GAMECUBE
-		#endif               //__cplusplus
+					#define DEBUG_NEW    new
+				#else
+					#if defined USE_DEBUG_NEW
+						#if defined(_DEBUG) && !defined(LINUX)
+							#include <crtdbg.h>
+							#define DEBUG_CLIENTBLOCK new (_NORMAL_BLOCK, __FILE__, __LINE__)
+							//#define new DEBUG_CLIENTBLOCK
+							#define DEBUG_NEW         new (_NORMAL_BLOCK, __FILE__ "@" __FUNCTION__, __LINE__)
+							#define DEBUG_NEW_ARRAY   new[](_NORMAL_BLOCK, __FILE__, __LINE__)
+						#endif
+inline void* __cdecl operator new(size_t size)
+{
+	return _malloc_dbg(size, _NORMAL_BLOCK, __FILE__, __LINE__);
+}
+
+inline void* __cdecl operator new[](size_t size) { return _malloc_dbg(size, _NORMAL_BLOCK, __FILE__, __LINE__); };
+inline void __cdecl operator delete(void* p) noexcept { _free_dbg(p, _NORMAL_BLOCK); };
+inline void __cdecl operator delete[](void* p) noexcept { _free_dbg(p, _NORMAL_BLOCK); };
+					#else
+						#define DEBUG_NEW new
+					#endif
+				#endif
+			#endif //GAMECUBE
+		#endif     //__cplusplus
 
 	#endif // USE_NEWPOOL
 
 #endif // _DEBUG
-#define USE_DEBUG_NEW
-#if defined USE_DEBUG_NEW
-	#if defined(_DEBUG) && !defined(LINUX)
-		#include <crtdbg.h>
-		#define DEBUG_CLIENTBLOCK new (_NORMAL_BLOCK, __FILE__, __LINE__)
-		//#define new DEBUG_CLIENTBLOCK
-		#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__) 
-	#endif
-#else
-		#define DEBUG_NEW new 
-#endif
 
 //#endif // CRYSYSTEM_EXPORTS
 //#endif //LINUX

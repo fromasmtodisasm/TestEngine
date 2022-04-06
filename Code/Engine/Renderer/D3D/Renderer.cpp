@@ -508,6 +508,7 @@ bool CD3DRenderer::OnResizeSwapchain(int newWidth, int newHeight)
 void CD3DRenderer::GetMemoryUsage(ICrySizer* Sizer) const
 {
 	Sizer->AddObject(this, sizeof(*this));
+	Sizer->AddObject(m_RenderAuxGeom);
 }
 
 void CD3DRenderer::Draw2dImage(float xpos, float ypos, float w, float h, int texture_id, float s0, float t0, float s1, float t1, float angle, float r, float g, float b, float a, float z)

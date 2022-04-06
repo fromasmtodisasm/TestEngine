@@ -131,11 +131,12 @@ CVertexBuffer* CBufferManager::Create(int vertexcount, int vertexformat, const c
 {
 	bDynamic = true;
 	assert(vertexformat >= VERTEX_FORMAT_P3F && vertexformat < VERTEX_FORMAT_NUMS);
-	auto           buffer     = DEBUG_NEW CVertexBuffer;
-	SVertexStream& stream     = buffer->m_VS[VSF_GENERAL];
-	buffer->m_VS[VSF_GENERAL] = stream;
-	stream.m_bDynamic         = bDynamic;
-	stream.m_VData            = CreateVertexBuffer(vertexformat, vertexcount);
+	auto buffer                    = DEBUG_NEW CVertexBuffer;
+	SVertexStream&          stream = buffer->m_VS[VSF_GENERAL];
+	buffer->m_VS[VSF_GENERAL]      = stream;
+	stream.m_bDynamic              = bDynamic;
+	//FIXME: rewirte memory managment
+	stream.m_VData                 = nullptr; //CreateVertexBuffer(vertexformat, vertexcount);
 
 	D3D11_BUFFER_DESC bufferDesc;
 	bufferDesc.Usage            = bDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
@@ -147,10 +148,10 @@ CVertexBuffer* CBufferManager::Create(int vertexcount, int vertexformat, const c
 	ID3D11Buffer**         p_VB = reinterpret_cast<ID3D11Buffer**>(&buffer->m_VS[0].m_VertBuf.m_pPtr);
 
 	D3D11_SUBRESOURCE_DATA InitData;
-	InitData.pSysMem          = stream.m_VData;
+	InitData.pSysMem          = nullptr;
 	InitData.SysMemPitch      = 0;
 	InitData.SysMemSlicePitch = 0;
-	auto hr                   = GetDevice()->CreateBuffer(&bufferDesc, &InitData, p_VB);
+	auto hr                   = GetDevice()->CreateBuffer(&bufferDesc, nullptr, p_VB);
 	if (FAILED(hr))
 	{
 		CryFatalError("Cannot create vertex buffer");
@@ -181,7 +182,7 @@ void CBufferManager::Release(CVertexBuffer* pVertexBuffer)
 		SAFE_RELEASE(ptr);
 		for (int i = 0; i < VSF_NUM; i++)
 		{
-			SAFE_DELETE(pVertexBuffer->m_VS[i].m_VData);
+			SAFE_DELETE_ARRAY(pVertexBuffer->m_VS[i].m_VData);
 		}
 	}
 	SAFE_DELETE(pVertexBuffer);
@@ -192,8 +193,8 @@ void CBufferManager::Create(SVertexStream* dest, const void* src, int indexcount
 	assert(dest != nullptr);
 	assert(src != nullptr);
 
-	SVertexStream _stream     ;
-	SVertexStream* stream      = &_stream;
+	SVertexStream  _stream;
+	SVertexStream* stream  = &_stream;
 	stream->m_bDynamic     = false;
 	stream->m_nBufOffset   = 0;
 	stream->m_nItems       = indexcount;

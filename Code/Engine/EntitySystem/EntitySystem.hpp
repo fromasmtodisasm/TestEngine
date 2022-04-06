@@ -85,7 +85,8 @@ public:
 	virtual void           MarkId(EntityId id) override;
 	virtual void           ClearId(EntityId id) override;
 
-	void                   AddToPhysicalWorld(CPhysicalEntity* pEntity);
+	CPhysicalEntity*       CreatePhysicalEntity(CEntity* pEntity);
+	void                   RemovePhysicalEntity(CPhysicalEntity* pEntity);
 
 public:
 	Entities                          m_Entities;
@@ -96,5 +97,5 @@ public:
 
 	btDiscreteDynamicsWorld*          m_pPhysicalWorld;
 
-	SPhysicsInitParams                m_PhysicsInitParams;
+	SPhysicsInitParams*                m_PhysicsInitParams;
 };

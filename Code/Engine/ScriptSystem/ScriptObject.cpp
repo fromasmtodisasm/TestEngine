@@ -105,6 +105,8 @@ CScriptObject::~CScriptObject()
 		lua_unref(L, m_nRef);
 
 	m_nRef = DELETED_REF;
+	SAFE_DELETE(m_pMetaObject);
+	m_pSS->OnRemove(this);
 }
 
 int CScriptObject::GetRef()
@@ -951,11 +953,11 @@ bool CScriptObject::AddSetGetHandlers(SCRIPT_FUNCTION pSetThunk, SCRIPT_FUNCTION
 
 	if (!lua_istable(L, -1))
 		return false;
-	CScriptObject* metaObject = DEBUG_NEW CScriptObject;
-	metaObject->Attach();
+	m_pMetaObject = DEBUG_NEW CScriptObject;
+	m_pMetaObject->Attach();
 
-	metaObject->AddFunction("__newindex", pSetThunk, -1);
-	metaObject->AddFunction("__index", pGetThunk, -1);
+	m_pMetaObject->AddFunction("__newindex", pSetThunk, -1);
+	m_pMetaObject->AddFunction("__index", pGetThunk, -1);
 	return true;
 }
 
@@ -978,6 +980,10 @@ void CScriptObject::Release()
 		if (m_pParent)
 			m_pParent->OnRelease();
 		delete this;
+	}
+	else
+	{
+		printf("!!!");
 	}
 #endif
 }

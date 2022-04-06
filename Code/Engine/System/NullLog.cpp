@@ -761,7 +761,7 @@ void CLog::LogStringToFile(const char* szString, bool bAdd, bool bError)
 			if (FILE* fp = OpenLogFile(m_szFilename, "at")) // change to option "atc"
 			{
 				fputs(tempString.c_str(), fp);
-				// fflush(fp);  // enable to flush the file
+				fflush(fp);  // enable to flush the file
 				CloseLogFile();
 			}
 		}

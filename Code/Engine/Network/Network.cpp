@@ -20,59 +20,80 @@ CNetwork g_Network;
 
 class CTmpServerSlot : public IServerSlot
 {
+public:
 	// Inherited via IServerSlot
 	virtual void Advise(IServerSlotSink* pSink) override
 	{
+		CryLog(__FUNCTION__);
+		m_pSink = pSink;
 	}
 	virtual void Disconnect(const char* szCause) override
 	{
+		CryLog(__FUNCTION__);
+		m_pSink->OnXServerSlotDisconnect(szCause);
 	}
 	virtual bool ContextSetup(CStream& stm) override
 	{
+		CryLog(__FUNCTION__);
 		return false;
 	}
 	virtual void SendReliable(CStream& stm, bool bSecondaryChannel = false) override
 	{
+		CryLog(__FUNCTION__);
 	}
 	virtual void SendUnreliable(CStream& stm) override
 	{
+		CryLog(__FUNCTION__);
 	}
 	virtual bool IsReady() override
 	{
-		return false;
+		//CryLog(__FUNCTION__);
+		return true;
 	}
 	virtual unsigned char GetID() override
 	{
+		CryLog(__FUNCTION__);
 		return 0;
 	}
 	virtual unsigned int GetClientIP() const override
 	{
+		CryLog(__FUNCTION__);
 		return 0;
 	}
 	virtual void Release() override
 	{
+		CryLog(__FUNCTION__);
+		delete this;
 	}
 	virtual unsigned int GetPing() override
 	{
+		CryLog(__FUNCTION__);
 		return 0;
 	}
 	virtual unsigned int GetPacketsLostCount() override
 	{
+		CryLog(__FUNCTION__);
 		return 0;
 	}
 	virtual unsigned int GetUnreliablePacketsLostCount() override
 	{
+		CryLog(__FUNCTION__);
 		return 0;
 	}
 	virtual void ResetBandwidthStats() override
 	{
+		CryLog(__FUNCTION__);
 	}
 	virtual void GetBandwidthStats(SServerSlotBandwidthStats& out) const override
 	{
+		CryLog(__FUNCTION__);
 	}
 	virtual void OnPlayerAuthorization(bool bAllow, const char* szError, const uint8_t* pGlobalID, unsigned int uiGlobalIDSize) override
 	{
+		CryLog(__FUNCTION__);
+		m_pSink->OnXPlayerAuthorization(bAllow, szError, pGlobalID, uiGlobalIDSize);
 	}
+	IServerSlotSink* m_pSink;
 };
 
 class CTmpNetworkServer : public IServer
@@ -143,6 +164,12 @@ public:
 	{
 		SDLNet_TCP_Close(m_Socket);
 		Env::Log()->Log("NetworkServer Desctruected");
+
+		for (auto& slot : m_ServerSlots)
+		{
+			//slot->Disconnect("Server shutdown");
+		}
+
 		g_Network.UnregisterServer(this);
 	}
 	bool Init()
@@ -306,10 +333,16 @@ public:
 
 	bool ConnectTo(CTmpNetworkClient* pClient)
 	{
-		auto ss = DEBUG_NEW CTmpServerSlot;
-		m_pFactory->CreateServerSlot(ss);
-		return true;
+		auto ServerSlot                    = DEBUG_NEW CTmpServerSlot;
+		bool                        result = false;
+		if (result = m_pFactory->CreateServerSlot(ServerSlot))
+		{
+			m_ServerSlots.push_back(ServerSlot);
+		}
+		return result;
 	}
+
+	std::vector<CTmpServerSlot*> m_ServerSlots;
 };
 
 class CCompressionHelper : public ICompressionHelper

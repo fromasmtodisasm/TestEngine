@@ -140,7 +140,7 @@ public:
 	static lua_State*     L;
 	// Pointer to ScriptSystem, set by CScriptSystem::Init
 	static CScriptSystem* m_pSS;
-	void*                 m_pNativeData;
+	void*                 m_pNativeData{};
 	struct member_ptr
 	{
 		INT_PTR fID;
@@ -153,6 +153,7 @@ public:
 	Iterator           iter;
 
 private:
-	int m_nRef;
-	int m_nRefCount;
+	int            m_nRef;
+	int            m_nRefCount;
+	CScriptObject* m_pMetaObject{};
 };

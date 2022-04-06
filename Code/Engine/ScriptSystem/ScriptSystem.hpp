@@ -16,6 +16,7 @@
 #include <vector>
 
 class CLUADbg;
+struct CScriptObject;
 
 struct SLuaStackEntry
 {
@@ -70,6 +71,8 @@ class CScriptSystem : public IScriptSystem
   public:
 	CScriptSystem();
 	~CScriptSystem();
+
+	void                      OnRemove(CScriptObject* pScriptObject);
 
 	bool Init(ISystem* pSystem);
 
@@ -389,6 +392,8 @@ class CScriptSystem : public IScriptSystem
   private:
 	static CFunctionHandler* m_pH;
 	CLUADbg* m_pLuaDebugger;
+	std::vector<CScriptObject*> m_AllocatedObjects;
+	bool                        m_bDisableOnRemove = false;
 
   public:
 	// Inherited via IScriptSystem

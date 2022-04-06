@@ -260,7 +260,9 @@ int istream_close(SDL_RWops* context)
 {
 	if (context)
 	{
-		delete (CCryFile*)context->hidden.unknown.data1;
+		auto file = (CCryFile*)context->hidden.unknown.data1;
+		file->Close();
+		delete file;
 		SDL_FreeRW(context);
 	}
 	return 0;
@@ -290,9 +292,9 @@ CSound* CSound::Load(const char* path, int nFlags)
 	if (file->Open(path, "rb"))
 	{
 		if (nFlags & FLAG_SOUND_MUSIC)
-			Data.Music = Mix_LoadMUS_RW(SDL_RWFromPak(file), 0);
+			Data.Music = Mix_LoadMUS_RW(SDL_RWFromPak(file), 1);
 		else
-			Data.Sample = Mix_LoadWAV_RW(SDL_RWFromPak(file), 0);
+			Data.Sample = Mix_LoadWAV_RW(SDL_RWFromPak(file), 1);
 		if (!Data.Sample)
 		{
 			CryError("Mix_LoadWA: %s", Mix_GetError());
@@ -302,6 +304,10 @@ CSound* CSound::Load(const char* path, int nFlags)
 			pSound         = DEBUG_NEW CSound(Data);
 			pSound->nFlags = nFlags;
 		}
+	}
+	else
+	{
+		delete file;
 	}
 	return pSound;
 }

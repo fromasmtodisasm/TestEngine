@@ -305,55 +305,63 @@ struct SPipTangents
 	Legacy::Vec3 m_TNormal;
 };
 
+template<typename T>
+T* AllocateBuffer(int n, const char* file, int line)
+{
+	return reinterpret_cast<T*>(::operator new(n * sizeof(T), _NORMAL_BLOCK, file, line));
+}
+
+#define ALLOC_BUFFER(t, n) AllocateBuffer<t>(n, __FILE__, __LINE__);
+
 //////////////////////////////////////////////////////////////////////////
 _inline void* CreateVertexBuffer(int nFormat, int nVerts)
 {
 	switch (nFormat)
 	{
 	case VERTEX_FORMAT_P3F:
-		return new SVF_P3F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F, nVerts);
 
 	case VERTEX_FORMAT_P3F_N:
-		return new SVF_P3F_N[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_N, nVerts);
 
 	case VERTEX_FORMAT_P3F_C4B_T2F:
-		return new SVF_P3F_C4B_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_C4B_T2F, nVerts);
 
 	case VERTEX_FORMAT_P3F_C4B_C4B_T2F:
-		return new SVF_P3F_C4B_C4B_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_C4B_C4B_T2F, nVerts);
 
 	case VERTEX_FORMAT_P3F_N_C4B_C4B_T2F:
-		return new SVF_P3F_N_C4B_C4B_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_N_C4B_C4B_T2F, nVerts);
 
 	case VERTEX_FORMAT_P3F_C4B_T2F_T2F:
-		return new SVF_P3F_C4B_T2F_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_C4B_T2F_T2F, nVerts);
 
 	case VERTEX_FORMAT_P3F_N_C4B_T2F:
-		return new SVF_P3F_N_C4B_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_N_C4B_T2F, nVerts);
 
 	case VERTEX_FORMAT_P3F_T2F:
-		return new SVF_P3F_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_T2F, nVerts);
 
 	case VERTEX_FORMAT_P3F_N_T2F:
-		return new SVF_P3F_N_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_N_T2F, nVerts);
 
 	case VERTEX_FORMAT_P3F_C4B:
-		return new SVF_P3F_C4B[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_C4B, nVerts);
 
 	case VERTEX_FORMAT_P3F_C4B_C4B:
-		return new SVF_P3F_C4B_C4B[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_C4B_C4B, nVerts);
 
 	case VERTEX_FORMAT_P3F_N_C4B_C4B:
-		return new SVF_P3F_N_C4B_C4B[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_N_C4B_C4B, nVerts);
 
 	case VERTEX_FORMAT_P3F_N_C4B:
-		return new SVF_P3F_N_C4B[nVerts];
+		return ALLOC_BUFFER(SVF_P3F_N_C4B, nVerts);
 
 	case VERTEX_FORMAT_TRP3F_C4B_T2F:
-		return new SVF_TRP3F_C4B_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_TRP3F_C4B_T2F, nVerts);
 
 	case VERTEX_FORMAT_T2F:
-		return new SVF_T2F[nVerts];
+		return ALLOC_BUFFER(SVF_T2F, nVerts);
 
 	default:
 		assert(0);
