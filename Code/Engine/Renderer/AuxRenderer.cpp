@@ -256,7 +256,7 @@ CRenderAuxGeom::~CRenderAuxGeom()
 {
 	SAFE_DELETE(m_BoundingBox);
 	//SAFE_DELETE(m_BB_IndexBuffer);
-	SAFE_DELETE(m_HardwareVB);
+	Env::Renderer()->ReleaseBuffer(m_HardwareVB);
 }
 
 bool first_draw = true;
@@ -385,7 +385,7 @@ void CRenderAuxGeom::DrawAABBs()
 void CRenderAuxGeom::DrawLines()
 {
 	m_AuxGeomShader->Bind();
-	Env::Renderer()->UpdateBuffer(m_HardwareVB, m_VB.data(), m_VB.size(), false);
+	Env::Renderer()->UpdateBuffer(m_HardwareVB, m_VB.data(), (int)m_VB.size(), false);
 	int offset = 0;
 	::GetDeviceContext()->OMSetDepthStencilState(m_pDSStateLines, 0);
 	for (auto& pb : m_auxPushBuffer)

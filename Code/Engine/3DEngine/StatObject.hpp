@@ -42,16 +42,16 @@ public:
 #else
 	list2<aiMaterial> m_lstMatTable;
 #endif
-	int                   m_DiffuseMap = -1;
+	int       m_DiffuseMap = -1;
 
 	// list of geom names from cgf file
 	//list2<char*> m_lstGeomNames;
 
-	FILETIME              m_fileTime;
+	FILETIME  m_fileTime;
 
-	int                   m_VertexFormat;
-	void*                 m_VertexBuffer;
-	std::vector<uint16_t> m_Indices;
+	int       m_VertexFormat;
+	void*     m_VertexBuffer;
+	uint16_t* m_Indices;
 
 	// constructor
 	//CIndexedMesh() {}
@@ -94,6 +94,14 @@ public:
 			pSizer->AddObject(properties);
 		}
 	};
+
+	~CStatObj()
+	{
+		//m_VertexBuffer
+		if (m_VertexBuffer)
+			Env::Renderer()->ReleaseBuffer(m_VertexBuffer);
+		Env::Renderer()->ReleaseIndexBuffer(&m_IndexBuffer);
+	}
 
 	CStatObj(CIndexedMesh IndexedMesh);
 

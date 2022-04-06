@@ -6,9 +6,9 @@ class CObjectManager
 	IStatObj* LoadStatObj(const char* szFileName, const char* szGeomName = 0);
 
   private:
-	typedef std::map<string, CStatObj*, stl::less_stricmp<string>> ObjectsMap;
+	typedef std::map<string, _smart_ptr<CStatObj>, stl::less_stricmp<string>> ObjectsMap;
 	ObjectsMap													   m_nameToObjectMap;
 
-	typedef std::set<CStatObj*> LoadedObjects;
+	typedef std::set<_smart_ptr<CStatObj>> LoadedObjects;
 	LoadedObjects				m_lstLoadedObjects;
 };

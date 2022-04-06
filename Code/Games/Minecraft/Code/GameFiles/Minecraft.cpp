@@ -229,7 +229,7 @@ IEntity* MineWorld::SpawnBox(const Legacy::Vec3& pos, const Legacy::Vec3& veloci
 {
 	auto        object = m_pMtlBox;
 
-	CEntityDesc desc(nextEntity(), PLAYER_CLASS_ID);
+	CEntityDesc desc(nextEntity(), 2);
 	desc.angles = {-90, 0, 0};
 	desc.pos    = pos;
 	desc.name   = "Box";
@@ -541,9 +541,11 @@ void MinePlayer::init()
 
 	auto        steve = Env::I3DEngine()->MakeObject("minecraft/minecraft_steve.obj");
 
-	CEntityDesc desc(nextEntity(), PLAYER_CLASS_ID);
+	CEntityDesc desc(nextEntity(), 2);
 	entity = Env::EntitySystem()->SpawnEntity(desc);
 	Env::I3DEngine()->RegisterEntity(entity);
+	entity->SetIStatObj(steve);
+	entity->Physicalize();
 
 	entity->SetPos(glm::vec3(5, 3, 5));
 	myPos = entity->GetPos();
@@ -629,7 +631,7 @@ void MinePlayer::destroyBlockOnCursor()
 		//impulse.impulse = vectorf(0, 0, 0);
 		//p->Action(&impulse);
 
-		auto box = minecraft->world.SpawnBox(camera.GetPos(), camera.Front * 10.f);
+		auto box = minecraft->world.SpawnBox(camera.GetPos(), camera.Front * 30.f);
 		Env::I3DEngine()->RegisterEntity(box);
 	}
 

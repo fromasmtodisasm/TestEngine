@@ -479,9 +479,9 @@ CXGame::~CXGame()
 	SAFE_DELETE(m_pScriptObjectGame);
 	SAFE_DELETE(m_pScriptObjectInput);
 
+	SAFE_DELETE(m_pScriptObjectLanguage);
 #if 0
 	SAFE_DELETE(m_pScriptObjectBoids);
-	SAFE_DELETE(m_pScriptObjectLanguage);
 	SAFE_DELETE(m_pScriptObjectAI);
 #endif
 
@@ -501,6 +501,10 @@ CXGame::~CXGame()
 	SAFE_RELEASE(m_pRConSystem);
 	SAFE_DELETE(m_pTimeDemoRecorder);
 	SAFE_DELETE(m_pGameMods);
+
+	SAFE_DELETE(minecraft);
+	SAFE_DELETE(m_pLegacyInput);
+
 
 	delete m_pTagPointManager;
 }

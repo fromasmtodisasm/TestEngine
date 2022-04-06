@@ -410,8 +410,8 @@ bool CSystemConfiguration::ParseSystemConfig()
 	}
 
 	m_pSink->OnLoadConfigurationEntry_End();
+	delete[] szFullText;
 	return true;
-	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

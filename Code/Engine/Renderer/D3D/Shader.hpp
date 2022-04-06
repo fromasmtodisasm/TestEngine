@@ -55,12 +55,27 @@ public:
 	bool Upload(ID3DBlob* pBlob, CShader* pSH);
 };
 
-class CShader : public IShader
+struct MemoryTag
+{
+	char text[64];
+	MemoryTag(std::string_view str)
+	{
+		strncpy(text, str.data(), str.length());
+	}
+};
+
+class CShader : 
+	public MemoryTag,
+	public IShader
 {
 	friend class ShaderMan;
 
 public:
 	// Inherited via IShader
+	CShader()
+	    : MemoryTag("CShaderTag")
+	{
+	}
 	~CShader();
 
 	CShader&                 operator=(const CShader& src);

@@ -469,6 +469,7 @@ void CSystem::ReleaseScripts()
 	CScriptObjectConsole::ReleaseTemplate();
 	CScriptObjectScript::ReleaseTemplate();
 	CScriptObjectRenderer::ReleaseTemplate();
+	CScriptObjectSystem::ReleaseTemplate();
 }
 
 void CSystem::SetWorkingDirectory(const std::string& path) const
@@ -716,6 +717,7 @@ void CSystem::ShutDown()
 	SAFE_DELETE(m_ScriptObjectSound);
 	SAFE_DELETE(m_ScriptObjectScript);
 	SAFE_DELETE(m_ScriptObjectRenderer);
+	SAFE_DELETE(m_ScriptObjectSystem);
 	ReleaseScripts();
 	SAFE_RELEASE(m_env.pScriptSystem);
 
@@ -734,11 +736,10 @@ void CSystem::ShutDown()
 	SAFE_DELETE(m_pSystemEventDispatcher);
 	SAFE_DELETE(m_pCmdLine);
 	SAFE_DELETE(m_env.pProjectManager);
-	SAFE_RELEASE(m_env.pLog);
 	SAFE_RELEASE(m_env.pCryPak);
-	SAFE_RELEASE(m_pCryPak);
 	UnloadSubsystems();
 	SAFE_RELEASE(m_env.pConsole);
+	SAFE_RELEASE(m_env.pLog);
 	SDL_Quit();
 }
 

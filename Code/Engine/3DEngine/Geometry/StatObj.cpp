@@ -102,7 +102,10 @@ void CStatObj::Render(const struct SRendParams& rParams, const Legacy::Vec3& t, 
 		Env::Renderer()->UpdateBuffer(m_VertexBuffer, m_IndexedMesh.m_VertexBuffer, m_IndexedMesh.m_nVertCount, false);
 
 		m_IndexBuffer = SVertexStream();
-		Env::Renderer()->CreateIndexBuffer(&m_IndexBuffer, m_IndexedMesh.m_Indices.data(), m_IndexedMesh.m_Indices.size());
+		Env::Renderer()->CreateIndexBuffer(&m_IndexBuffer, m_IndexedMesh.m_Indices, m_IndexedMesh.m_nFaceCount);
+
+		delete[] m_IndexedMesh.m_VertexBuffer;
+		delete[] m_IndexedMesh.m_Indices;
 	}
 
 	int texId = rParams.texture;
@@ -498,19 +501,19 @@ public:
 
 bool CIndexedMesh::LoadCGF(const char* szFileName, const char* szGeomName)
 {
-	auto             cgfImporter = DEBUG_NEW Assimp::CgfImporter;
+	auto cgfImporter = DEBUG_NEW Assimp::CgfImporter;
 
-	Assimp::Importer ai;
+	Assimp::Importer             ai;
 	#if 0
 	auto             ioHandler = DEBUG_NEW MyIO;
 	#else
-	auto             ioHandler = new MyIO;
+	auto ioHandler = new MyIO;
 	#endif
 	ai.SetIOHandler(ioHandler);
 
 	ai.RegisterLoader(cgfImporter);
 
-	const aiScene* scene = ai.ReadFile(szFileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes /*| aiProcess_GenSmoothNormals | aiProcess_FixInfacingNormals *//* | aiProcess_FlipWindingOrder*/);
+	const aiScene* scene = ai.ReadFile(szFileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes /*| aiProcess_GenSmoothNormals | aiProcess_FixInfacingNormals */ /* | aiProcess_FlipWindingOrder*/);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -543,17 +546,18 @@ bool CIndexedMesh::LoadCGF(const char* szFileName, const char* szGeomName)
 	#endif
 			}
 
-			char* vb            = (char*)(m_VertexBuffer = CreateVertexBuffer(m_VertexFormat, mesh->mNumVertices));
+			char*                 vb            = (char*)(m_VertexBuffer = CreateVertexBuffer(m_VertexFormat, mesh->mNumVertices));
+			m_Indices                           = ALLOC_BUFFER(std::uint16_t, mesh->mNumFaces);
 
-			auto  stride        = gVertexSize[m_VertexFormat];
+			auto                  stride        = gVertexSize[m_VertexFormat];
 
-			auto  TCOffset      = g_VertFormatUVOffsets[RealFormat];
-			auto  NormalsOffset = g_VertFormatNormalOffsets[RealFormat];
-			auto  vertexSize    = gVertexSize[RealFormat];
+			auto                  TCOffset      = g_VertFormatUVOffsets[RealFormat];
+			auto                  NormalsOffset = g_VertFormatNormalOffsets[RealFormat];
+			auto                  vertexSize    = gVertexSize[RealFormat];
 
-			auto  UVs           = mesh->mTextureCoords[0];
-			m_nVertCount        = mesh->mNumVertices;
-			m_nFaceCount        = mesh->mNumFaces;
+			auto                  UVs           = mesh->mTextureCoords[0];
+			m_nVertCount                        = mesh->mNumVertices;
+			m_nFaceCount                        = mesh->mNumFaces;
 			for (size_t i = 0; i < m_nVertCount; i++)
 			{
 				memcpy(&vb[i * stride], &mesh->mVertices[i], sizeof(Legacy::Vec3));
@@ -575,9 +579,14 @@ bool CIndexedMesh::LoadCGF(const char* szFileName, const char* szGeomName)
 				const aiFace& Face = mesh->mFaces[i];
 				if (Face.mNumIndices == 3)
 				{
-					m_Indices.push_back(Face.mIndices[0]);
-					m_Indices.push_back(Face.mIndices[1]);
-					m_Indices.push_back(Face.mIndices[2]);
+					continue;
+					m_Indices[3 * i + 0] = Face.mIndices[0];
+					m_Indices[3 * i + 1] = Face.mIndices[1];
+					m_Indices[3 * i + 2] = Face.mIndices[2];
+				}
+				else
+				{
+					CryFatalError("wtf");
 				}
 			}
 			std::vector<string> Textures;

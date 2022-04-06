@@ -25,6 +25,7 @@ C3DEngine::C3DEngine(ISystem* pSystem, const char* szInterfaceVersion)
 C3DEngine::~C3DEngine()
 {
 	SAFE_DELETE(m_pTerrain);
+	SAFE_DELETE(m_pObjManager);
 }
 
 void C3DEngine::Enable(bool bEnable)

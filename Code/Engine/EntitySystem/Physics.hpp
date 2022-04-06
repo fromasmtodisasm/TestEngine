@@ -24,8 +24,15 @@ struct SPhysicsInitParams
 	void                      Create()
 	{
 		collisionConfiguration = DEBUG_NEW btDefaultCollisionConfiguration();
-		dispatcher             = DEBUG_NEW btCollisionDispatcher(collisionConfiguration);
-		broadPhase             = DEBUG_NEW btDbvtBroadphase();
+		dispatcher             = DEBUG_NEW             btCollisionDispatcher(collisionConfiguration);
+		broadPhase             = DEBUG_NEW             btDbvtBroadphase();
 		constraintSolver       = new btSequentialImpulseConstraintSolver;
+	}
+	~SPhysicsInitParams()
+	{
+		SAFE_DELETE(collisionConfiguration);
+		SAFE_DELETE(dispatcher);
+		SAFE_DELETE(broadPhase);
+		SAFE_DELETE(constraintSolver);
 	}
 };

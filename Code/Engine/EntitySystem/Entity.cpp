@@ -20,6 +20,8 @@ CEntity::CEntity(CEntityDesc& desc)
 CEntity::~CEntity()
 {
 	SAFE_DELETE(m_EntityCharacter);
+	if (m_pPhysics)
+		m_pEntitySystem->RemovePhysicalEntity(m_pPhysics);
 }
 
 void CEntity::GetRenderBBox(Legacy::Vec3& mins, Legacy::Vec3& maxs)
@@ -333,8 +335,8 @@ void CEntity::SetBBox(const Legacy::Vec3& mins, const Legacy::Vec3& maxs)
 
 void CEntity::GetBBox(Legacy::Vec3& mins, Legacy::Vec3& maxs)
 {
-	mins = m_BoxMin/* * m_Scale*/;
-	maxs = m_BoxMax/* * m_Scale*/;
+	mins = m_BoxMin /* * m_Scale*/;
+	maxs = m_BoxMax /* * m_Scale*/;
 }
 
 void CEntity::GetLocalBBox(Legacy::Vec3& min, Legacy::Vec3& max)
@@ -359,14 +361,14 @@ bool CEntity::DrawEntity(const SRendParams& EntDrawParams)
 	auto      scale     = GetScale();
 	glm::mat4 transform = glm::mat4(1);
 #if 1
-	transform = glm::translate(transform, pos);
+	transform   = glm::translate(transform, pos);
 
-	transform = glm::rotate(transform, glm::radians(rotation.x), {1, 0, 0});
-	transform = glm::rotate(transform, glm::radians(rotation.y), {0, 1, 0});
-	transform = glm::rotate(transform, glm::radians(rotation.z), {0, 0, 1});
+	transform   = glm::rotate(transform, glm::radians(rotation.x), {1, 0, 0});
+	transform   = glm::rotate(transform, glm::radians(rotation.y), {0, 1, 0});
+	transform   = glm::rotate(transform, glm::radians(rotation.z), {0, 0, 1});
 	auto rotate = transform;
 
-	transform = glm::scale(transform, scale);
+	transform   = glm::scale(transform, scale);
 #endif
 	SRendParams rp(EntDrawParams);
 	rp.pMatrix = &transform;
@@ -841,8 +843,7 @@ void CEntity::SinkRebind(IEntitySystemSink* pSink)
 
 void CEntity::Physicalize(bool bInstant)
 {
-	m_pPhysics = DEBUG_NEW CPhysicalEntity(this);
-	m_pEntitySystem->AddToPhysicalWorld(m_pPhysics);
+	m_pPhysics = m_pEntitySystem->CreatePhysicalEntity(this);
 }
 
 void CEntity::OnStartAnimation(const char* sAnimation)

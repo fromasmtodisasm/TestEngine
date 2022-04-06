@@ -70,9 +70,11 @@ inline CEntitySystem::CEntitySystem(ISystem* pSystem)
 #undef SET_SCRIPTEVENT
 	}
 
-	m_PhysicsInitParams.Create();
-	auto [a, b, c, d] = m_PhysicsInitParams;
-	m_pPhysicalWorld  = new btDiscreteDynamicsWorld(a, b, c, d);
+	m_PhysicsInitParams = DEBUG_NEW SPhysicsInitParams;
+	m_PhysicsInitParams->Create();
+	//NOTE: Oh My God!!! Need use reference
+	auto& [a, b, c, d] = *m_PhysicsInitParams;
+	m_pPhysicalWorld   = new btDiscreteDynamicsWorld(a, b, c, d);
 	m_pPhysicalWorld->setGravity(btVector3(0, -9.8, 0));
 
 	btStaticPlaneShape* floorShape = new btStaticPlaneShape(btVector3(0, 1, 0), -1);
@@ -89,6 +91,11 @@ CEntitySystem::~CEntitySystem()
 	{
 		SAFE_DELETE(debugger);
 	}
+
+	// delete before physics
+	m_Entities.~vector();
+	SAFE_DELETE(m_pPhysicalWorld);
+	SAFE_DELETE(m_PhysicsInitParams);
 }
 
 void CEntitySystem::Update()
@@ -193,7 +200,7 @@ void CEntitySystem::GetEntitiesInRadius(const Legacy::Vec3& origin, float radius
 {
 	for (size_t i = 0; i < m_nSpawnedEntities; i++)
 	{
-		auto* e = (CEntity*)&m_Entities[i];
+		auto*        e = (CEntity*)&m_Entities[i];
 		Legacy::Vec3 min, max;
 		e->GetBBox(min, max);
 		if (glm::length(e->GetPos() - origin) <= radius)
@@ -288,9 +295,17 @@ void CEntitySystem::ClearId(EntityId id)
 	LOG_FUNCTION();
 }
 
-void CEntitySystem::AddToPhysicalWorld(CPhysicalEntity* pEntity)
+CPhysicalEntity* CEntitySystem::CreatePhysicalEntity(CEntity* pEntity)
 {
-	m_pPhysicalWorld->addRigidBody(pEntity->m_pRigidBody);
+	auto physics = DEBUG_NEW CPhysicalEntity(pEntity);
+	m_pPhysicalWorld->addRigidBody(physics->m_pRigidBody);
+	return physics;
+}
+
+void CEntitySystem::RemovePhysicalEntity(CPhysicalEntity* pEntity)
+{
+	m_pPhysicalWorld->removeRigidBody(pEntity->m_pRigidBody);
+	delete pEntity;
 }
 
 extern "C"

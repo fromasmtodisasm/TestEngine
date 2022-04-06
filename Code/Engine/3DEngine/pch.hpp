@@ -10,5 +10,5 @@
 template<class T>
 T* CryAlignedNew()
 {
-	return new T;
+	return DEBUG_NEW T;
 }

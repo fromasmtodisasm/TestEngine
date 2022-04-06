@@ -15,7 +15,7 @@
 	#define INDENT_LOG_DURING_SCOPE(...)                   (void)(0)
 	#define CRY_DEFINE_ASSET_SCOPE(sAssetType, sAssetName) (void)(0)
 #else
-#define INDENT_LOG_DURING_SCOPE(i, format, ...) CryLog(format, __VA_ARGS__)
+	#define INDENT_LOG_DURING_SCOPE(i, format, ...) CryLog(format, __VA_ARGS__)
 #endif
 
 void*           g_pLuaDebugger{};
@@ -84,12 +84,76 @@ CScriptSystem::~CScriptSystem()
 	m_stdScriptBinds.Done();
 	SAFE_DELETE(m_pH);
 
+	if (!m_AllocatedObjects.empty())
+	{
+		m_bDisableOnRemove = true;
+		CryError("%d dangling ScriptObjects", m_AllocatedObjects.size());
+		for (size_t i = 0; i < m_AllocatedObjects.size(); i++)
+		{
+			auto object = m_AllocatedObjects[i];
+			{
+				class CPrintSink : public IScriptObjectDumpSink
+				{
+				public:
+					void OnElementFound(int nIdx, ScriptVarType type){/*ignore non string indexed values*/};
+					void OnElementFound(const char* sName, ScriptVarType type)
+					{
+						switch (type)
+						{
+						case ScriptVarType::Null:
+							break;
+						case ScriptVarType::String:
+							CryLog("str: %s", sName);
+							break;
+						case ScriptVarType::Number:
+							CryLog("num: %s", sName);
+							break;
+						case ScriptVarType::Bool:
+							CryLog("bool: %s", sName);
+							break;
+						case ScriptVarType::Function:
+							CryLog("func: %s", sName);
+							break;
+						case ScriptVarType::Object:
+							CryLog("obj: %s", sName);
+							break;
+						case ScriptVarType::Pointer:
+							CryLog("pointer: %s", sName);
+							break;
+						case ScriptVarType::UserData:
+							CryLog("ud: %s", sName);
+							break;
+						default:
+							break;
+						}
+					}
+				};
+
+				CPrintSink sink;
+				if (object->m_pNativeData == (void*)0xdddddddddddddddd)
+					continue;
+				if (object->m_pNativeData == (void*)0xcdcdcdcdcdcdcdcd)
+					continue;
+				object->Dump(&sink);
+				CryLog("______________________________");
+			}
+			object->Release();
+		}
+	}
+
 	if (L)
 	{
 		lua_close(L);
 
 		L = NULL;
 	}
+}
+
+void CScriptSystem::OnRemove(CScriptObject* pScriptObject)
+{
+	if (m_bDisableOnRemove)
+		return;
+	stl::find_and_erase(m_AllocatedObjects, pScriptObject);
 }
 
 void* luaAlloc(void* userData, void* ptr, size_t oldSize, size_t newSize)
@@ -139,12 +203,12 @@ bool CScriptSystem::Init(ISystem* pSystem)
 	    "2 to only trigger on errors\n"
 	    "Usage: lua_debugger [0/1/2]");
 
-	//////////////////////////////////////////////////////////////////////////
-	// Execute common lua file.
-	//////////////////////////////////////////////////////////////////////////
-	#if 0
+//////////////////////////////////////////////////////////////////////////
+// Execute common lua file.
+//////////////////////////////////////////////////////////////////////////
+#if 0
 	ExecuteFile("Scripts/common.lua", true, false);
-	#endif
+#endif
 
 	return L ? true : false;
 }
@@ -430,7 +494,8 @@ IScriptObject* CScriptSystem::GetGlobalObject()
 IScriptObject* CScriptSystem::CreateEmptyObject()
 {
 	auto o = DEBUG_NEW CScriptObject;
-	o->AddRef();
+	m_AllocatedObjects.push_back(o);
+	//o->AddRef();
 	return o;
 }
 
@@ -438,6 +503,7 @@ IScriptObject* CScriptSystem::CreateObject()
 {
 	CScriptObject* result = DEBUG_NEW CScriptObject;
 	result->CreateNew();
+	m_AllocatedObjects.push_back(result);
 	return result;
 }
 
@@ -709,7 +775,7 @@ USER_DATA CScriptSystem::CreateUserData(INT_PTR nVal, int nCookie)
 
 	auto          size = sizeof(UserDataInfo);
 	UserDataInfo* ud   = (UserDataInfo*)lua_newuserdata(L, size);
-	ud                 = DEBUG_NEW UserDataInfo;
+	//ud   = DEBUG_NEW UserDataInfo;
 	ud->ptr            = nVal;
 	ud->cookie         = nCookie;
 	lua_pop(L, 1);
@@ -1248,7 +1314,7 @@ void              CScriptSystem::PrintStack()
 
 SCRIPTSYSTEM_API IScriptSystem* CreateScriptSystem(ISystem* pSystem, bool bStdLibs)
 {
-	auto ss             = DEBUG_NEW CScriptSystem();
+	auto ss                   = DEBUG_NEW CScriptSystem();
 	Env::Get()->pScriptSystem = ss;
 	if (ss->Init(pSystem))
 	{

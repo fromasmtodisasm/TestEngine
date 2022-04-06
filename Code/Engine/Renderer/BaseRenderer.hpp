@@ -21,6 +21,7 @@
 
 extern FxParser* g_FxParser;
 class Texture;
+class CRenderAuxGeom;
 struct IFont;
 class CStandardGraphicsPipeline;
 class CGraphicsPipeline;
@@ -427,7 +428,7 @@ protected:
 	CCamera             m_Camera;
 	//============
 
-	IRenderAuxGeom*     m_RenderAuxGeom = nullptr;
+	CRenderAuxGeom*     m_RenderAuxGeom = nullptr;
 	CBufferManager*     m_BufferManager = nullptr;
 
 	CVertexBuffer*      m_VertexBuffer  = nullptr;
@@ -482,91 +483,19 @@ public:
 class ShaderMan
 {
 public:
-	void RT_ShaderLoad(const char* name, int flags, uint64 nMaskGen, CShader* p)
-	{
-		if (auto it = m_Shaders.find((name)); it != m_Shaders.end())
-		{
-			CryLog("Shader <%s> already cached", name);
-			it->second->AddRef();
-			*p = *it->second;
-			return;
-		}
-		if (!Sh_LoadBinary(name, flags, nMaskGen, p))
-		{
-			if (Compile(name, flags, nMaskGen, p))
-			{
-				p->SaveBinaryShader(name, flags, nMaskGen);
-			}
-			else
-			{
-				p = nullptr;
-			}
-		}
-	}
+	void     RT_ShaderLoad(const char* name, int flags, uint64 nMaskGen, CShader* p);
 	CShader* NewShader()
 	{
-		return new CShader;
+		return DEBUG_NEW CShader;
 	}
-	IShader* Sh_Load(const char* name, int flags, uint64 nMaskGen)
-	{
-		_smart_ptr<CShader> pShader = NewShader();
-		gRenDev->ExecuteRenderThreadCommand([=]
-		                                    {
-												CryLog("load shader: %s", name);
-												RT_ShaderLoad(name, flags, nMaskGen, pShader); });
-		if (pShader->GetFlags2() & EF2_FAILED)
-		{
-			pShader = nullptr;
-		}
-		return pShader;
-	}
+	IShader* Sh_Load(const char* name, int flags, uint64 nMaskGen);
 	bool Sh_LoadBinary(const char* name, int flags, uint64 nMaskGen, CShader* p) const
 	{
 		//return Env::Console()->GetCVar("r_SkipShaderCache")->GetIVal() ? nullptr : CShader::LoadBinaryShader(name, flags, nMaskGen);
 		return false;
 	}
 
-	bool Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p)
-	{
-		PEffect           pEffect = nullptr;
-		std::stringstream path;
-		auto              pos       = name.find_last_of('.');
-		std::string_view  real_name = name;
-		std::string_view  technique;
-		int               pass = 0;
-		if (pos != name.npos)
-		{
-			real_name = name.substr(0, pos);
-			technique = name.substr(pos + 1);
-		}
-		path << real_name << ".fx";
-		auto shader_path = PathUtil::Make(PathUtil::Make(PathUtil::GetEnginePath(), string("Engine/shaders/fx")), path.str());
-		if (g_FxParser->Parse(shader_path.c_str(), &pEffect))
-		{
-			auto nTech = 0;
-			if (auto tech = pEffect->GetTechnique(technique.data(), technique.length()); tech != nullptr)
-				nTech = tech->GetId();
-			p->m_NameShader = real_name.data();
-			p->m_NameFile   = path.str();
-			if (CShader::LoadFromEffect(p, pEffect, nTech, pass))
-			{
-				p->AddRef();
-				p->ReflectShader();
-				p->CreateInputLayout();
-				p->m_Flags2 |= EF2_LOADED;
-				delete pEffect;
-				m_Shaders[string(name)] = p;
-				return true;
-			}
-			p->m_Flags2 |= EF2_FAILED;
-			return false;
-		}
-		else
-		{
-			p->m_Flags2 |= EF2_FAILED;
-		}
-		return false;
-	}
+	bool Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p);
 	void ReloadAll()
 	{
 		for (auto& s : m_Shaders)
@@ -576,6 +505,7 @@ public:
 	}
 	~ShaderMan()
 	{
+		printf("sldkfj");
 	}
 
 	std::map<string, _smart_ptr<CShader>> m_Shaders;

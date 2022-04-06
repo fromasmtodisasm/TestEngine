@@ -391,34 +391,44 @@ namespace ZipFile
 
 	struct File : public _i_reference_target_t
 	{
-		std::int32_t offset;
-		uint32       size;
-		uint32       compressed_size;
-		string_view  name;
-		char*        base;
-		bool         compressed;
+		std::uint32_t offset{};
+		uint32        size{};
+		uint32        compressed_size{};
+		string_view   name{};
+		char*         base{};
+		bool          compressed  = false;
+		bool          need_delete = true;
 		File(
-		    std::int32_t offset,
-		    uint32       size,
-		    uint32       compressed_size,
-		    string_view  name,
-		    char*        base,
-		    bool         compressed)
+		    std::uint32_t offset,
+		    uint32        size,
+		    uint32        compressed_size,
+		    string_view   name,
+		    char*         base,
+		    bool          compressed,
+		    bool          need_delete)
 		    : offset(offset)
 		    , size(size)
 		    , compressed_size(compressed_size)
 		    , name(name)
 		    , base(base)
 		    , compressed(compressed)
+		    , need_delete(need_delete)
 		{
 		}
-		File() = default;
+		File() {}
+		~File()
+		{
+			//FIXME: rewrite this HELL
+			if (compressed && need_delete)
+				delete[] base;
+		}
 
 		File(ZipFile::CentralDirectory& entry, void* header)
 		{
-			auto name       = string_view((char*)header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
-			bool compressed = entry.desc.lSizeCompressed != entry.desc.lSizeUncompressed;
-			File file{int32(size_t(entry.lLocalHeaderOffset) + sizeof LocalFileHeader + name.length()), entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed};
+			auto  name       = string_view((char*)header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
+			bool  compressed = entry.desc.lSizeCompressed != entry.desc.lSizeUncompressed;
+			auto& lfh        = *(LocalFileHeader*)((char*)header + entry.lLocalHeaderOffset);
+			File  file{entry.lLocalHeaderOffset + sizeof LocalFileHeader + lfh.nFileNameLength + lfh.nExtraFieldLength, entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed, false};
 
 			std::swap(*this, file);
 		}
@@ -443,7 +453,7 @@ namespace ZipFile
 					return nullptr;
 				}
 			}
-			result = DEBUG_NEW File{0, file->size, file->compressed_size, file->name, BaseHeapAddres, file->compressed};
+			result = DEBUG_NEW File{0, file->size, file->compressed_size, file->name, BaseHeapAddres, file->compressed, true};
 
 			return result;
 #else
@@ -466,8 +476,8 @@ namespace ZipFile
 
 	struct MyFile
 	{
-		_smart_ptr<File> m_pFileData;
-		std::atomic_bool m_fileSlotInUse;
+		_smart_ptr<File> m_pFileData{};
+		std::atomic_bool m_fileSlotInUse{};
 		long             m_nCurSeek{};
 		int              m_nFlags{};
 
@@ -476,7 +486,15 @@ namespace ZipFile
 		    , m_fileSlotInUse(false)
 		{
 		}
-		MyFile()              = default;
+
+		MyFile()
+		    : m_nCurSeek(0)
+		    , m_pFileData(nullptr)
+		    , m_nFlags(0)
+		    , m_fileSlotInUse(false)
+		{
+		}
+		~MyFile()             = default;
 
 		MyFile(const MyFile&) = delete;
 		MyFile& operator=(const MyFile&) = delete;
@@ -512,14 +530,15 @@ namespace ZipFile
 
 		void Destruct()
 		{
-			this->~MyFile();
-		}
+			assert(m_pFileData);
+			assert(m_fileSlotInUse);
+			// mark it free, and deallocate the pseudo file memory
+			m_pFileData     = NULL;
 
-		~MyFile()
-		{
-			//m_pFileData = nullptr;
 			m_fileSlotInUse = false;
 		}
+
+		File* GetFile() { return m_pFileData; }
 
 	public:
 		int FRead(void* dst, size_t size, size_t nCount, FILE* file)
@@ -585,10 +604,13 @@ namespace ZipFile
 
 		ZipFile::File create_file(ZipFile::CentralDirectory& entry, void* header)
 		{
+#if 0
 			auto name       = string_view((char*)header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
 			bool compressed = entry.desc.lSizeCompressed != entry.desc.lSizeUncompressed;
-			File file{int32(size_t(entry.lLocalHeaderOffset) + sizeof LocalFileHeader + name.length()), entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed};
-			return file;
+			File file{entry.lLocalHeaderOffset + sizeof LocalFileHeader + name.length(), entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed};
+#endif
+			assert(0);
+			return File{};
 		}
 
 		using FileList = MapType<_smart_ptr<File>>;

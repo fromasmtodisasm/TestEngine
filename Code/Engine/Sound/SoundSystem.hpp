@@ -55,5 +55,5 @@ private:
 	int                             m_AudioChannels = 2;
 	int                             m_AudioBuffers  = 4096;
 
-	std::vector<_smart_ptr<CSound>> m_SoundList;
+	std::map<string, _smart_ptr<CSound>> m_SoundList;
 };
