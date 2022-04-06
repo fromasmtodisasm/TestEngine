@@ -282,13 +282,13 @@ namespace ZipFile
 		    : SArchiveHandle((void*)fm->getData(), fm->getSize())
 		{
 			// HACK!!!
-			this->fm =std::move(fm);
+			this->fm = std::move(fm);
 		}
 
 		SArchiveHandle(void* data, size_t size, std::unique_ptr<CFileMapping> fm = nullptr)
 		    : fm(std::move(fm))
 		{
-			header = (LocalFileHeader*)data;
+			header                      = (LocalFileHeader*)data;
 			m_CentralDirectoryRecordEnd = (CDREnd*)((char*)data + size - sizeof CDREnd);
 		}
 
@@ -389,7 +389,7 @@ namespace ZipFile
 
 #include <unordered_map>
 
-	struct File
+	struct File : public _i_reference_target_t
 	{
 		std::int32_t offset;
 		uint32       size;
@@ -397,6 +397,31 @@ namespace ZipFile
 		string_view  name;
 		char*        base;
 		bool         compressed;
+		File(
+		    std::int32_t offset,
+		    uint32       size,
+		    uint32       compressed_size,
+		    string_view  name,
+		    char*        base,
+		    bool         compressed)
+		    : offset(offset)
+		    , size(size)
+		    , compressed_size(compressed_size)
+		    , name(name)
+		    , base(base)
+		    , compressed(compressed)
+		{
+		}
+		File() = default;
+
+		File(ZipFile::CentralDirectory& entry, void* header)
+		{
+			auto name       = string_view((char*)header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
+			bool compressed = entry.desc.lSizeCompressed != entry.desc.lSizeUncompressed;
+			File file{int32(size_t(entry.lLocalHeaderOffset) + sizeof LocalFileHeader + name.length()), entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed};
+
+			std::swap(*this, file);
+		}
 
 		static File* CopyToHeap(File* file)
 		{
@@ -404,7 +429,7 @@ namespace ZipFile
 			IZLibInflateStream* pInflateStream = ((CSystem*)(Env::System()))->GetIZLibDecompressor()->CreateInflateStream();
 
 			File*               result;
-			char*               BaseHeapAddres = (char*)malloc(file->size);
+			char*               BaseHeapAddres = new char[file->size];
 			{
 				pInflateStream->SetOutputBuffer(const_cast<char*>(BaseHeapAddres), file->size);
 				pInflateStream->Input(file->base + file->offset, file->compressed_size);
@@ -418,7 +443,7 @@ namespace ZipFile
 					return nullptr;
 				}
 			}
-			result = new File{0, file->size, file->compressed_size, file->name, BaseHeapAddres, file->compressed};
+			result = DEBUG_NEW File{0, file->size, file->compressed_size, file->name, BaseHeapAddres, file->compressed};
 
 			return result;
 #else
@@ -439,24 +464,71 @@ namespace ZipFile
 		}
 	};
 
-	struct MyFile : public _i_reference_target_t
+	struct MyFile
 	{
-		File* m_File;
-		long  m_nCurSeek{};
+		_smart_ptr<File> m_pFileData;
+		std::atomic_bool m_fileSlotInUse;
+		long             m_nCurSeek{};
+		int              m_nFlags{};
 
 		MyFile(File* file)
-		    : m_File(file)
+		    : m_pFileData(file)
+		    , m_fileSlotInUse(false)
 		{
+		}
+		MyFile()              = default;
+
+		MyFile(const MyFile&) = delete;
+		MyFile& operator=(const MyFile&) = delete;
+
+		MyFile(MyFile&& other)
+		    : m_nCurSeek(other.m_nCurSeek)
+		    , m_pFileData(std::move(other.m_pFileData))
+		    , m_nFlags(other.m_nFlags)
+		    , m_fileSlotInUse(other.m_fileSlotInUse.exchange(false))
+		{
+		}
+		MyFile& operator=(MyFile&& other)
+		{
+			m_nCurSeek      = other.m_nCurSeek;
+			m_pFileData     = std::move(other.m_pFileData);
+			m_nFlags        = other.m_nFlags;
+			m_fileSlotInUse = other.m_fileSlotInUse.exchange(false);
+			return *this;
+		}
+
+		bool TryConstruct(File* pFileData, unsigned nFlags)
+		{
+			bool expectedInUse = false;
+			if (m_fileSlotInUse.compare_exchange_strong(expectedInUse, true))
+			{
+				m_pFileData = pFileData;
+				m_nFlags    = nFlags;
+				m_nCurSeek  = 0;
+				return true;
+			}
+			return false;
+		}
+
+		void Destruct()
+		{
+			this->~MyFile();
+		}
+
+		~MyFile()
+		{
+			//m_pFileData = nullptr;
+			m_fileSlotInUse = false;
 		}
 
 	public:
 		int FRead(void* dst, size_t size, size_t nCount, FILE* file)
 		{
-			size_t left = m_File->size - m_nCurSeek;
+			size_t left = m_pFileData->size - m_nCurSeek;
 			if (left > 0)
 			{
 				left        = std::min(size_t(left), size * nCount);
-				auto offset = m_File->base + m_File->offset + m_nCurSeek;
+				auto offset = m_pFileData->base + m_pFileData->offset + m_nCurSeek;
 				memcpy(dst, offset, left);
 
 				m_nCurSeek += std::int32_t(size * nCount);
@@ -467,11 +539,11 @@ namespace ZipFile
 
 		bool     Eof() { return m_nCurSeek < Size(); }
 		long     FTell() { return m_nCurSeek; }
-		unsigned GetFileSize() { return m_File->size; }
+		unsigned GetFileSize() { return m_pFileData->size; }
 		//////////////////////////////////////////////////////////////////////////
 		int      FSeek(long nOffset, int nMode)
 		{
-			if (!m_File)
+			if (!m_pFileData)
 				return -1;
 
 			switch (nMode)
@@ -494,7 +566,7 @@ namespace ZipFile
 
 		size_t Size()
 		{
-			return m_File->size;
+			return m_pFileData->size;
 		}
 	};
 
@@ -515,11 +587,11 @@ namespace ZipFile
 		{
 			auto name       = string_view((char*)header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
 			bool compressed = entry.desc.lSizeCompressed != entry.desc.lSizeUncompressed;
-			File file{entry.lLocalHeaderOffset + sizeof LocalFileHeader + name.length(), entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed};
+			File file{int32(size_t(entry.lLocalHeaderOffset) + sizeof LocalFileHeader + name.length()), entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed};
 			return file;
 		}
 
-		using FileList = MapType<File>;
+		using FileList = MapType<_smart_ptr<File>>;
 		bool OpenPak(string_view pak)
 		{
 			SArchiveHandle ar{pak};
@@ -527,25 +599,27 @@ namespace ZipFile
 
 			for (auto& entry : ar)
 			{
-				File file{create_file(entry, ar.header)};
+				_smart_ptr<File> file = DEBUG_NEW File(entry, ar.header);
 
-				if (auto it = m_Files.find(file.name); it != m_Files.end()) printf("Eroror, file %s already mapped\n", file.name.data());
+				if (auto it = m_Files.find(file->name); it != m_Files.end()) printf("Eroror, file %s already mapped\n", file->name.data());
 
-				m_Files[file.name] = file;
+				m_Files[file->name] = file;
 			}
 			m_Archives.emplace_back(std::move(ar));
 			return true;
 		}
-		_smart_ptr<MyFile> FOpen(string_view fname)
-		{
-			if (auto it = m_Files.find(fname); it != m_Files.end()) return _smart_ptr<MyFile>(new MyFile(File::CreateFrom(&it->second)));
-			return nullptr;
-		}
+		//_smart_ptr<MyFile>
+		//_smart_ptr<MyFile>
+		//FOpen(string_view fname)
+		//{
+		//	if (auto it = m_Files.find(fname); it != m_Files.end()) return _smart_ptr<MyFile>(new MyFile(File::CreateFrom(&it->second)));
+		//	return nullptr;
+		//}
 		void Dump()
 		{
 			for (auto& f : m_Files)
 			{
-				printf("%*.*s\n\tcompressed: %s\n", f.first.size(), f.first.size(), f.first.data(), f.second.compressed ? "true" : "false");
+				printf("%*.*s\n\tcompressed: %s\n", f.first.size(), f.first.size(), f.first.data(), f.second->compressed ? "true" : "false");
 			}
 		}
 

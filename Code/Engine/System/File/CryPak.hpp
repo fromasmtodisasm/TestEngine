@@ -224,7 +224,7 @@ private:
 #endif
 	    ;
 
-	using FileList = MapType<ZipFile::File>;
+	using FileList = MapType<_smart_ptr<ZipFile::File>>;
 
 private:
 	IMiniLog*                m_pLog = Env::Log();
@@ -251,7 +251,7 @@ private:
 
 	FileList                         m_Files;
 
-	std::vector<ZipFile::MyFile*>    m_arrOpenFiles;
+	std::vector<ZipFile::MyFile>     m_arrOpenFiles;
 
 	bool                             m_RecordFileOpen = true;
 

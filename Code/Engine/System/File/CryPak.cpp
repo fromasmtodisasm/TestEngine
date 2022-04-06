@@ -170,12 +170,14 @@ namespace filehelpers
 
 }; // namespace filehelpers
 
+static const size_t s_defaultOpenFileSlots    = 128;
+static const size_t s_openFileSlotsGrowNumber = 32;
 CCryPak::CCryPak(IMiniLog* pLog, PakVars* pPakVars, const bool bLvlRes)
     : m_pLog(pLog)
 {
 	std::replace(m_strDataRootWithSlash.begin(), m_strDataRootWithSlash.end(), g_cNativeSlash, g_cNonNativeSlash);
 	m_strDataRootWithSlash[m_strDataRootWithSlash.size() - 1] = g_cNativeSlash;
-	m_arrOpenFiles.resize(128);
+	m_arrOpenFiles.resize(s_defaultOpenFileSlots);
 
 	m_pPakVars = pPakVars;
 }
@@ -228,16 +230,15 @@ bool CCryPak::OpenPackCommon(const char* szBindRoot, const char* szFullPath, uns
 
 	for (auto& entry : ar)
 	{
-		auto name       = string_view((char*)ar.header + entry.lLocalHeaderOffset + sizeof LocalFileHeader, entry.nFileNameLength); //
-		if (name.find("loadscreen") != string::npos)
+		_smart_ptr<File> file = DEBUG_NEW File(entry, ar.header);
+
+		if (auto it = m_Files.find(file->name); it != m_Files.end()) printf("Eroror, file %s already mapped\n", file->name.data());
+		if (file->name.find("loadscreen") != string::npos)
 		{
 			printf("here");
 		}
-		File file{create_file(entry, ar.header)};
 
-		if (auto it = m_Files.find(file.name); it != m_Files.end()) printf("Eroror, file %s already mapped\n", file.name.data());
-
-		m_Files[file.name] = file;
+		m_Files[file->name] = file;
 	}
 
 	m_Archives.emplace_back(std::move(ar));
@@ -467,7 +468,7 @@ void CCryPak::ParseAliases(const char* szCommandLine)
 		szName[(size_t)(szSep - szVal)] = 0;
 
 		// find next pair
-		const char* szSepNext = strchr(szSep + 1, ',');
+		const char* szSepNext           = strchr(szSep + 1, ',');
 
 		// get alias name
 		if (!szSepNext)
@@ -545,7 +546,7 @@ void CCryPak::SetAlias(const char* szName, const char* szAlias, bool bAdd)
 		{
 			SAFE_DELETE(tPrev->szAlias);
 			tPrev->nLen2   = strlen(szAlias);
-			tPrev->szAlias = new char[tPrev->nLen2 + 1]; // includes /0
+			tPrev->szAlias = DEBUG_NEW char[tPrev->nLen2 + 1]; // includes /0
 			strcpy(tPrev->szAlias, szAlias);
 			// make it lowercase
 	#if !CRY_PLATFORM_IOS && !CRY_PLATFORM_LINUX && !CRY_PLATFORM_ANDROID
@@ -556,16 +557,16 @@ void CCryPak::SetAlias(const char* szName, const char* szAlias, bool bAdd)
 	else
 	{
 		// add a new one
-		tNameAlias* tNew = new tNameAlias;
+		tNameAlias* tNew = DEBUG_NEW tNameAlias;
 
 		tNew->nLen1      = strlen(szName);
-		tNew->szName     = new char[tNew->nLen1 + 1]; // includes /0
+		tNew->szName     = DEBUG_NEW char[tNew->nLen1 + 1]; // includes /0
 		strcpy(tNew->szName, szName);
 		// make it lowercase
 		strlwr(tNew->szName);
 
 		tNew->nLen2   = strlen(szAlias);
-		tNew->szAlias = new char[tNew->nLen2 + 1]; // includes /0
+		tNew->szAlias = DEBUG_NEW char[tNew->nLen2 + 1]; // includes /0
 		strcpy(tNew->szAlias, szAlias);
 		// make it lowercase
 	#if !CRY_PLATFORM_IOS && !CRY_PLATFORM_LINUX && !CRY_PLATFORM_ANDROID
@@ -838,10 +839,41 @@ FILE* CCryPak::FOpen(const char* pName, const char* szMode, unsigned nInputFlags
 		}
 	}
 
-	if (auto data = GetFileData(pName); data)
+	if (File* pFileData = (File*)GetFileData(pName); pFileData)
 	{
-		INT_PTR nFile = m_arrOpenFiles.size() + CCryPak::g_nPseudoFileIdxOffset;
-		m_arrOpenFiles.push_back((MyFile*)data);
+		INT_PTR nFile         = m_arrOpenFiles.size() + CCryPak::g_nPseudoFileIdxOffset;
+
+		//////////////////////////////////////////////////////////////////////////////////////
+		// try to open the pseudofile from one of the zips, make sure there is no user alias
+		// find the empty slot and open the file there; return the handle
+		bool    foundFileSlot = false;
+		{
+			// fast path: try to find empty file slot
+			//AUTO_READLOCK(m_csOpenFiles);
+			for (nFile = 0; nFile < m_arrOpenFiles.size(); ++nFile)
+			{
+				if (m_arrOpenFiles[nFile].TryConstruct(pFileData, nOSFlags))
+				{
+					foundFileSlot = true;
+					break;
+				}
+			}
+		}
+		if (!foundFileSlot)
+		{
+			// slow path: wait for other file users to finish and then grow array of file slots
+			//AUTO_MODIFYLOCK(m_csOpenFiles);
+			const size_t newSize = m_arrOpenFiles.size() + s_openFileSlotsGrowNumber;
+			m_arrOpenFiles.resize(newSize);
+			nFile = newSize - 1;
+			if (!m_arrOpenFiles[nFile].TryConstruct(pFileData, nOSFlags))
+			{
+				CRY_ASSERT(false, "Newly created file slot is already in use");
+			}
+		}
+		//////////////////////////////////////////////////////////////////////////////////////
+
+		//m_arrOpenFiles.push_back((MyFile)pFileData);
 
 	#if !defined(_RELEASE)
 		if (g_cvars.pakVars.nLogAllFileAccess)
@@ -855,7 +887,7 @@ FILE* CCryPak::FOpen(const char* pName, const char* szMode, unsigned nInputFlags
 		#else
 			       "memory",
 			       pName,
-			       ((MyFile*)data)->m_File->offset
+			       ((MyFile*)pFileData)->m_pFileData->offset
 		#endif
 			);
 		}
@@ -911,7 +943,7 @@ int CCryPak::FSeek(FILE* handle, long seek, int mode)
 		INT_PTR nPseudoFile = ((INT_PTR)handle) - g_nPseudoFileIdxOffset;
 		//AUTO_READLOCK(m_csOpenFiles);
 		if ((UINT_PTR)nPseudoFile < m_arrOpenFiles.size())
-			return m_arrOpenFiles[nPseudoFile]->FSeek(seek, mode);
+			return m_arrOpenFiles[nPseudoFile].FSeek(seek, mode);
 	}
 
 	//int nResult = CIOWrapper::Fseek(hFile, seek, mode);
@@ -927,7 +959,7 @@ long CCryPak::FTell(FILE* handle)
 		//AUTO_READLOCK(m_csOpenFiles);
 		if ((UINT_PTR)nPseudoFile < m_arrOpenFiles.size())
 		{
-			return m_arrOpenFiles[nPseudoFile]->FTell();
+			return m_arrOpenFiles[nPseudoFile].FTell();
 		}
 	}
 	//return (long)CIOWrapper::FTell(hFile);
@@ -946,7 +978,7 @@ int CCryPak::FClose(FILE* hFile)
 		//AUTO_READLOCK(m_csOpenFiles);
 		if ((UINT_PTR)nPseudoFile < m_arrOpenFiles.size())
 		{
-	#if 0
+	#if 1
 			m_arrOpenFiles[nPseudoFile].Destruct();
 	#endif
 			return 0;
@@ -1169,7 +1201,7 @@ ZipFile::File CCryPak::create_file(ZipFile::CentralDirectory& entry, void* heade
 	#endif
 	bool  compressed = entry.desc.lSizeCompressed != entry.desc.lSizeUncompressed;
 	auto& lfh        = *(LocalFileHeader*)((char*)header + entry.lLocalHeaderOffset);
-	File  file{entry.lLocalHeaderOffset + sizeof LocalFileHeader + lfh.nFileNameLength + lfh.nExtraFieldLength, entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed};
+	File  file(entry.lLocalHeaderOffset + sizeof LocalFileHeader + lfh.nFileNameLength + lfh.nExtraFieldLength, entry.desc.lSizeUncompressed, entry.desc.lSizeCompressed, name, (char*)header, compressed);
 	return file;
 }
 
@@ -1188,7 +1220,7 @@ size_t CCryPak::FReadRaw(void* pData, size_t nSize, size_t nCount, FILE* hFile)
 		//AUTO_READLOCK(m_csOpenFiles);
 		if ((UINT_PTR)nPseudoFile < m_arrOpenFiles.size())
 		{
-			return m_arrOpenFiles[nPseudoFile]->FRead(pData, nSize, nCount, hFile);
+			return m_arrOpenFiles[nPseudoFile].FRead(pData, nSize, nCount, hFile);
 		}
 	}
 
@@ -1205,12 +1237,12 @@ CFileDataPtr CCryPak::GetFileData(const char* szName, unsigned int& nArchiveFlag
 	//ZipDir::FileEntry* pFileEntry = FindPakFileEntry(szName, nArchiveFlags, &pZip);
 	//if (pFileEntry)
 	//{
-	//	pResult = new CCachedFileData(this, pZip, nArchiveFlags, pFileEntry, szName);
+	//	pResult = DEBUG_NEW CCachedFileData(this, pZip, nArchiveFlags, pFileEntry, szName);
 	//}
 
 	if (auto it = m_Files.find(szName); it != m_Files.end())
 	{
-		pResult = (CFileDataPtr*)new MyFile(File::CreateFrom(&it->second));
+		pResult = (CFileDataPtr*)File::CreateFrom(it->second);
 	}
 	return pResult;
 }

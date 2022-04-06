@@ -160,6 +160,7 @@ int main(int argc, char* argv[])
 			Extract(g_Options.extract_file, g_Options.extract_base, g_Options.extract_pattern);
 	}
 
+	#if 0
 	if (g_Options.testing)
 	{
 		CPak testPak;
@@ -195,6 +196,8 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
+	#endif
+
 	#endif
 
 	ZipFile::CDREnd t{0};
