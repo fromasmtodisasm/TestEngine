@@ -104,8 +104,8 @@ void CStatObj::Render(const struct SRendParams& rParams, const Legacy::Vec3& t, 
 		m_IndexBuffer = SVertexStream();
 		Env::Renderer()->CreateIndexBuffer(&m_IndexBuffer, m_IndexedMesh.m_Indices, m_IndexedMesh.m_nFaceCount);
 
-		delete[] m_IndexedMesh.m_VertexBuffer;
-		delete[] m_IndexedMesh.m_Indices;
+		SAFE_DELETE_ARRAY(m_IndexedMesh.m_VertexBuffer);
+		SAFE_DELETE_ARRAY(m_IndexedMesh.m_Indices);
 	}
 
 	int texId = rParams.texture;

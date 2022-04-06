@@ -7,6 +7,9 @@ public:
 	{
 		Grass,
 	};
+	~MineWorld() {
+		printf("sldfkj");
+	}
 
 	void                                     init();
 
@@ -32,9 +35,9 @@ public:
 	int                                      entityCnt = 1;
 
 	std::unordered_map<glm::ivec3, IEntity*> blocks;
-	std::vector<IStatObj*>                   types;
+	std::vector<_smart_ptr<IStatObj>>        types;
 
-	IStatObj*                                m_pMtlBox;
+	_smart_ptr<IStatObj>                     m_pMtlBox;
 };
 
 class MineDebug
@@ -49,45 +52,45 @@ public:
 	void drawTmpBox(glm::vec3 pos1, glm::vec3 pos2);
 
 private:
-	IStatObj*             model = nullptr;
+	_smart_ptr<IStatObj>  model;
 	std::vector<IEntity*> tmpBoxes;
 };
 
 class MinePlayer
 {
 public:
-	void         init();
+	void               init();
 
-	void         update();
+	void               update();
 
-	void         destroyBlockOnCursor();
+	void               destroyBlockOnCursor();
 
-	void         placeBlockOnCursor();
+	void               placeBlockOnCursor();
 
-	void         move(glm::vec3 direction, float value);
+	void               move(glm::vec3 direction, float value);
 
-	bool         selectedPos(glm::ivec3& outBlockPos, glm::vec3& outPickPos, float& pickDistance) const;
+	bool               selectedPos(glm::ivec3& outBlockPos, glm::vec3& outPickPos, float& pickDistance) const;
 
-	bool         blockSideOnCursor(glm::ivec3& outBlockPos, glm::ivec3& outSidePos, float& pickDistance) const;
+	bool               blockSideOnCursor(glm::ivec3& outBlockPos, glm::ivec3& outSidePos, float& pickDistance) const;
 
-	void         applyMovement();
+	void               applyMovement();
 
-	bool         moveOutsideCollisionByPoint(glm::vec3& newPos, glm::vec3 point);
+	bool               moveOutsideCollisionByPoint(glm::vec3& newPos, glm::vec3 point);
 
-	bool         moveOutsideCollision(glm::vec3& newPos);
+	bool               moveOutsideCollision(glm::vec3& newPos);
 
-	IEntity*     entity = nullptr;
-	glm::vec3    movement{};
+	IEntity*           entity;
+	glm::vec3          movement{};
 
-	ISound*      m_pSetBlockSound;
-	ISound*      m_pDestroyBlockSound;
+	_smart_ptr<ISound> m_pSetBlockSound;
+	_smart_ptr<ISound> m_pDestroyBlockSound;
 
-	float        cameraDistance = -4.0;
-	float        destroyTime    = 0.0;
-	float        placeTime      = 0.0;
+	float              cameraDistance = -4.0;
+	float              destroyTime    = 0.0;
+	float              placeTime      = 0.0;
 
-	Legacy::Vec3 myPos;
-	int          m_ClickFrame = 0;
+	Legacy::Vec3       myPos;
+	int                m_ClickFrame = 0;
 };
 
 class MineUI

@@ -101,6 +101,9 @@ public:
 		if (m_VertexBuffer)
 			Env::Renderer()->ReleaseBuffer(m_VertexBuffer);
 		Env::Renderer()->ReleaseIndexBuffer(&m_IndexBuffer);
+
+		SAFE_DELETE_ARRAY(m_IndexedMesh.m_VertexBuffer);
+		SAFE_DELETE_ARRAY(m_IndexedMesh.m_Indices);
 	}
 
 	CStatObj(CIndexedMesh IndexedMesh);

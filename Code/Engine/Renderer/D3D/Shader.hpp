@@ -37,10 +37,10 @@ enum ED3DShError
 class CHWShader : public NoCopy
 {
 public:
-	_smart_ptr<ID3DBlob> m_ByteCode{};
-	ID3D11Resource*      m_D3DShader{};
-	IShader::Type        m_Type{};
-	string               m_EntryFunc;
+	_smart_ptr<ID3DBlob>   m_ByteCode{};
+	ComPtr<ID3D11Resource> m_D3DShader{};
+	IShader::Type          m_Type{};
+	string                 m_EntryFunc;
 	CHWShader(IShader::Type type, string entry)
 	    : m_Type(type)
 	    , m_EntryFunc(entry)
@@ -64,9 +64,9 @@ struct MemoryTag
 	}
 };
 
-class CShader : 
-	public MemoryTag,
-	public IShader
+class CShader :
+    public MemoryTag,
+    public IShader
 {
 	friend class ShaderMan;
 
@@ -117,9 +117,9 @@ public:
 	int                                    m_Flags   = 0;
 	int                                    m_Flags2  = 0;
 
-	ID3D11InputLayout*                     m_pInputLayout;
+	ComPtr<ID3D11InputLayout>              m_pInputLayout;
 	D3D11_SHADER_DESC                      m_Desc;
-	ID3D11ShaderReflection*                m_pReflection;
+	ComPtr<ID3D11ShaderReflection>         m_pReflection;
 	DynVertexFormat                        format;
 	std::array<CHWShader*, Type::E_NUM>    m_Shaders{0};
 };

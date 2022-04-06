@@ -34,10 +34,12 @@ void MineWorld::init()
 {
 	auto loadAssets = [this]()
 	{
-		auto grass = Env::I3DEngine()->MakeObject("minecraft/Grass_Block.obj");
+		_smart_ptr<IStatObj> obj;
+		obj.Assign_NoAddRef(Env::I3DEngine()->MakeObject("minecraft/Grass_Block.obj"));
 		//auto grass = Env::I3DEngine()->MakeObject("objects/editor/mtlbox.cgf");
 
-		types.push_back(grass);
+		types.push_back(obj.ReleaseOwnership());
+		
 	};
 
 	auto generateLevel = [this]()
@@ -137,7 +139,7 @@ void MineWorld::init()
 			CEntityDesc desc(nextEntity(), 0);
 			desc.name       = "Hero";
 			minecraft->Jack = Env::EntitySystem()->SpawnEntity(desc);
-			auto* Jack      = minecraft->Jack;
+			auto Jack      = minecraft->Jack;
 
 			Jack->SetIStatObj(object);
 			Jack->SetPos({-5, 50, -5});

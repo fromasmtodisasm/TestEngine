@@ -483,30 +483,17 @@ public:
 class ShaderMan
 {
 public:
-	void     RT_ShaderLoad(const char* name, int flags, uint64 nMaskGen, CShader* p);
+	void     RT_ShaderLoad(const char* name, int flags, uint64 nMaskGen, _smart_ptr<CShader>* p);
 	CShader* NewShader()
 	{
 		return DEBUG_NEW CShader;
 	}
 	IShader* Sh_Load(const char* name, int flags, uint64 nMaskGen);
-	bool Sh_LoadBinary(const char* name, int flags, uint64 nMaskGen, CShader* p) const
-	{
-		//return Env::Console()->GetCVar("r_SkipShaderCache")->GetIVal() ? nullptr : CShader::LoadBinaryShader(name, flags, nMaskGen);
-		return false;
-	}
+	bool     Sh_LoadBinary(const char* name, int flags, uint64 nMaskGen, CShader* p) const;
 
 	bool Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p);
-	void ReloadAll()
-	{
-		for (auto& s : m_Shaders)
-		{
-			s.second->Reload(0);
-		}
-	}
-	~ShaderMan()
-	{
-		printf("sldkfj");
-	}
+	void ReloadAll();
+	~ShaderMan();
 
 	std::map<string, _smart_ptr<CShader>> m_Shaders;
 };

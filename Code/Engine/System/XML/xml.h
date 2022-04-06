@@ -92,16 +92,18 @@ public:
 	tinyxml2::XMLNode* m_NodeList;
 };
 
-class CXMLDocument : public XDOM::IXMLDOMDocument
+class CXMLDocument : public XDOM::IXMLDOMDocument, _reference_target_t
 {
 public:
 	// Inherited via IXMLDOMDocument
 	virtual int AddRef() override
 	{
-		return 0;
+		_reference_target_t::AddRef();
+		return NumRefs();
 	}
 	virtual void Release() override
 	{
+		_reference_target_t::Release();
 	}
 	virtual XDOM::_DOMNodeType getNodeType() override
 	{
