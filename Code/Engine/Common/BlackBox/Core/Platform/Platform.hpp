@@ -455,9 +455,7 @@ inline DestinationType alias_cast(SourceType pPtr)
 // CryModule memory manager routines must always be included.
 // They are used by any module which doesn't define NOT_USE_CRY_MEMORY_MANAGER
 // No Any STL includes must be before this line.
-//#ifndef NOT_USE_CRY_MEMORY_MANAGER
-//#define NOT_USE_CRY_MEMORY_MANAGER
-#if 1 //#ifndef NOT_USE_CRY_MEMORY_MANAGER
+#ifndef NOT_USE_CRY_MEMORY_MANAGER
 	#define USE_NEWPOOL
 	#include <BlackBox/Memory/CryMemoryManager.h>
 #else

@@ -199,6 +199,9 @@ union UCol
 };
 
 //////////////////////////////////////////////////////////////////////////
+struct SVF_NONE // 12 bytes
+{
+};
 struct SVF_P3F // 12 bytes
 {
 	Legacy::Vec3 xyz;
@@ -367,6 +370,46 @@ _inline void* CreateVertexBuffer(int nFormat, int nVerts)
 		assert(0);
 	}
 	return NULL;
+}
+
+template<typename T>
+struct vertex_type
+{
+};
+
+template<>
+struct vertex_type<void>
+{
+	eVertexFormat value = eVertexFormat(0);
+};
+
+template<> struct vertex_type<SVF_P3F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F; };
+template<> struct vertex_type<SVF_P3F_C4B>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_C4B; };
+template<> struct vertex_type<SVF_P3F_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_T2F; };
+template<> struct vertex_type<SVF_P3F_C4B_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_C4B_T2F; };
+template<> struct vertex_type<SVF_TRP3F_C4B_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_TRP3F_C4B_T2F; };
+template<> struct vertex_type<SVF_P3F_C4B_C4B>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_C4B_C4B; };
+template<> struct vertex_type<SVF_P3F_N>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_N; };
+template<> struct vertex_type<SVF_P3F_N_C4B>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_N_C4B; };
+template<> struct vertex_type<SVF_P3F_N_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_N_T2F; };
+template<> struct vertex_type<SVF_P3F_N_C4B_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_N_C4B_T2F; };
+template<> struct vertex_type<SVF_P3F_N_C4B_C4B>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_N_C4B_C4B; };
+//template<> struct vertex_type<SVF_P3F_C4B_C4B_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_C4B_C4B_T2F; };
+template<> struct vertex_type<SVF_P3F_N_C4B_C4B_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_N_C4B_C4B_T2F; };
+//template<> struct vertex_type<SVF_T3F_B3F_N3F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_T3F_B3F_N3F; };
+template<> struct vertex_type<SVF_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_T2F; };
+template<> struct vertex_type<SVF_P3F_C4B_T2F_T2F>{ constexpr static eVertexFormat value = VERTEX_FORMAT_P3F_C4B_T2F_T2F; };
+
+template<typename T>
+struct is_valid_vertex_type
+{
+	constexpr static bool value = vertex_type<T>::value != eVertexFormat(0);
+};
+
+template<typename T>
+_inline T* CreateVertexBuffer(int nVerts)
+{
+		return ALLOC_BUFFER(T, nVerts);
 }
 
 #ifdef WIN64

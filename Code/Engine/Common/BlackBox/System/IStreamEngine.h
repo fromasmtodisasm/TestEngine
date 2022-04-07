@@ -229,7 +229,6 @@ public:
 	virtual ~IStreamEngine() {}
 };
 
-//FIXME: NOTIMPLEMENTED
 //////////////////////////////////////////////////////////////////////////
 class AutoSuspendTimeQuota
 {
@@ -237,16 +236,14 @@ public:
 	AutoSuspendTimeQuota(IStreamEngine* pStreamEngine)
 	{
 		CryError(__FUNCTION__);
-#if 0
 		m_pStreamEngine = pStreamEngine;
 		pStreamEngine->SuspendCallbackTimeQuota();
-#endif
 	}
 
 	~AutoSuspendTimeQuota()
 	{
 		CryError(__FUNCTION__);
-		//m_pStreamEngine->ResumeCallbackTimeQuota();
+		m_pStreamEngine->ResumeCallbackTimeQuota();
 	}
 
 protected:

@@ -19,6 +19,8 @@ add_sources("NoUberFile"
 		RenderThread.cpp
 		RenderThread.h
 		Shaders/FxParser.cpp
+		Terrain.cpp
+		Terrain.h
 	SOURCE_GROUP "Common"
 		Common/CommonRender.cpp
 		Common/CommonRender.h
@@ -47,6 +49,10 @@ add_sources("NoUberFile"
 		GraphicsPipeline/Common/GraphicsPipeline.h
 		GraphicsPipeline/Common/GraphicsPipelineStage.cpp
 		GraphicsPipeline/Common/GraphicsPipelineStage.h
+	SOURCE_GROUP "RenderElements"
+		RenderElements/Terrain.cpp
+		RenderElements/Terrain.h
+		RenderElements/RendElement.cpp
 )
 
 add_sources("NoUberFile"

@@ -24,24 +24,6 @@ float Script : STANDARDSGLOBAL
 //FIXME: shader parser
 //StructuredBuffer<float4x4> Transform;
 
-//namespace test
-//{
-//#define ALBEDO static vec3 albedo;
-//#define METALIC static float metallic;
-//#define ROUGHNESS static float roughness;
-//#define AO static float ao;
-//
-//ALBEDO    
-//METALIC   
-//ROUGHNESS 
-//AO        
-	//static vec3  albedo;
-	//static float metallic;
-	//static float roughness;
-	//static float ao;
-//}
-
-
 //--------------------------------------------------------------------------------------
 struct VS_INPUT
 {

@@ -170,11 +170,11 @@ add_sources(
 		ScriptSystem/ScriptObject.hpp
 		ScriptSystem/_ScriptableEx.hpp
 	SOURCE_GROUP "System"
+		System/CVarOverrides.h
 		System/ConsoleCommands.hpp
 		System/ConsoleRegistration.h
-		System/File/CryFile.h
 		System/CrySizer.hpp
-		System/CVarOverrides.h
+		System/File/CryFile.h
 		System/File/ICryPak.hpp
 		System/FrameProfiler.hpp
 		System/IBitStream.hpp
@@ -189,9 +189,9 @@ add_sources(
 		System/IPlatform.hpp
 		System/IProcess.hpp
 		System/IProjectManager.hpp
+		System/IResourceCollector.h
 		System/IStreamEngine.h
 		System/ISystem.hpp
-		System/IResourceCollector.h
 		System/ITextModeConsole.h
 		System/ITimer.hpp
 		System/IValidator.hpp

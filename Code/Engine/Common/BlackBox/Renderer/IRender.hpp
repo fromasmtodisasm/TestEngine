@@ -364,25 +364,24 @@ struct ISammplerState
 enum EDrawTextFlags : uint32
 {
 	eDrawText_Default,
-	eDrawText_Center         = BIT32(0),  //!< Centered alignment, otherwise right or left.
-	eDrawText_Right          = BIT32(1),  //!< Right alignment, otherwise center or left.
-	eDrawText_CenterV        = BIT32(2),  //!< Center vertically, otherwise top.
-	eDrawText_Bottom         = BIT32(3),  //!< Bottom alignment.
+	eDrawText_Center         = BIT32(0), //!< Centered alignment, otherwise right or left.
+	eDrawText_Right          = BIT32(1), //!< Right alignment, otherwise center or left.
+	eDrawText_CenterV        = BIT32(2), //!< Center vertically, otherwise top.
+	eDrawText_Bottom         = BIT32(3), //!< Bottom alignment.
 
-	eDrawText_2D             = BIT32(4),  //!< 3-component vector is used for xy screen position, otherwise it's 3d world space position.
+	eDrawText_2D             = BIT32(4), //!< 3-component vector is used for xy screen position, otherwise it's 3d world space position.
 
-	eDrawText_FixedSize      = BIT32(5),  //!< Font size is defined in the actual pixel resolution, otherwise it's in the virtual 800x600.
-	eDrawText_800x600        = BIT32(6),  //!< Position are specified in the virtual 800x600 resolution, otherwise coordinates are in pixels.
+	eDrawText_FixedSize      = BIT32(5), //!< Font size is defined in the actual pixel resolution, otherwise it's in the virtual 800x600.
+	eDrawText_800x600        = BIT32(6), //!< Position are specified in the virtual 800x600 resolution, otherwise coordinates are in pixels.
 
-	eDrawText_Monospace      = BIT32(7),  //!< Non proportional font rendering (Font width is same for all characters).
+	eDrawText_Monospace      = BIT32(7), //!< Non proportional font rendering (Font width is same for all characters).
 
-	eDrawText_Framed         = BIT32(8),  //!< Draw a transparent, rectangular frame behind the text to ease readability independent from the background.
+	eDrawText_Framed         = BIT32(8), //!< Draw a transparent, rectangular frame behind the text to ease readability independent from the background.
 
 	eDrawText_DepthTest      = BIT32(9),  //!< Text should be occluded by world geometry using the depth buffer.
 	eDrawText_IgnoreOverscan = BIT32(10), //!< Ignore the overscan borders, text should be drawn at the location specified.
 	eDrawText_LegacyBehavior = BIT32(11)  //!< Reserved for internal system use.
 };
-
 
 //////////////////////////////////////////////////////////////////////////
 //! This structure used in DrawText method of renderer.
@@ -392,11 +391,11 @@ struct SDrawTextInfo
 {
 	//! One of EDrawTextFlags flags.
 	//! @see EDrawTextFlags
-	int    flags;
+	int     flags;
 	//! Text color, (r,g,b,a) all members must be specified.
-	float  color[4];
-	float  xscale;
-	float  yscale;
+	float   color[4];
+	float   xscale;
+	float   yscale;
 	IFFont* font;
 
 	SDrawTextInfo()
@@ -407,6 +406,31 @@ struct SDrawTextInfo
 		color[0] = color[1] = color[2] = color[3] = 1;
 		font                                      = 0;
 	}
+};
+//////////////////////////////////////////////////////////////////////
+struct CObjFace
+{
+	CObjFace() { memset(this, 0, sizeof(CObjFace)); }
+	~CObjFace()
+	{
+	}
+
+	unsigned short v[3];
+	unsigned short t[3];
+	unsigned short n[3];
+	unsigned short b[3];
+	unsigned short shader_id;
+
+	//! tell if this surface is lit by the light (for dynamic lights)
+	bool           m_bLit;
+#if 0
+	//! plane equation for this surface (for dynamic lights)
+	Plane          m_Plane;
+	Vec3           m_Vecs[3];
+#endif
+
+	uchar m_dwFlags;
+	float m_fArea;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -640,115 +664,115 @@ struct IRenderer : public IRendererCallbackServer
 		FRONT_AND_BACK
 	};
 	//! Init the renderer, params are self-explanatory
-	virtual IWindow*       Init(int x, int y, int width, int height, unsigned int cbpp, int zbpp, int sbits, bool fullscreen, IWindow* window = nullptr)                                                                                   = 0;
+	virtual IWindow*       Init(int x, int y, int width, int height, unsigned int cbpp, int zbpp, int sbits, bool fullscreen, IWindow* window = nullptr) = 0;
 
 	//! Changes resolution of the window/device (doen't require to reload the level
-	virtual bool           ChangeResolution(int nNewWidth, int nNewHeight, int nNewColDepth, int nNewRefreshHZ, bool bFullScreen)                                                                                                          = 0;
+	virtual bool           ChangeResolution(int nNewWidth, int nNewHeight, int nNewColDepth, int nNewRefreshHZ, bool bFullScreen)                        = 0;
 
 	//! Shut down the renderer
-	virtual void           Release()                                                                                                                                                                                                       = 0;
+	virtual void           Release()                                                                                                                     = 0;
 
 	//! Should be called at the beginning of every frame
-	virtual void           BeginFrame(void)                                                                                                                                                                                                = 0;
+	virtual void           BeginFrame(void)                                                                                                              = 0;
 
 	//! Should be called at the end of every frame
-	virtual void           Update(void)                                                                                                                                                                                                    = 0;
+	virtual void           Update(void)                                                                                                                  = 0;
 
 	//! This renderer will share resources (textures) with specified renderer.
 	//! Specified renderer must be of same type as this renderer.
-	virtual void           ShareResources(IRenderer* renderer)                                                                                                                                                                             = 0;
+	virtual void           ShareResources(IRenderer* renderer)                                                                                           = 0;
 
-	virtual void           SetRenderCallback(IRenderCallback* pCallback)                                                                                                                                                                   = 0;
+	virtual void           SetRenderCallback(IRenderCallback* pCallback)                                                                                 = 0;
 
-	virtual void           GetViewport(int* x, int* y, int* width, int* height)                                                                                                                                                            = 0;
-	virtual void           SetViewport(int x = 0, int y = 0, int width = 0, int height = 0)                                                                                                                                                = 0;
-	virtual void           SetScissor(int x = 0, int y = 0, int width = 0, int height = 0)                                                                                                                                                 = 0;
+	virtual void           GetViewport(int* x, int* y, int* width, int* height)                                                                          = 0;
+	virtual void           SetViewport(int x = 0, int y = 0, int width = 0, int height = 0)                                                              = 0;
+	virtual void           SetScissor(int x = 0, int y = 0, int width = 0, int height = 0)                                                               = 0;
 
 	//! Draw a bbox specified by mins/maxs (debug puprposes)
-	virtual void           Draw3dBBox(const Legacy::Vec3& mins, const Legacy::Vec3& maxs)                                                                                                                                                  = 0;
+	virtual void           Draw3dBBox(const Legacy::Vec3& mins, const Legacy::Vec3& maxs)                                                                = 0;
 
 	//! Set the renderer camera
-	virtual void           SetCamera(const CCamera& cam)                                                                                                                                                                                   = 0;
+	virtual void           SetCamera(const CCamera& cam)                                                                                                 = 0;
 
 	//! Get the renderer camera
-	virtual const CCamera& GetCamera()                                                                                                                                                                                                     = 0;
+	virtual const CCamera& GetCamera()                                                                                                                   = 0;
 
 	//! Change display size
-	virtual bool           ChangeDisplay(unsigned int width, unsigned int height, unsigned int cbpp)                                                                                                                                       = 0;
+	virtual bool           ChangeDisplay(unsigned int width, unsigned int height, unsigned int cbpp)                                                     = 0;
 
 	//! Chenge viewport size
-	virtual void           ChangeViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)                                                                                                                         = 0;
+	virtual void           ChangeViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)                                       = 0;
 
-	#if 0
+#if 0
 	//! Write a message on the screen with additional flags.
 	//! for flags @see
 	virtual void           Draw2dText(float posX, float posY, const char* szText, const SDrawTextInfo& info)                                                                                                                               = 0;
-	#endif
+#endif
 
 	//! Draw a 2d image on the screen (Hud etc.)
-	virtual void           Draw2dImage(float xpos, float ypos, float w, float h, int texture_id, float s0 = 0, float t0 = 0, float s1 = 1, float t1 = 1, float angle = 0, float r = 1, float g = 1, float b = 1, float a = 1, float z = 1) = 0;
+	virtual void         Draw2dImage(float xpos, float ypos, float w, float h, int texture_id, float s0 = 0, float t0 = 0, float s1 = 1, float t1 = 1, float angle = 0, float r = 1, float g = 1, float b = 1, float a = 1, float z = 1) = 0;
 
 	//! Draw a image using the current matrix
-	virtual void           DrawImage(float xpos, float ypos, float w, float h, uint64 texture_id, float s0, float t0, float s1, float t1, float r, float g, float b, float a)                                                              = 0;
+	virtual void         DrawImage(float xpos, float ypos, float w, float h, uint64 texture_id, float s0, float t0, float s1, float t1, float r, float g, float b, float a)                                                              = 0;
 
-	virtual void           DrawFullScreenImage(int texture_id)                                                                                                                                                                             = 0;
+	virtual void         DrawFullScreenImage(int texture_id)                                                                                                                                                                             = 0;
 
 	//! Set the polygon mode (wireframe, solid)
-	virtual int            SetPolygonMode(int mode)                                                                                                                                                                                        = 0;
+	virtual int          SetPolygonMode(int mode)                                                                                                                                                                                        = 0;
 
 	//! Get screen width
-	virtual int            GetWidth()                                                                                                                                                                                                      = 0;
+	virtual int          GetWidth()                                                                                                                                                                                                      = 0;
 
 	//! Get screen height
-	virtual int            GetHeight()                                                                                                                                                                                                     = 0;
+	virtual int          GetHeight()                                                                                                                                                                                                     = 0;
 
 	//! Memory status information
-	virtual void           GetMemoryUsage(ICrySizer* Sizer) const                                                                                                                                                                          = 0;
+	virtual void         GetMemoryUsage(ICrySizer* Sizer) const                                                                                                                                                                          = 0;
 
 	//! Get a screenshot and save to a file
-	virtual void           ScreenShot(const char* filename = NULL)                                                                                                                                                                         = 0;
+	virtual void         ScreenShot(const char* filename = NULL)                                                                                                                                                                         = 0;
 
 	//! Project to screen
-	virtual void           ProjectToScreen(float ptx, float pty, float ptz,
-	                                       float* sx, float* sy, float* sz)                                                                                                                                                                = 0;
+	virtual void         ProjectToScreen(float ptx, float pty, float ptz,
+	                                     float* sx, float* sy, float* sz)                                                                                                                                                                = 0;
 
 	//! Unproject to screen
-	virtual int            UnProject(float sx, float sy, float sz,
-	                                 float* px, float* py, float* pz,
-	                                 const float modelMatrix[16],
-	                                 const float projMatrix[16],
-	                                 const int   viewport[4])                                                                                                                                                                                = 0;
+	virtual int          UnProject(float sx, float sy, float sz,
+	                               float* px, float* py, float* pz,
+	                               const float modelMatrix[16],
+	                               const float projMatrix[16],
+	                               const int   viewport[4])                                                                                                                                                                                = 0;
 
 	//! Unproject from screen
-	virtual int            UnProjectFromScreen(float sx, float sy, float sz,
-	                                           float* px, float* py, float* pz)                                                                                                                                                            = 0;
+	virtual int          UnProjectFromScreen(float sx, float sy, float sz,
+	                                         float* px, float* py, float* pz)                                                                                                                                                            = 0;
 
 	//! for editor
-	virtual void           GetModelViewMatrix(float* mat)                                                                                                                                                                                  = 0;
+	virtual void         GetModelViewMatrix(float* mat)                                                                                                                                                                                  = 0;
 
 	//! for editor
-	virtual void           GetModelViewMatrix(double* mat)                                                                                                                                                                                 = 0;
+	virtual void         GetModelViewMatrix(double* mat)                                                                                                                                                                                 = 0;
 
 	//! for editor
-	virtual void           GetProjectionMatrix(double* mat)                                                                                                                                                                                = 0;
+	virtual void         GetProjectionMatrix(double* mat)                                                                                                                                                                                = 0;
 
 	//! for editor
-	virtual void           GetProjectionMatrix(float* mat)                                                                                                                                                                                 = 0;
+	virtual void         GetProjectionMatrix(float* mat)                                                                                                                                                                                 = 0;
 
 	//! for editor
-	virtual Legacy::Vec3   GetUnProject(const Legacy::Vec3& WindowCoords, const CCamera& cam)                                                                                                                                              = 0;
+	virtual Legacy::Vec3 GetUnProject(const Legacy::Vec3& WindowCoords, const CCamera& cam)                                                                                                                                              = 0;
 
-	virtual void           RenderToViewport(const CCamera& cam, float x, float y, float width, float height)                                                                                                                               = 0;
+	virtual void         RenderToViewport(const CCamera& cam, float x, float y, float width, float height)                                                                                                                               = 0;
 
-	virtual void           PrintLine(const char* szText, SDrawTextInfo& info)                                                                                                                                                              = 0;
+	virtual void         PrintLine(const char* szText, SDrawTextInfo& info)                                                                                                                                                              = 0;
 
-	virtual int            EnumDisplayFormats(SDispFormat* formats)                                                                                                                                                                        = 0;
+	virtual int          EnumDisplayFormats(SDispFormat* formats)                                                                                                                                                                        = 0;
 
-	virtual float          ScaleCoordX(float value)                                                                                                                                                                                        = 0;
-	virtual float          ScaleCoordY(float value)                                                                                                                                                                                        = 0;
+	virtual float        ScaleCoordX(float value)                                                                                                                                                                                        = 0;
+	virtual float        ScaleCoordY(float value)                                                                                                                                                                                        = 0;
 
-	virtual void           SetState(State state, bool enable)                                                                                                                                                                              = 0;
-	inline void            SetState(int State){
+	virtual void         SetState(State state, bool enable)                                                                                                                                                                              = 0;
+	inline void          SetState(int State){
         // CryLog(__FUNCTION__);
         // NOT_IMPLEMENTED;
     };
@@ -855,6 +879,22 @@ struct IRenderer : public IRendererCallbackServer
 	virtual void*                          EF_Query(int Query, int Param = 0)                                                                                                                             = 0;
 
 	virtual unsigned int                   LoadTexture(const char* filename, int* tex_type = NULL, unsigned int def_tid = 0, bool compresstodisk = true, bool bWarn = true)                               = 0;
+
+	// Create new RE (RenderElement) of type (edt)
+	virtual CRendElement*                  EF_CreateRE(EDataType edt)                                                                                                                                     = 0;
+
+	// Begin using shaders (return first index for allow recursions)
+	virtual void                           EF_StartEf()                                                                                                                                                   = 0;
+
+	// Get CCObject for RE transformation
+	virtual CCObject*                      EF_GetObject(bool bTemp = false, int num = -1)                                                                                                                 = 0;
+
+	// Add shader to the list
+	virtual void                           EF_AddEf(int NumFog, CRendElement* re, IShader* ef, SRenderShaderResources* sr, CCObject* obj, int nTempl, IShader* efState = 0, int nSort = 0)                = 0;
+
+	// Draw all shaded REs in the list
+	virtual void                           EF_EndEf3D(int nFlags)                                                                                                                                         = 0;
+
 #if 0
 	virtual bool		 DXTCompress(byte* raw_data, int nWidth, int nHeight, ETEX_Format eTF, bool bUseHW, bool bGenMips, int nSrcBytesPerPix, MIPDXTcallback callback = 0)
 	{

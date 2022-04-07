@@ -7,6 +7,10 @@
 #include "Common/Include_HLSL_CPP_Shared.h"
 
 #include "RenderThread.h"
+#include <stb_image.h>
+
+#include <FreeImage.h>
+
 
 #define EDITOR (Env::Get()->IsEditing())
 // Globals
@@ -567,7 +571,9 @@ ID3DShaderResourceView* CD3DRenderer::CreateTextureFromFile(CCryFile file)
 	file.Seek(0, SEEK_SET);
 	std::vector<uint8_t> blob(texture_size);
 	file.Read(&blob[0], texture_size);
-	return CreateTexture(blob);
+
+	auto ext = PathUtil::GetExt(file.GetFilename());
+	return CreateTexture(blob, !strstr(ext, "png"));
 }
 
 ID3DShaderResourceView* CD3DRenderer::CreateTextureFromFile(const char* name)
@@ -626,7 +632,27 @@ bool CD3DRenderer::FindTexture(string filename, CCryFile& file, string& adjustet
 	return result;
 }
 
-ID3DShaderResourceView* CD3DRenderer::CreateTexture(std::vector<uint8_t>& blob)
+ID3DShaderResourceView* CD3DRenderer::CreateTextureOther(std::vector<uint8_t>& blob)
+{
+	int                     texture_index = -1;
+	ID3D11Resource*         pTexture{};
+	ID3DShaderResourceView* pSRView = NULL;
+	HRESULT                 HResult{};
+
+	//int                     x;
+	//int                     y;
+	//int                     channels;
+	
+	//auto                    result = stbi_load_16_from_memory(&blob[0], blob.size(), &x, &y, channels, 0);
+	auto MEMORY = FreeImage_OpenMemory(&blob[0], blob.size());
+	auto result = FreeImage_LoadFromMemory(FREE_IMAGE_FORMAT::FIF_PNG, MEMORY);
+
+
+	FreeImage_CloseMemory(MEMORY);
+	return pSRView;
+}
+
+ID3DShaderResourceView* CD3DRenderer::CreateTextureFromDDS(std::vector<uint8_t>& blob)
 {
 	int                     texture_index = -1;
 	ID3D11Resource*         pTexture{};
@@ -639,6 +665,14 @@ ID3DShaderResourceView* CD3DRenderer::CreateTexture(std::vector<uint8_t>& blob)
 	    &pTexture,
 	    &pSRView);
 	return pSRView;
+}
+
+ID3DShaderResourceView* CD3DRenderer::CreateTexture(std::vector<uint8_t>& blob, bool bDDS/* = true*/)
+{
+	if (bDDS)
+		return CreateTextureFromDDS(blob);
+	else
+		return CreateTextureOther(blob);
 }
 unsigned int CD3DRenderer::LoadTextureInternal(_smart_ptr<STexPic> pix, string fn, int* tex_type, unsigned int def_tid, bool compresstodisk, bool bWarn)
 {
@@ -697,9 +731,9 @@ int CD3DRenderer::AddTextureResource(string name, ID3DShaderResourceView* pSRVie
 
 		D3D11_TEXTURE2D_DESC desc;
 		pTexture2D->GetDesc(&desc);
-		auto d = CD3D11_TEXTURE2D_DESC(desc);
+		auto d        = CD3D11_TEXTURE2D_DESC(desc);
 
-		auto  pic_desc = static_cast<D3D11_TEXTURE2D_DESC*>(*pic.GetAddressOf());
+		auto pic_desc = static_cast<D3D11_TEXTURE2D_DESC*>(*pic.GetAddressOf());
 		memcpy(pic_desc, &desc, sizeof desc);
 		auto& it = m_TexPics[texture_index] = pic;
 	}
@@ -811,7 +845,7 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, ID3D11ShaderRe
 	Legacy::Vec2 uv_pos	 = Legacy::Vec2(x, y) / screen_size;
 	Legacy::Vec2 uv_size = Legacy::Vec2(w, h) / screen_size;
 #else
-	Legacy::Vec2 uv_pos = Legacy::Vec2(s0, t0);
+	Legacy::Vec2 uv_pos  = Legacy::Vec2(s0, t0);
 	Legacy::Vec2 uv_size = Legacy::Vec2(s1, t1);
 #endif
 

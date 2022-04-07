@@ -343,7 +343,9 @@ public:
 	virtual ITexPic*        EF_LoadTexture(const char* nameTex, uint flags, uint flags2, byte eTT, float fAmount1 = -1.0f, float fAmount2 = -1.0f, int Id = -1, int BindId = 0) override;
 	virtual void            SetTexture(int tnum, ETexType Type = eTT_Base) override;
 
-	ID3DShaderResourceView* CreateTexture(std::vector<uint8_t>& blob);
+	ID3DShaderResourceView* CreateTextureOther(std::vector<uint8_t>& blob);
+	ID3DShaderResourceView* CreateTextureFromDDS(std::vector<uint8_t>& blob);
+	ID3DShaderResourceView* CreateTexture(std::vector<uint8_t>& blob, bool bDDS=true);
 	ID3DShaderResourceView* CreateTextureFromFile(CCryFile file);
 	ID3DShaderResourceView* CreateTextureFromFile(const char* name);
 

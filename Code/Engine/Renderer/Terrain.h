@@ -28,7 +28,7 @@ DeclareUnique(CVertexBuffer, (Env::Renderer()->ReleaseBuffer))
 	    { Env::Renderer()->ReleaseBuffer(b); });
 }
 
-class CTerrain
+class CTerrainRenderer
 {
 	using Vec3       = Legacy::Vec3;
 	using VertexType = SVF_P3F_T2F;
@@ -36,8 +36,8 @@ class CTerrain
 	using TexturePtr = _smart_ptr<ITexPic>;
 
 public:
-	CTerrain();
-	~CTerrain();
+	CTerrainRenderer();
+	~CTerrainRenderer();
 
 	void Render(CCamera& Camera);
 	void Update();

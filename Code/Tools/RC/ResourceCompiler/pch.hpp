@@ -1,4 +1,5 @@
 #pragma once
+#define USE_DEBUG_NEW
 
 #include <BlackBox/Core/Platform/Platform.hpp>
 #include <BlackBox/Core/Platform/Windows.hpp>

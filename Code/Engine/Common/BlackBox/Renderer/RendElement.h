@@ -181,7 +181,7 @@ public:
 	CFColor             m_Color;
 	int                 m_SortId;
 
-	static CRendElement m_RootGlobal;
+	static CRendElement s_RootGlobal;
 	CRendElement*       m_NextGlobal;
 	CRendElement*       m_PrevGlobal;
 
@@ -207,26 +207,8 @@ protected:
 	}
 
 public:
-	CRendElement()
-	{
-		m_Type       = eDATA_Unknown;
-		m_NextGlobal = NULL;
-		m_PrevGlobal = NULL;
-		m_Flags      = 0;
-		m_CustomData = NULL;
-		for (int i = 0; i < MAX_CUSTOM_TEX_BINDS_NUM; i++)
-			m_CustomTexBind[i] = -1;
-		m_fFogScale = 0;
-		m_SortId    = 0;
-		m_LastVP    = NULL;
-		if (!m_RootGlobal.m_NextGlobal)
-		{
-			m_RootGlobal.m_NextGlobal = &m_RootGlobal;
-			m_RootGlobal.m_PrevGlobal = &m_RootGlobal;
-		}
-		if (this != &m_RootGlobal)
-			LinkGlobal(&m_RootGlobal);
-	}
+	CRendElement();
+	CRendElement(bool bGlobal);
 
 	virtual ~CRendElement()
 	{

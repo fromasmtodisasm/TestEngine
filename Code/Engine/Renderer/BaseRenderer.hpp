@@ -367,6 +367,21 @@ public:
 	virtual ITexPic*               EF_LoadTexture(const char* nameTex, uint flags, uint flags2, byte eTT, float fAmount1 = -1.0f, float fAmount2 = -1.0f, int Id = -1, int BindId = 0) = 0;
 	virtual void                   SetTexture(int tnum, ETexType Type = eTT_Base)                                                                                                      = 0;
 
+	// Create new RE (RenderElement) of type (edt)
+	virtual CRendElement*          EF_CreateRE(EDataType edt) override;
+
+	// Begin using shaders (return first index for allow recursions)
+	virtual void                   EF_StartEf() override;
+
+	// Get CCObject for RE transformation
+	virtual CCObject*              EF_GetObject(bool bTemp = false, int num = -1) override;
+
+	// Add shader to the list
+	virtual void                   EF_AddEf(int NumFog, CRendElement* re, IShader* ef, SRenderShaderResources* sr, CCObject* obj, int nTempl, IShader* efState = 0, int nSort = 0) override;
+
+	// Draw all shaded REs in the list
+	virtual void                   EF_EndEf3D(int nFlags) override;
+
 	void                           ShutDown();
 	template<typename RenderThreadCallback>
 	void ExecuteRenderThreadCommand(RenderThreadCallback&& callback)
@@ -478,6 +493,8 @@ public:
 
 #endif
 	std::unique_ptr<SRenderThread> m_RenderThread;
+
+	std::vector<CRenderObject>     m_RenderObjects;
 };
 
 class ShaderMan
@@ -491,8 +508,8 @@ public:
 	IShader* Sh_Load(const char* name, int flags, uint64 nMaskGen);
 	bool     Sh_LoadBinary(const char* name, int flags, uint64 nMaskGen, CShader* p) const;
 
-	bool Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p);
-	void ReloadAll();
+	bool     Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p);
+	void     ReloadAll();
 	~ShaderMan();
 
 	std::map<string, _smart_ptr<CShader>> m_Shaders;

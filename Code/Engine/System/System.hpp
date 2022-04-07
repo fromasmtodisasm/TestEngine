@@ -14,7 +14,7 @@
 #include "Timer.hpp"
 #include "Window.hpp"
 #include "PakVars.h"
-#include <BlackBox/System/IProcess.hpp>
+#include "StreamEngine/StreamEngine.h"
 
 #include "ScriptBinds/ScriptObjectConsole.hpp"
 #include "ScriptBinds/ScriptObjectRenderer.hpp"
@@ -37,8 +37,10 @@
 #define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
 
 struct IWindow;
+struct IProcess;
 struct IResourceCollector;
 
+class CStreamEngine;
 class CrySizerImpl;
 class CScriptObjectConsole;
 class CScriptObjectSystem;
@@ -128,11 +130,11 @@ struct SCryEngineStatsModuleInfo
 
 struct SCryEngineStatsGlobalMemInfo
 {
-	int    totalUsedInModules;
-	int    totalCodeAndStatic;
-	int    countedMemoryModules;
-	uint64 totalAllocatedInModules;
-	int    totalNumAllocsInModules;
+	int                                    totalUsedInModules;
+	int                                    totalCodeAndStatic;
+	int                                    countedMemoryModules;
+	uint64                                 totalAllocatedInModules;
+	int                                    totalNumAllocsInModules;
 	std::vector<SCryEngineStatsModuleInfo> modules;
 };
 
@@ -351,6 +353,7 @@ private:
 	bool   InitEntitySystem();
 	bool   InitNetwork();
 	bool   InitGUI();
+	bool   InitStreamEngine();
 	bool   Init3DEngine();
 	bool   InitSoundSystem();
 	bool   InitSubSystem();
@@ -650,6 +653,9 @@ private:
 
 	int              sys_dump_memstats = false;
 
+	//! THe streaming engine
+	CStreamEngine*   m_pStreamEngine{};
+	//! current active process
 	IProcess*        m_pProcess{};
 
 	INetwork*        m_pNetworkLegacy;

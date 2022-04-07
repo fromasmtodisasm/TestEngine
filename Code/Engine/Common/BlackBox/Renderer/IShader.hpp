@@ -557,7 +557,9 @@ public:
 		m_VPMatrixId                    = -1;
 		m_VPMatrixFrame                 = -1;
 	}
-	~CCObject();
+	~CCObject()
+	{
+	}
 
 	short                 m_Id;
 	short                 m_Counter;
@@ -691,9 +693,11 @@ public:
 	void         SetScissor();
 	void         SetAlphaState(CPShader* pPS, int nCurState);
 
+	#if 0
 	virtual void AddWaves(SWaveForm2** wf);
 	virtual void SetShaderFloat(const char* Name, float Val);
 	virtual void RemovePermanent();
+	#endif
 
 #ifdef _RENDERER
 	#ifdef DEBUGALLOC

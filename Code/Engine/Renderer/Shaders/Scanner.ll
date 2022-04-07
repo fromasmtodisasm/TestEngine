@@ -74,7 +74,7 @@ blank [ \t\r]
 float_number [+-]?([0-9]*[.])?[0-9]+
 
 %option stack
-%x skiptoendofline ifdef endif getname define defname defval fbo fbo1 clearmode rendermode incl comment comment2 str function functionbody cstbuffer technique pass sampler_state dst_state pr_state color_sample_state rasterization_state resource resource1 input_layout
+%x checkif skiptoendofline ifdef endif getname define defname defval fbo fbo1 clearmode rendermode incl comment comment2 str function functionbody cstbuffer technique pass sampler_state dst_state pr_state color_sample_state rasterization_state resource resource1 input_layout
 
 %{
   // Code run each time a pattern is matched.
@@ -106,7 +106,6 @@ FatalError {
     yy_push_state(technique);
 	return yy::parser::make_TECHNIQUE(loc);
 }
-
 <INITIAL,cstbuffer>register {
   CryError("REGISTER");
 	return yy::parser::make_REGISTER(loc);
@@ -379,7 +378,19 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
 
 {int}      return make_INT(yytext, loc);
 {float_number}      return make_FLOAT(yytext, loc);
-<INITIAL,cstbuffer,technique,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,pass,resource,resource1,fbo,fbo1,input_layout,function>{id}   return check_type(yytext, loc);
+<INITIAL,cstbuffer,technique,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,pass,resource,resource1,fbo,fbo1,input_layout,function>{id} {
+	std::string_view id = YYText();
+	if (auto it = macros.find(id.data()); it == macros.end())
+	{
+		return check_type(yytext, loc);
+		CryError("Unrecognized ID!!! at");
+	}
+	else
+	{
+		CryLog("Found macro %s", id.data());
+	}
+
+}
 <INITIAL,cstbuffer,technique,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,pass,resource,resource1,fbo,fbo1,input_layout,function>. {   
     if((yytext[0] >= 33) && (yytext[0] <= 126))
         return CURRENT_SYMBOL;
@@ -443,13 +454,27 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
     }
 }
 
-#define yy_push_state(skiptoendofline);
-#if yy_push_state(skiptoendofline);
-#endif yy_push_state(skiptoendofline);
+#define yy_push_state(skiptoendofline); 
+#if yy_push_state(skiptoendofline); 
+#endif yy_push_state(skiptoendofline); 
 #elif yy_push_state(skiptoendofline);
 
-<skiptoendofline>[^\n]*
-<skiptoendofline>\n     loc.lines (yyleng); loc.step (); yy_pop_state();
+<define>{id} current_define = YYText(); yy_push_state(skiptoendofline);
+<checkif>[^\n]* CryLog("#if: %s", YYText()); 
+<checkif>\n yy_pop_state(/*skiptoendofline*/);
+
+<skiptoendofline>[^\n]* {
+    if (!current_define.empty()) 
+    {
+		register_macro(current_define, YYText());
+		
+    }
+    else
+    {
+        register_macro("", "");
+    }
+}
+<skiptoendofline>\n     loc.lines (yyleng); loc.step (); yy_pop_state(); if (!current_define.empty()) {current_define.clear(); yy_pop_state();}
 
 <<EOF>> {
 	if(include_stack.empty())//(  --include_stack_ptr  <  0  )

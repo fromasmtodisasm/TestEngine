@@ -13,6 +13,8 @@
 
 #include <BlackBox/Core/Platform/platform_impl.inl>
 
+#include "RenderElements/Terrain.h"
+
 #include <filesystem>
 #pragma warning(push)
 #pragma warning(disable : 4244)
@@ -848,4 +850,42 @@ ShaderMan::~ShaderMan()
 		s->Release(true);
 	}
 	fclose(f);
+}
+
+CRendElement* CRenderer::EF_CreateRE(EDataType edt)
+{
+	CRendElement* re = NULL;
+	switch (edt)
+	{
+		#if 0
+	case eDATA_Mesh:
+		re = new CREMeshImpl;
+		break;
+	case eDATA_OcclusionQuery:
+		re = new CREOcclusionQuery;
+		break;
+		#endif
+	case eDATA_Terrain:
+		re = DEBUG_NEW Terrain;
+		break;
+
+	}
+	return re;
+}
+
+void CRenderer::EF_StartEf()
+{
+}
+void CRenderer::EF_EndEf3D(int nFlags)
+{
+	m_RenderObjects.clear();
+}
+
+CCObject* CRenderer::EF_GetObject(bool bTemp, int num)
+{
+	return nullptr;
+}
+
+void CRenderer::EF_AddEf(int NumFog, CRendElement* re, IShader* ef, SRenderShaderResources* sr, CCObject* obj, int nTempl, IShader* efState, int nSort)
+{
 }

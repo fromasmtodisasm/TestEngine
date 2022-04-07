@@ -82,6 +82,11 @@ add_sources(
 	SOURCE_GROUP "ZLibCompressor"
 		"ZLibCompressor.cpp"
 		"ZLibCompressor.h"
+	SOURCE_GROUP "StreamEngine"
+		"StreamEngine/StreamEngine.cpp"
+		"StreamEngine/StreamEngine.h"
+		"StreamEngine/StreamReadStream.cpp"
+		"StreamEngine/StreamReadStream.h"
 )
 end_sources()
 

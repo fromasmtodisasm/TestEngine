@@ -313,6 +313,10 @@ void CSystem::Quit()
 
 	m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FAST_SHUTDOWN, 0, 0);
 
+	// Shut down the streaming system as late as possible and after audio!
+	if (m_pStreamEngine)
+		m_pStreamEngine->Shutdown();
+
 	GetIRemoteConsole()->Stop();
 
 	extern std::vector<const char*> g_moduleCVars;
@@ -580,7 +584,7 @@ void CSystem::CreateSystemVars()
 	                                                                                "-1 = off");
 	g_cvars.sys_build_folder = REGISTER_STRING("sys_build_folder", "", 0, "Optionally specifies external full path to the build folder to read pak files from. Can be a full path to an external folder or a relative path to a folder inside of the local build.");
 
-	m_sys_user_folder = REGISTER_STRING("sys_user_folder", "", 0, "Specifies the name of the user folder inside the 'Users/<username>/Saved Games/' folder, otherwise if left blank the User folder will be stored inside the root.");
+	m_sys_user_folder        = REGISTER_STRING("sys_user_folder", "", 0, "Specifies the name of the user folder inside the 'Users/<username>/Saved Games/' folder, otherwise if left blank the User folder will be stored inside the root.");
 
 	if (m_env.IsEditor())
 	{
@@ -736,7 +740,11 @@ void CSystem::ShutDown()
 	SAFE_DELETE(m_pSystemEventDispatcher);
 	SAFE_DELETE(m_pCmdLine);
 	SAFE_DELETE(m_env.pProjectManager);
+
 	SAFE_RELEASE(m_env.pCryPak);
+	// Shut down the streaming system and console as late as possible and after audio!
+	SAFE_DELETE(m_pStreamEngine);
+
 	UnloadSubsystems();
 	SAFE_RELEASE(m_env.pConsole);
 	SAFE_RELEASE(m_env.pLog);
@@ -979,6 +987,10 @@ bool CSystem::Update(int updateFlags /* = 0*/, int nPauseMode /* = 0*/)
 #if !defined(RELEASE) || defined(RELEASE_LOGGING)
 	GetIRemoteConsole()->Update();
 #endif
+	if (m_pStreamEngine)
+	{
+		m_pStreamEngine->Update();
+	}
 
 	bool bNoUpdate = false;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
@@ -1200,7 +1212,7 @@ bool CSystem::IsCVarWhitelisted(const char* szName, bool silent) const
 //////////////////////////////////////////////////////////////////////////
 IStreamEngine* CSystem::GetStreamEngine()
 {
-	return nullptr;
+	return m_pStreamEngine;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1336,7 +1348,6 @@ XmlNodeRef CSystem::LoadXmlFromString(const char* sXmlString)
 {
 	return {};
 }
-
 
 XmlNodeRef CSystem::LoadXmlFile(const char* sFilename)
 {

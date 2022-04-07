@@ -143,8 +143,7 @@ int main(int argc, char* argv[])
 	parse_cmd(argc, argv);
 
 	ResourceCompiler RC;
-	(void)RC;
-	//RC.RegisterConverters();
+	RC.RegisterConverters();
 
 	#if 1
 	if (g_Options.list)
@@ -206,11 +205,11 @@ int main(int argc, char* argv[])
 
 	if (ti->HasSubVars())
 	{
-		//cstr name = "";
-		//for (int i = 0; (name = ti.EnumElem(i)) != 0; i++)
-		//{
-		//	printf("%s\n", name);
-		//}
+		cstr name = "";
+		for (int i = 0; (name = ti->EnumElem(i)) != 0; i++)
+		{
+			printf("%s\n", name);
+		}
 	}
 
 	printf("CDREnd str: %s", ti->ToString(&t, FToString().NamedFields(true).SkipDefault(false).Sub(true)).c_str());

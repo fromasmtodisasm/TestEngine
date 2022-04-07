@@ -1,0 +1,11 @@
+//=== Shared samplers =========================================================
+
+// Material textures. TODO: remove sRGBLookup as it cannot work with resource sets
+//#define DIFFUSEMAP            Texture2D   diffuseTex          : register(t0)       /*<sRGBLookup = true>*/    ;//= TM_Diffuse;
+#define DIFFUSEMAP            Texture2D   diffuseTex          : register(t0)                                    ;//= TM_Diffuse;
+#define NORMALMAP             Texture2D   normalsTex          : register(t1)       <UIName = "Normalmap">       ;//= TM_Normals;
+#define SPECULARMAP           Texture2D   specularTex         : register(t2)                                    ;//= TM_Specular;
+#define ENVIRONMENTCUBEMAP    TextureCube envCubeTex          : register(t3)                                    ;//= TM_Env;
+#define DETAILMAP             Texture2D   detailTex           : register(t4)       <sRGBLookup = true>          ;//= TM_Detail;
+
+SamplerState ssLinear : register(s0);

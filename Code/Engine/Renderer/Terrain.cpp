@@ -3,10 +3,10 @@
 #include <BlackBox/3DEngine/IStatObj.hpp>
 #include <BlackBox/Renderer/IRenderAuxGeom.hpp>
 
-#include "StatObject.hpp"
+//#include "StatObject.hpp"
 #include "CryHeaders.h"
 
-CTerrain::CTerrain()
+CTerrainRenderer::CTerrainRenderer()
 {
 	GenerateMesh();
 
@@ -17,13 +17,13 @@ CTerrain::CTerrain()
 
 }
 
-CTerrain::~CTerrain()
+CTerrainRenderer::~CTerrainRenderer()
 {
 	//Env::Renderer()->ReleaseBuffer(m_pVerts);
 	SAFE_DELETE(m_pRendElement);
 }
 
-void CTerrain::Render(CCamera& Camera)
+void CTerrainRenderer::Render(CCamera& Camera)
 {
 	DrawAxises();
 
@@ -36,11 +36,11 @@ void CTerrain::Render(CCamera& Camera)
 #endif
 }
 
-void CTerrain::Update()
+void CTerrainRenderer::Update()
 {
 }
 
-void CTerrain::DrawAxises()
+void CTerrainRenderer::DrawAxises()
 {
 	auto       redColor   = Legacy::Vec3(0, 0, 1);
 	auto       greenColor = Legacy::Vec3(0, 1, 0);
@@ -64,7 +64,7 @@ void CTerrain::DrawAxises()
 	Env::AuxGeomRenderer()->DrawLine({-axisLength, 0, 0}, {redColor}, {axisLength, 0, 0}, {redColor});
 	Env::AuxGeomRenderer()->DrawLine({0, 0, -axisLength}, {greenColor}, {0, 0, axisLength}, {greenColor});
 }
-void CTerrain::Nick(Legacy::Vec3 dir, Legacy::Vec3 normal, float from, float to, float step)
+void CTerrainRenderer::Nick(Legacy::Vec3 dir, Legacy::Vec3 normal, float from, float to, float step)
 {
 	auto  color  = UCol(Legacy::Vec3(1, 1, 1) * 0.15f);
 	auto  v      = glm::normalize(glm::cross(dir, normal));
@@ -93,7 +93,7 @@ std::unique_ptr<T[]> MakeUniqueBuffer(int nVerts)
 }
 
 const int PatchSize = 512;
-void      CTerrain::GenerateMesh()
+void      CTerrainRenderer::GenerateMesh()
 {
 	using Legacy::Vec2;
 	using Legacy::Vec3;

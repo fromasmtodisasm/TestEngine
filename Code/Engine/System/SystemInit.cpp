@@ -27,17 +27,17 @@ using stack_string = string;
 // Where possible, these are defaults used to initialize cvars
 // System.cfg can then be used to override them
 // This includes the Game DLL, although it is loaded elsewhere
-#define DLL_AUDIOSYSTEM      "AudioSystem"
-#define DLL_NETWORK          "Network"
-#define DLL_ENTITYSYSTEM     "EntitySystem"
-#define DLL_SCRIPTSYSTEM     "ScriptSystem"
-#define DLL_INPUT            "Input"
-#define DLL_PHYSICS          "Physics"
-#define DLL_MOVIE            "Movie"
-#define DLL_AI               "AISystem"
-#define DLL_ANIMATION        "Animation"
-#define DLL_FONT             "Font"
-#define DLL_3DENGINE         "3DEngine"
+#define DLL_AUDIOSYSTEM                     "AudioSystem"
+#define DLL_NETWORK                         "Network"
+#define DLL_ENTITYSYSTEM                    "EntitySystem"
+#define DLL_SCRIPTSYSTEM                    "ScriptSystem"
+#define DLL_INPUT                           "Input"
+#define DLL_PHYSICS                         "Physics"
+#define DLL_MOVIE                           "Movie"
+#define DLL_AI                              "AISystem"
+#define DLL_ANIMATION                       "Animation"
+#define DLL_FONT                            "Font"
+#define DLL_3DENGINE                        "3DEngine"
 #if 1
 	#define DLL_RENDERER_DX11 "RenderD3D11"
 #else
@@ -381,11 +381,11 @@ bool CSystem::Init()
 		}
 	#endif
 
-		//FIXME:
-		#if 0
+	//FIXME:
+	#if 0
 		// Set this as soon as the system cvars got initialized.
 		static_cast<CCryPak* const>(m_env.pCryPak)->SetLocalizationFolder(g_cvars.sys_localization_folder->GetString());
-		#endif
+	#endif
 
 		//////////////////////////////////////////////////////////////////////////
 		//Load engine files
@@ -404,6 +404,23 @@ bool CSystem::Init()
 #endif // CRY_PLATFORM_DESKTOP
 	if (m_pUserCallback)
 		m_pUserCallback->OnInit(this);
+	//////////////////////////////////////////////////////////////////////////
+	// Stream Engine
+	//////////////////////////////////////////////////////////////////////////
+	CryLogAlways("Stream Engine Initialization");
+	InitStreamEngine();
+	InlineInitializationProcessing("CSystem::Init StreamEngine");
+
+	{
+		if (m_pCmdLine->FindArg(eCLAT_Pre, STR_DX11_RENDERER))
+			m_env.pConsole->LoadConfigVar("r_Driver", STR_DX11_RENDERER);
+		else if (m_pCmdLine->FindArg(eCLAT_Pre, STR_DX12_RENDERER))
+			m_env.pConsole->LoadConfigVar("r_Driver", STR_DX12_RENDERER);
+		else if (m_pCmdLine->FindArg(eCLAT_Pre, STR_VK_RENDERER))
+			m_env.pConsole->LoadConfigVar("r_Driver", STR_VK_RENDERER);
+	}
+
+	CryLogAlways("BuildTime: " __DATE__ " " __TIME__);
 	//====================================================
 	std::string prompt = "Initializing System";
 	if (m_env.IsDedicated())
@@ -598,10 +615,10 @@ bool CSystem::InitLog()
 {
 	if (m_startupParams.pLog == nullptr)
 	{
-		m_env.pLog                      = DEBUG_NEW CLog(this);
-		string             sLogFileName = m_startupParams.sLogFileName != nullptr ? m_startupParams.sLogFileName : DEFAULT_LOG_FILENAME;
+		m_env.pLog                          = DEBUG_NEW CLog(this);
+		string                 sLogFileName = m_startupParams.sLogFileName != nullptr ? m_startupParams.sLogFileName : DEFAULT_LOG_FILENAME;
 
-		const ICmdLineArg* logfile      = m_pCmdLine->FindArg(eCLAT_Pre, "logfile");
+		const ICmdLineArg*     logfile      = m_pCmdLine->FindArg(eCLAT_Pre, "logfile");
 		if (logfile && strlen(logfile->GetValue()) > 0)
 		{
 			sLogFileName = logfile->GetValue();
@@ -631,8 +648,8 @@ ICVar* CSystem::attachVariable(const char* szVarName, int* pContainer, const cha
 {
 	IConsole* pConsole = GetIConsole();
 
-	ICVar* pOldVar = pConsole->GetCVar(szVarName);
-	int nDefault;
+	ICVar*    pOldVar  = pConsole->GetCVar(szVarName);
+	int       nDefault;
 	if (pOldVar)
 	{
 		nDefault = pOldVar->GetIVal();
@@ -661,7 +678,6 @@ ICVar* CSystem::attachVariable(const char* szVarName, int* pContainer, const cha
 	}
 	return pVar;
 }
-
 
 bool CSystem::InitRender()
 {
@@ -763,6 +779,20 @@ bool CSystem::InitGUI()
 	return false;
 }
 #endif
+#define CRY_PROFILE_FUNCTION FUNCTION_PROFILER
+//////////////////////////////////////////////////////////////////////////
+bool CSystem::InitStreamEngine()
+{
+	CRY_PROFILE_FUNCTION(PROFILE_LOADING_ONLY);
+	MEMSTAT_CONTEXT(EMemStatContextType::Other, "Init Stream Engine");
+
+	if (m_pUserCallback)
+		m_pUserCallback->OnInitProgress("Initializing Stream Engine...");
+
+	m_pStreamEngine = DEBUG_NEW CStreamEngine();
+
+	return true;
+}
 
 bool CSystem::Init3DEngine()
 {
@@ -924,13 +954,13 @@ bool CSystem::InitFileSystem_LoadEngineFolders()
 
 	m_env.pCryPak->SetGameFolder(pGameFolderCVar->GetString());
 
-	//FIXME:
-	#if 0
+//FIXME:
+#if 0
 	if (g_cvars.sys_build_folder->GetString() != nullptr && g_cvars.sys_build_folder->GetString()[0] != '\0')
 	{
 		m_env.pCryPak->AddMod(PathUtil::AddSlash(g_cvars.sys_build_folder->GetString()) + m_pProjectManager->GetCurrentAssetDirectoryRelative());
 	}
-	#endif
+#endif
 
 //FIXME:
 #if 0
@@ -1168,7 +1198,7 @@ bool CSystem::InitFileSystem()
 		bLvlRes = true;
 #endif // !defined(_RELEASE)
 
-	CCryPak* pCryPak;
+	CCryPak*            pCryPak;
 	pCryPak = DEBUG_NEW CCryPak(m_env.pLog, &g_cvars.pakVars, bLvlRes);
 //TODO:
 #if 0
@@ -1188,11 +1218,11 @@ bool CSystem::InitFileSystem()
 		fs::current_path(fs::path(temp.c_str()));
 #endif
 	}
-	//FIXME:
-	#if 0
+//FIXME:
+#if 0
 	if (m_bEditor || bLvlRes)
 		m_env.pCryPak->RecordFileOpen(ICryPak::RFOM_EngineStartup);
-	#endif
+#endif
 
 	{
 		char szEngineRootDir[_MAX_PATH];
@@ -1203,28 +1233,26 @@ bool CSystem::InitFileSystem()
 		const CryPathString engineDir = PathUtil::Make(CryPathString(engineRootDir.c_str()), CryPathString(CRYENGINE_ENGINE_FOLDER));
 		m_env.pCryPak->SetAlias("%ENGINE%", engineDir.c_str(), true);
 
-	#ifndef RELEASE
-		#if 0
+#ifndef RELEASE
+	#if 0
 		if (m_bEditor)
-			#else
+	#else
 		if (Env::Get()->IsEditor())
-		#endif
+	#endif
 		{
 			const CryPathString editorDir = PathUtil::Make(CryPathString(engineRootDir.c_str()), CryPathString("Editor"));
 			m_env.pCryPak->SetAlias("%EDITOR%", editorDir.c_str(), true);
 		}
-	#endif
+#endif
 	}
-
 
 	LogVersion();
 
 	((CCryPak*)m_env.pCryPak)->SetLog(m_env.pLog);
 
-	
 	((CCryPak*)m_env.pCryPak)->SetLog(m_env.pLog);
 
-	ILoadConfigurationEntrySink* pCVarsWhiteListConfigSink = nullptr;//GetCVarsWhiteListConfigSink();
+	ILoadConfigurationEntrySink* pCVarsWhiteListConfigSink = nullptr; //GetCVarsWhiteListConfigSink();
 #if CRY_PLATFORM_ANDROID && !defined(ANDROID_OBB)
 	string path = string(CryGetProjectStoragePath()) + "/system.cfg";
 #else

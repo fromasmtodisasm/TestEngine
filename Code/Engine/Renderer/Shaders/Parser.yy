@@ -103,7 +103,7 @@
         string Name;
     };
 
-    #define CryLog(...) 
+    //#define CryLog(...) 
 
 }
 

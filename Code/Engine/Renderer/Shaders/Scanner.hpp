@@ -1,7 +1,7 @@
 #pragma once
 
 #if !defined(yyFlexLexerOnce)
-#	include <FlexLexer.h>
+	#include <FlexLexer.h>
 #endif
 
 #undef YY_DECL
@@ -14,9 +14,9 @@ class Driver;
 
 class Scanner : public yyFlexLexer
 {
-  public:
+public:
 	Scanner(Driver& driver)
-		: driver(driver)
+	    : driver(driver)
 	{
 		symboltype_map.insert({"float"});
 		symboltype_map.insert({"float2"});
@@ -30,19 +30,19 @@ class Scanner : public yyFlexLexer
 	}
 	virtual ~Scanner() {}
 	virtual yy::parser::symbol_type ScanToken();
-	void							pop_state() { yy_pop_state(); }
-	void							goto_codebody();
-	bool							MakeInclude(const char* file_name);
-	void							eof();
+	void                            pop_state() { yy_pop_state(); }
+	void                            goto_codebody();
+	bool                            MakeInclude(const char* file_name);
+	void                            eof();
 
-	bool register_type(const string& str)
+	bool                            register_type(const string& str)
 	{
 		symboltype_map.insert(str);
 		return false;
 	}
 	void add_shader_fragment(const char* f)
 	{
-		defered_fragment = f + (" " + defered_fragment);		
+		defered_fragment = f + (" " + defered_fragment);
 	}
 	void add_shader_fragment()
 	{
@@ -63,19 +63,32 @@ class Scanner : public yyFlexLexer
 		return {};
 	}
 
-	yy::parser::symbol_type check_type(const std::string&				s,
-									   const yy::parser::location_type& loc);
-	void					print_state();
+	void register_macro(std::string_view key, std::string_view value)
+	{
+		if (key.empty())
+		{
+			return;
+		}
+		macros[string(key)] = value;
+		CryLog("Registered macro: %s", key.data());
+	}
 
-	Driver& driver;
+	yy::parser::symbol_type  check_type(const std::string&               s,
+	                                    const yy::parser::location_type& loc);
+	void                     print_state();
 
-	std::set<std::string> symboltype_map;
-	string				  string_buf;
-	string				  shader;
+	Driver&                  driver;
 
-	bool   canNowAddFragment	  = true;
-	bool   previewsCanAddFragment = false;
-	string defered_fragment;
+	std::set<std::string>    symboltype_map;
+	string                   string_buf;
+	string                   shader;
 
-	size_t pos = 0, len = 0;
+	bool                     canNowAddFragment      = true;
+	bool                     previewsCanAddFragment = false;
+	string                   defered_fragment;
+
+	size_t                   pos = 0, len = 0;
+
+	std::map<string, string> macros;
+	string                   current_define;
 };

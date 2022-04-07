@@ -233,3 +233,4 @@ struct CTexture
 #define PERDRAW_SLOT  BSLOT(3)
 #define MATERIAL_SLOT BSLOT(4)
 
+using CRenderObject = CCObject;
