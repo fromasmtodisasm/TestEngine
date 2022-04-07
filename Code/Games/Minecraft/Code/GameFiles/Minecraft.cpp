@@ -194,7 +194,7 @@ void MineUI::draw() const
 
 void Minecraft::init()
 {
-	Env::CryPak()->OpenPack("% fcdata%/objects.pak");
+	Env::CryPak()->OpenPacks("% fcdata%/*.pak");
 	minecraft = this;
 
 	world.init();
