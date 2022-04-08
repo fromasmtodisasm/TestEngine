@@ -7,6 +7,8 @@
   "dependencies": [
     "assimp",
     "bullet3",
+    "directxtex",
+    "directxtk",
     "crc32c",
     "dxsdk-d3dx",
     "freeimage",
