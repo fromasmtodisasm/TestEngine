@@ -48,7 +48,7 @@ public:
 	float        m_fov = 45.0f;
 	float        Ratio = 16.0f / 9;
 	float        zNear = 0.1f;
-	float        zFar  = 1000.f;
+	float        zFar  = 10000.f;
 
 	// Constructor with vectors
 	CCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = -90.f, float pitch = PITCH)

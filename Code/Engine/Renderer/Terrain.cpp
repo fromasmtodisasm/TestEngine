@@ -53,29 +53,9 @@ CTerrainRenderer::CTerrainRenderer()
 {
 	GenerateMesh(PatchSize);
 
-	m_Shader          = Env::Renderer()->Sh_Load("terrain");
+	m_Shader = Env::Renderer()->Sh_Load("terrain");
 
-	char* diffuse_tmp = "Terrain_/GrandCanyon/diffuse_4097_x0%d_y0%d.dds";
-	char* height_tmp  = "Terrain_/GrandCanyon/height_4097_x0%d_y0%d.dds";
-
-	char  buffer[256] = {};
-	int   nx          = 9;
-	int   ny          = 9;
-	for (int y = 0; y < ny; y++)
-	{
-		for (int x = 0; x < nx; x++)
-		{
-			sprintf(buffer, diffuse_tmp, x, y);
-			auto  Albedo = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Base);
-			sprintf(buffer, height_tmp, x, y);
-			auto  Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
-
-			Patch patch{Albedo, Height, glm::vec3(x, 0, 9 - y)};
-			m_Patches.emplace_back(patch);
-		}
-	}
-
-	m_Patches;
+	LoadTerrain();
 
 	m_pRendElement = Env::Renderer()->EF_CreateRE(EDataType::eDATA_Terrain);
 	// Set up rasterizer
@@ -101,7 +81,9 @@ CTerrainRenderer::CTerrainRenderer()
 
 	Env::Console()->AddConsoleVarSink(this);
 
-	REGISTER_CVAR2("r_tp", &CV_Regenerate, 64, 0, "");
+	REGISTER_CVAR2("r_TerrainPatchSize", &CV_TerrainPatchSize, 64, 0, "");
+	REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
+	REGISTER_CVAR2("r_TerrainPatchScale", &SV_Scale, 100.f, 0, "Terrain patch scale");
 }
 
 CTerrainRenderer::~CTerrainRenderer()
@@ -147,20 +129,26 @@ void CTerrainRenderer::DrawElement(CCamera& Camera)
 	// NOTE: to avoid matrix transpose need follow specific order of arguments in mul function in HLSL
 	auto         cb             = CreateCBuffer<HLSL_PerDrawCB>();
 
+	m_Shader->Bind();
 	for (auto& p : m_Patches)
 	{
 		glm::mat4 transform(1);
-		float scale = 20;
 		//transform   = glm::translate(transform, {0, 1, 0});
-		transform   = glm::scale(transform, glm::vec3(scale));
-		transform   = glm::translate(transform, p.Pos);
+		transform = glm::scale(transform, glm::vec3(SV_Scale));
+		transform = glm::translate(transform, p.Pos);
 
-		cb.World    = transform;
-		cb.MVP      = ViewProjection * cb.World;
-		cb.MV       = View * cb.World;
-		cb.Model    = cb.World;
+		auto pos  = glm::vec4(p.Pos, 1) * transform;
+		auto d    = glm::distance(Camera.GetPos(), glm::vec3(pos));
+		if (d > CV_DrawDistance)
+		{
+			continue;
+		}
 
-		m_Shader->Bind();
+		cb.World = transform;
+		cb.MVP   = ViewProjection * cb.World;
+		cb.MV    = View* cb.World;
+		cb.Model = cb.World;
+
 		ID3DBuffer* pBuffers[] = {
 		    cb.Buffer.Get(),
 		};
@@ -182,7 +170,7 @@ void CTerrainRenderer::Update()
 		m_pVerts.reset(nullptr);
 		Env::Renderer()->ReleaseIndexBuffer(&m_pIndices);
 
-		GenerateMesh(CV_Regenerate);
+		GenerateMesh(CV_TerrainPatchSize);
 
 		m_bNeedRegenerate = false;
 	}
@@ -240,7 +228,7 @@ std::unique_ptr<T[]> MakeUniqueBuffer(int nVerts)
 	return std::make_unique<T[]>(nVerts);
 }
 
-void      CTerrainRenderer::GenerateMesh(int size)
+void CTerrainRenderer::GenerateMesh(int size)
 {
 	using Legacy::Vec2;
 	using Legacy::Vec3;
@@ -253,18 +241,18 @@ void      CTerrainRenderer::GenerateMesh(int size)
 	};
 
 	auto PatchSize = size;
-	auto nVerts  = (PatchSize + 1) * (PatchSize + 1);
-	auto Verts   = MakeUniqueBuffer<VertexType>(nVerts);
-	auto nFaces  = 2 * (PatchSize) * (PatchSize);
+	auto nVerts    = (PatchSize) * (PatchSize);
+	auto Verts     = MakeUniqueBuffer<VertexType>(nVerts);
+	auto nFaces    = 2 * (PatchSize - 1) * (PatchSize - 1);
 	//auto Normals = DEBUG_NEW Vec3[3* PatchSize * PatchSize];
-	auto Indices = DEBUG_NEW Face[nFaces];
+	auto Indices   = DEBUG_NEW Face[nFaces];
 	for (int y = 0; y < PatchSize; y++)
 	{
 		for (int x = 0; x < PatchSize; x++)
 		{
 			auto idx       = y * PatchSize + x;
-			Verts[idx].xyz = Vec3(float(x) / PatchSize, 0, float(y) / PatchSize);
-			Verts[idx].st  = Vec2(float(x) / PatchSize, float(y) / PatchSize);
+			Verts[idx].xyz = Vec3(float(x) / (PatchSize - 1), 0, float(y) / (PatchSize - 1));
+			Verts[idx].st  = Vec2(float(x) / (PatchSize - 1), float(y) / (PatchSize - 1));
 		}
 	}
 	int idx = 0;
@@ -307,14 +295,37 @@ void      CTerrainRenderer::GenerateMesh(int size)
 	SAFE_DELETE(Indices);
 }
 
+void CTerrainRenderer::LoadTerrain()
+{
+	char* diffuse_tmp = "Terrain_/GrandCanyon/diffuse_4097_x0%d_y0%d.dds";
+	char* height_tmp  = "Terrain_/GrandCanyon/height_4097_x0%d_y0%d.dds";
+
+	char  buffer[256] = {};
+	int   nx          = 10;
+	int   ny          = 10;
+	for (int y = 0; y < ny; y++)
+	{
+		for (int x = 0; x < nx; x++)
+		{
+			sprintf(buffer, diffuse_tmp, x, y);
+			auto Albedo = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Base);
+			sprintf(buffer, height_tmp, x, y);
+			auto  Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
+
+			Patch patch{Albedo, Height, glm::vec3(x, 0, 9 - y)};
+			m_Patches.emplace_back(patch);
+		}
+	}
+}
+
 bool CTerrainRenderer::OnBeforeVarChange(ICVar* pVar, const char* sNewValue)
 {
-	if (!strcmp(pVar->GetName(), "r_tp"))
+	if (!strcmp(pVar->GetName(), "r_TerrainPatchSize"))
 	{
 		m_bNeedRegenerate = true;
 		return true;
 	}
-	return false;
+	return true;
 }
 
 void CTerrainRenderer::OnAfterVarChange(ICVar* pVar)

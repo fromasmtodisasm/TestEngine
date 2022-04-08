@@ -27,7 +27,7 @@
 float global_float <string desc="Test global variable";> = 0.5;
 
 float global_float2 <string desc="Test global variable";> = float(0);
-float2 global_float3 <string desc="Test global variable";> = float2(0,0);
+float2 global_float3 <string desc="Test global variable";> = float2(0, 0);
 
 //struct struct_definition
 //{
@@ -40,8 +40,8 @@ float2 global_float3 <string desc="Test global variable";> = float2(0,0);
 
 struct Light
 {
-	float3 Pos;
-	float3 Color;
+    float3 Pos;
+    float3 Color;
 };
 
 
@@ -51,13 +51,16 @@ cbuffer PerFrameCB : register(PERFRAME_SLOT)
     float4 SunColor;
     float4 AmbientStrength;
     float4 LightIntensity;
-	int    NumLights;
-}
+    float fogStart;
+    float fogEnd;
+    float3 fogColor;
+    int NumLights;
+};
 
 #define NUM_LIGHTS 4
 cbuffer LightsCB : register(LIGHTS_SLOT)
 {
-	Light g_Lights[NUM_LIGHTS];
+    Light g_Lights[NUM_LIGHTS];
 };
 
 cbuffer PerViewCB : register(PERVIEW_SLOT)
@@ -69,7 +72,7 @@ cbuffer PerViewCB : register(PERVIEW_SLOT)
         float4x4 View;
         float4x4 ViewProjection;
         float3 Eye;
-    }perViewCB;
+    } perViewCB;
 }
 
 cbuffer PerDrawCB : register(PERDRAW_SLOT)
@@ -83,10 +86,10 @@ cbuffer PerDrawCB : register(PERDRAW_SLOT)
 
 cbuffer MaterialCB : register(MATERIAL_SLOT)
 {
-	float3 albedo;
-	float  metallic;
-	float  roughness;
-	float  ao;
+    float3 albedo;
+    float metallic;
+    float roughness;
+    float ao;
 }
 
 
@@ -125,8 +128,8 @@ float4x4 GetViewProjMat()
 [[fn]]
 float3 GetNormal(float3 normal)
 {
-	float4x4 ModelView = mul(GetViewMatrix(), Model);
-	return normalize(mul((float3x3)Model, normal));
+    float4x4 ModelView = mul(GetViewMatrix(), Model);
+    return normalize(mul((float3x3) Model, normal));
 }
 
 [[fn]]
@@ -147,6 +150,12 @@ float4 Transform(in float3 Pos)
 float4 WorldTransofrm(in float3 Pos)
 {
     return mul(Model, float4(Pos, 1));
+}
+
+[[fn]]
+float4 ModelViewTransofrm(in float3 Pos)
+{
+    return mul(MV, float4(Pos, 1));
 }
 
 [[fn]]

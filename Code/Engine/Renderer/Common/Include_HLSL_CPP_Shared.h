@@ -1,32 +1,35 @@
 #ifdef __cplusplus
 // C++
 	#pragma once
-	//#pragma pack(push,4)
+//#pragma pack(push,4)
 
-	#define align alignas(sizeof Legacy::Vec4)
+	#define align              alignas(sizeof Legacy::Vec4)
     //static_assert(alignof(Legacy::Vec3) == sizeof(Legacy::Vec4), "Platform doesn't support this directly.");
-	#define hlsl_cbuffer(name) struct /*alignas(sizeof Legacy::Vec4)*/ HLSL_ ## name
+	#define hlsl_cbuffer(name) struct /*alignas(sizeof Legacy::Vec4)*/ HLSL_##name
 	#define hlsl_cbuffer_register(name, reg, slot) \
-	  enum { SLOT_ ## name = slot };               \
-	  struct alignas(16) HLSL_ ## name
-	//#define default_ctr(name)     HLSL_##name() = default;
+		enum                                       \
+		{                                          \
+			SLOT_##name = slot                     \
+		};                                         \
+		struct alignas(16) HLSL_##name
+    //#define default_ctr(name)     HLSL_##name() = default;
 	#define default_ctr(name)
 
-	#define hlsl_uint(member)     align uint member
-	#define hlsl_float(member)    align float member
-	#define hlsl_float2(member)   align Legacy::Vec2 member
-	#define hlsl_float3(member)   align Legacy::Vec3 member
-	#define hlsl_float4(member)   align Legacy::Vec4 member
-#if 0
-	#define hlsl_matrix44(member) Matrix44 member
-#else
-	#define hlsl_matrix44(member) D3DXMATRIX member
-#endif
+	#define hlsl_uint(member)   align uint member
+	#define hlsl_float(member)  align float member
+	#define hlsl_float2(member) align Legacy::Vec2 member
+	#define hlsl_float3(member) align Legacy::Vec3 member
+	#define hlsl_float4(member) align Legacy::Vec4 member
+	#if 0
+		#define hlsl_matrix44(member) Matrix44 member
+	#else
+		#define hlsl_matrix44(member) D3DXMATRIX member
+	#endif
 	#define hlsl_matrix34(member) Matrix34 member
 #else //__cplusplus
 // HLSL
 	#define hlsl_cbuffer(name)                      cbuffer name
-	#define hlsl_cbuffer_register(name, reg, float) cbuffer name: reg
+	#define hlsl_cbuffer_register(name, reg, float) cbuffer name : reg
 	#define hlsl_uint(member)                       uint member
 	#define hlsl_float(member)                      float member
 	#define hlsl_float2(member)                     float2 member
@@ -35,6 +38,18 @@
 	#define hlsl_matrix44(member)                   float4x4 member
 	#define hlsl_matrix34(member)                   float3x4 member
 #endif //__cplusplus
+
+hlsl_cbuffer_register(PerFrameConstantBuffer, register(b0), 0)
+{
+	hlsl_float4(SunDirection);
+	hlsl_float4(SunColor);
+	hlsl_float4(AmbientStrength);
+	hlsl_float4(LightIntensity);
+	hlsl_float(fogStart);
+	hlsl_float(fogEnd);
+	hlsl_float3(fogColor);
+	hlsl_uint(NumLights);
+};
 
 hlsl_cbuffer_register(Light, register(b1), 1)
 {

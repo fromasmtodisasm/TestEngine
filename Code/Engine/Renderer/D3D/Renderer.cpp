@@ -138,12 +138,15 @@ void CD3DRenderer::BeginFrame(void)
 void CD3DRenderer::UpdateConstants()
 {
 	//D3DPERF_BeginEvent(D3DC_Blue, L"UpdateConstants");
-	ScopedMap<SPerFrameConstantBuffer>(m_PerFrameConstants, [&](auto pConstData)
+	ScopedMap<HLSL_PerFrameConstantBuffer>(m_PerFrameConstants, [&](auto pConstData)
 	                                   {
 		                                   pConstData->SunDirection    = Legacy::Vec4(glm::normalize(Legacy::Vec3(2, 3, 4)), 1.f);
 		                                   pConstData->SunColor        = {r_SunColor, 1};
 		                                   pConstData->AmbientStrength = Legacy::Vec4(1, 1, 1, 1) * 0.3f;
 		                                   pConstData->NumLights       = m_LigthsList.size();
+		                                   pConstData->fogStart        = 0;
+		                                   pConstData->fogEnd          = 100;
+		                                   pConstData->fogColor        = Legacy::Vec3(m_ClearColor);
 		                                   pConstData->LightIntensity  = Legacy::Vec4(1, 1, 1, 1); });
 
 	ScopedMap<SPerViewConstantBuffer>(m_PerViewConstants, [&](auto pConstData)
@@ -474,7 +477,7 @@ bool CD3DRenderer::InitOverride()
 	{
 		return hr;
 	}
-	cbDesc.ByteWidth = Memory::AlignedSizeCB<SPerFrameConstantBuffer>::value;
+	cbDesc.ByteWidth = Memory::AlignedSizeCB<HLSL_PerFrameConstantBuffer>::value;
 	hr               = DEVICE->CreateBuffer(&cbDesc, NULL, &this->m_PerFrameConstants);
 	if (FAILED(hr))
 	{

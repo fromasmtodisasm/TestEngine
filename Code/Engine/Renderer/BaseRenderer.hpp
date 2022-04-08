@@ -390,14 +390,6 @@ public:
 	}
 
 protected:
-	struct alignas(16) SPerFrameConstantBuffer
-	{
-		Legacy::Vec4 SunDirection;
-		Legacy::Vec4 SunColor;
-		Legacy::Vec4 AmbientStrength;
-		Legacy::Vec4 LightIntensity;
-		int          NumLights;
-	};
 	struct alignas(16) SLights
 	{
 		Legacy::Vec3 Color;

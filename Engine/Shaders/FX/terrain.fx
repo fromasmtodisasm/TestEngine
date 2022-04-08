@@ -12,6 +12,7 @@ struct VS_OUTPUT
 {
     float4 Pos : SV_POSITION;
     float2 TC : TEXCOORD0;
+    float viewDistance : FOG;
 };
 HEIGHTMAP
 
@@ -27,6 +28,9 @@ VS_OUTPUT VS(
 
     float3 newPos = IN.Pos + float3(0, height - 0.5, 0);
     output.Pos = Transform(newPos);
+    
+    output.viewDistance = ModelViewTransofrm(IN.Pos).z;
+    // Calculate linear fog.    
     return output;
 }
 
@@ -35,10 +39,18 @@ DIFFUSEMAP
 [[fn]]
 float4 PS(VS_OUTPUT IN) : SV_Target0
 {    
-    return diffuseTex.Sample(ssLinear, IN.TC);
-    //return heightTex.Sample(ssLinear, IN.TC);
-    //return float4(IN.Pos.xyz, 1);
-    //return float4(1, 0, 0, 1);
+    float4 textureColor;
+    float4 finalColor;
+
+    // Sample the texture pixel at this location.
+    textureColor = diffuseTex.Sample(ssLinear, IN.TC);
+    
+    // Calculate the final color using the fog effect equation.
+
+    float fogFactor = saturate((fogEnd - IN.viewDistance) / (fogEnd - fogStart));
+    finalColor = /*fogFactor * */textureColor; // + (1.0 - fogFactor) * float4(fogColor, 1);
+
+    return finalColor;
 
 }
 

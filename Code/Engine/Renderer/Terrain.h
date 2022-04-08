@@ -43,7 +43,7 @@ public:
 		TexturePtr Height = nullptr;
 		glm::vec3  Pos;
 	};
-	const int PatchSize = 257;
+	const int PatchSize = 65;
 
 public:
 	CTerrainRenderer();
@@ -61,6 +61,8 @@ public:
 private:
 	void GenerateMesh(int size);
 
+	void LoadTerrain();
+
 private:
 	//std::vector<_smart_ptr<CStatObj>> m_Areas;
 
@@ -72,7 +74,9 @@ private:
 
 	std::vector<Patch>  m_Patches;
 
-	int                 CV_Regenerate;
+	int                 CV_TerrainPatchSize;
+	float               CV_DrawDistance;
+	float               SV_Scale;
 	bool                m_bNeedRegenerate{};
 
 	// Inherited via IConsoleVarSink
