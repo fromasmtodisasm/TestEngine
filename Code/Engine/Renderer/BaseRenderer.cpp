@@ -389,6 +389,7 @@ void CRenderer::UpdateIndexBuffer(SVertexStream* dest, const void* src, int inde
 
 void CRenderer::ReleaseIndexBuffer(SVertexStream* dest)
 {
+	m_BufferManager->Release(dest);
 }
 
 void CRenderer::CreateQuad()

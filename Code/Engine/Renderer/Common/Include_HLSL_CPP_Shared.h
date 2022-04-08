@@ -51,7 +51,7 @@ hlsl_cbuffer_register(PerDrawCB, register(b3), 3)
 	hlsl_matrix44(MVP);
 	hlsl_matrix44(MV);
 
-	bool       ApplyGrayScale;
+	//bool       ApplyGrayScale;
 };
 
 hlsl_cbuffer_register(MaterialCB, register(b4), 4)

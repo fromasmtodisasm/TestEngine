@@ -1079,10 +1079,11 @@ enum ETexType
 	eTT_Base,
 	eTT_Cubemap,
 	eTT_AutoCubemap,
-	eTT_Bumpmap,
 	eTT_DSDTBump,
 	eTT_Rectangle,
-	eTT_3D
+	eTT_Bumpmap,
+	eTT_Heightmap,
+	eTT_3D,
 };
 
 #define FFILT_NONE          0

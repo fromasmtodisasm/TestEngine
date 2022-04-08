@@ -25,6 +25,8 @@ CTerrain::~CTerrain()
 
 void CTerrain::Render(CCamera& Camera)
 {
+	return;
+
 	DrawAxises();
 
 #if 0

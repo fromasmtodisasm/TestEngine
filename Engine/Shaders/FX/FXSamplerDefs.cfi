@@ -7,5 +7,6 @@
 #define SPECULARMAP           Texture2D   specularTex         : register(t2)                                    ;//= TM_Specular;
 #define ENVIRONMENTCUBEMAP    TextureCube envCubeTex          : register(t3)                                    ;//= TM_Env;
 #define DETAILMAP             Texture2D   detailTex           : register(t4)       <sRGBLookup = true>          ;//= TM_Detail;
+#define HEIGHTMAP             Texture2D   heightTex           : register(t6)                                    ;//= TM_Height;
 
 SamplerState ssLinear : register(s0);

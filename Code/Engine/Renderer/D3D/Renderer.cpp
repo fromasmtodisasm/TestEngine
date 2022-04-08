@@ -9,8 +9,12 @@
 #include "RenderThread.h"
 #include <stb_image.h>
 
-#include <FreeImage.h>
+//#include <DirectXTex.h>
 
+#include <FreeImage.h>
+#include "../Terrain.h"
+
+CTerrainRenderer* gTerrainRenderer;
 
 #define EDITOR (Env::Get()->IsEditing())
 // Globals
@@ -124,6 +128,11 @@ void CD3DRenderer::BeginFrame(void)
 	m_GBuffer.OnBeginFrame(pDC, m_ClearColor);
 	pDC->ClearRenderTargetView(m_pMainRenderTargetView.Get(), &m_ClearColor[0]);
 	pDC->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView), D3D11_CLEAR_DEPTH, 1.f, 0);
+
+	if (gTerrainRenderer == nullptr)
+	{
+		gTerrainRenderer = DEBUG_NEW CTerrainRenderer;
+	}
 }
 
 void CD3DRenderer::UpdateConstants()
@@ -251,6 +260,8 @@ void CD3DRenderer::Update(void)
 			}
 			{
 				m_RenderAuxGeom->Flush();
+				gTerrainRenderer->Update();
+				gTerrainRenderer->Render(m_Camera);
 				D3DPERF_BeginEvent(D3DC_Blue, L"DrawImages");
 				for (auto img : m_DrawImages)
 				{
@@ -561,7 +572,8 @@ void CD3DRenderer::SetTexture(int tnum, ETexType Type)
 	auto t = m_TexturesMap[tnum].second;
 	if (t)
 	{
-		::GetDeviceContext()->PSSetShaderResources(0, 1, &t);
+		::GetDeviceContext()->PSSetShaderResources(int(Type), 1, &t);
+		::GetDeviceContext()->VSSetShaderResources(int(Type), 1, &t);
 	}
 }
 ID3DShaderResourceView* CD3DRenderer::CreateTextureFromFile(CCryFile file)
@@ -642,11 +654,10 @@ ID3DShaderResourceView* CD3DRenderer::CreateTextureOther(std::vector<uint8_t>& b
 	//int                     x;
 	//int                     y;
 	//int                     channels;
-	
-	//auto                    result = stbi_load_16_from_memory(&blob[0], blob.size(), &x, &y, channels, 0);
-	auto MEMORY = FreeImage_OpenMemory(&blob[0], blob.size());
-	auto result = FreeImage_LoadFromMemory(FREE_IMAGE_FORMAT::FIF_PNG, MEMORY);
 
+	//auto                    result = stbi_load_16_from_memory(&blob[0], blob.size(), &x, &y, channels, 0);
+	auto                    MEMORY = FreeImage_OpenMemory(&blob[0], blob.size());
+	auto                    result = FreeImage_LoadFromMemory(FREE_IMAGE_FORMAT::FIF_PNG, MEMORY);
 
 	FreeImage_CloseMemory(MEMORY);
 	return pSRView;
@@ -667,7 +678,7 @@ ID3DShaderResourceView* CD3DRenderer::CreateTextureFromDDS(std::vector<uint8_t>&
 	return pSRView;
 }
 
-ID3DShaderResourceView* CD3DRenderer::CreateTexture(std::vector<uint8_t>& blob, bool bDDS/* = true*/)
+ID3DShaderResourceView* CD3DRenderer::CreateTexture(std::vector<uint8_t>& blob, bool bDDS /* = true*/)
 {
 	if (bDDS)
 		return CreateTextureFromDDS(blob);

@@ -7,7 +7,7 @@ void CCameraController::ProcessKeyboard(Movement direction, float deltaTime, flo
 
 	auto  moveDirection = glm::vec3(
         CurrentCamera()->Front.x,
-        CurrentCamera()->mode == CCamera::Mode::FPS ? 0 : CurrentCamera()->Front.y,
+        /*CurrentCamera()->mode == CCamera::Mode::FPS ? 0 : */CurrentCamera()->Front.y,
         CurrentCamera()->Front.z);
 
 	if (direction == Movement::FORWARD)

@@ -220,7 +220,7 @@ void CBufferManager::Release(SVertexStream* pVertexStream)
 {
 	assert(pVertexStream);
 	reinterpret_cast<ID3D11Buffer*>(pVertexStream->m_VertBuf.m_pPtr)->Release();
-	delete pVertexStream;
+	//delete pVertexStream;
 }
 
 void CBufferManager::Draw(CVertexBuffer* src, SVertexStream* indicies, int numindices, int offsindex, int prmode, int vert_start, int vert_stop, CMatInfo* mi)

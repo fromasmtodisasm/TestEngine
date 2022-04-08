@@ -110,13 +110,15 @@ macro(add_common_includes)
 endmacro()
 
 if(OPTION_DX_RENDERER)
+	find_package(directxtex CONFIG REQUIRED)
+
 	message(STATUS "Using D3D11 Renderer Backend")
 	EngineModule(RenderD3D11 PCH "pch.hpp" SOLUTION_FOLDER "Engine")
 	add_common_libs()
 	add_common_includes()
 
 	target_compile_definitions(RenderD3D11 PUBLIC "DX_RENDERER")
-	target_link_libraries(${THIS_PROJECT} PRIVATE dxguid d3d11 d3d10 d3d9 d3dcompiler DXGI.lib)
+	target_link_libraries(${THIS_PROJECT} PRIVATE dxguid d3d11 d3d10 d3d9 d3dcompiler DXGI.lib Microsoft::DirectXTex)
 	add_library(Renderer ALIAS RenderD3D11)
 else()
 	cryfilecontainer(RenderD3D11 SOLUTION_FOLDER "Engine")
