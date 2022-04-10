@@ -14,7 +14,7 @@ public:
 
 	bool     Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p);
 
-	void     Reload(CShader* pShader);
+	CShader*     Reload(CShader* pShader);
 
 	void     ReloadAll();
 	~ShaderMan();

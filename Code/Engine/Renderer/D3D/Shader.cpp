@@ -116,7 +116,13 @@ int CShader::GetFlags2()
 
 bool CShader::Reload(int nFlags)
 {
-	return false;
+	auto shader =  gShMan->Reload(this);
+
+	m_pInputLayout = shader->m_pInputLayout;
+	m_Desc = shader->m_Desc;
+	m_pReflection = shader->m_pReflection;
+	*this       = *shader;
+	return true;
 }
 
 bool CShader::WaitUntilLoaded()

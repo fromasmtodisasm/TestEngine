@@ -55,7 +55,7 @@ CTerrainRenderer::CTerrainRenderer()
 
 	m_Shader = Env::Renderer()->Sh_Load("terrain");
 
-	LoadTerrain();
+	LoadTerrain("GrandCanyon");
 
 	m_pRendElement = Env::Renderer()->EF_CreateRE(EDataType::eDATA_Terrain);
 	// Set up rasterizer
@@ -84,6 +84,10 @@ CTerrainRenderer::CTerrainRenderer()
 	REGISTER_CVAR2("r_TerrainPatchSize", &CV_TerrainPatchSize, 64, 0, "");
 	REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
 	REGISTER_CVAR2("r_TerrainPatchScale", &SV_Scale, 100.f, 0, "Terrain patch scale");
+
+	REGISTER_COMMAND("r_TerrainShaderReload", [](IConsoleCmdArgs*)
+	    { gTerrainRenderer->m_Shader->Reload(0); },
+	    0, "Reload terrain shader");
 }
 
 CTerrainRenderer::~CTerrainRenderer()
@@ -295,10 +299,10 @@ void CTerrainRenderer::GenerateMesh(int size)
 	SAFE_DELETE(Indices);
 }
 
-void CTerrainRenderer::LoadTerrain()
+void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 {
-	char* diffuse_tmp = "Terrain/GrandCanyon/diffuse_4097_x0%d_y0%d.dds";
-	char* height_tmp  = "Terrain/GrandCanyon/height_4097_x0%d_y0%d.dds";
+	char* diffuse_tmp = "Terrain/%s/diffuse_4097_x0%d_y0%d.dds";
+	char* height_tmp  = "Terrain/%s/height_4097_x0%d_y0%d.dds";
 
 	char  buffer[256] = {};
 	int   nx          = 10;
@@ -307,9 +311,9 @@ void CTerrainRenderer::LoadTerrain()
 	{
 		for (int x = 0; x < nx; x++)
 		{
-			sprintf(buffer, diffuse_tmp, x, y);
+			sprintf(buffer, diffuse_tmp, baseFolder.data(), x, y);
 			auto Albedo = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Base);
-			sprintf(buffer, height_tmp, x, y);
+			sprintf(buffer, height_tmp, baseFolder.data(), x, y);
 			auto  Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
 
 			Patch patch{Albedo, Height, glm::vec3(x, 0, ny - y)};

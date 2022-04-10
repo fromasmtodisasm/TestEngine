@@ -61,9 +61,9 @@ public:
 private:
 	void GenerateMesh(int size);
 
-	void LoadTerrain();
+	void LoadTerrain(std::string_view baseFolder);
 
-private:
+public:
 	//std::vector<_smart_ptr<CStatObj>> m_Areas;
 
 	CVertexBufferUnique m_pVerts;
@@ -84,3 +84,5 @@ private:
 	virtual void        OnAfterVarChange(ICVar* pVar) override;
 	virtual void        OnVarUnregister(ICVar* pVar) override;
 };
+
+extern CTerrainRenderer* gTerrainRenderer;

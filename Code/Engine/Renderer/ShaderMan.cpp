@@ -46,12 +46,13 @@ bool ShaderMan::Compile(std::string_view name, int flags, uint64 nMaskGen, CShad
 		auto nTech = 0;
 		if (auto tech = pEffect->GetTechnique(technique.data(), technique.length()); tech != nullptr)
 			nTech = tech->GetId();
-		p->m_NameShader = real_name.data();
+		p->m_NameShader = name;
 		p->m_NameFile   = path.str();
 		if (CShader::LoadFromEffect(p, pEffect, nTech, pass))
 		{
 			p->ReflectShader();
 			p->CreateInputLayout();
+			p->m_Flags = flags;
 			p->m_Flags2 |= EF2_LOADED;
 			delete pEffect;
 			m_Shaders[string(name)] = p;
@@ -67,11 +68,20 @@ bool ShaderMan::Compile(std::string_view name, int flags, uint64 nMaskGen, CShad
 	return false;
 }
 
-void ShaderMan::Reload(CShader* pShader)
+CShader* ShaderMan::Reload(CShader* pShader)
 {
-	pShader->~CShader();
+	string name = pShader->GetName();
+	auto flags = pShader->GetFlags();
 
-	m_Shaders.find(pShader->m_NameShader);
+	auto it = m_Shaders.find(pShader->m_NameShader);
+	m_Shaders.erase(it);
+	/*if (pShader->m_NumRefs > 0)
+	{
+		pShader->~CShader();
+	}*/
+
+	auto shader = (CShader*)Sh_Load(name.c_str(), flags, 0);
+	return shader;
 
 }
 

@@ -15,7 +15,6 @@
 #include "../Terrain.h"
 
 CTerrainRenderer* gTerrainRenderer;
-
 #define EDITOR (Env::Get()->IsEditing())
 // Globals
 static CD3DRenderer _gcpRendD3D;
