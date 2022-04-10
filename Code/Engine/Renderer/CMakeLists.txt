@@ -21,6 +21,8 @@ add_sources("NoUberFile"
 		Shaders/FxParser.cpp
 		Terrain.cpp
 		Terrain.h
+		ShaderMan.cpp
+		ShaderMan.h
 	SOURCE_GROUP "Common"
 		Common/CommonRender.cpp
 		Common/CommonRender.h

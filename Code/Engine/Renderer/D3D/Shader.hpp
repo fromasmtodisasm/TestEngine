@@ -88,6 +88,7 @@ public:
 	virtual void             Bind() override;
 	virtual int              GetFlags() override;
 	virtual int              GetFlags2() override;
+	virtual bool             Reload(int nFlags) override;
 
 	virtual DynVertexFormat* GetDynVertexFormat()
 	{

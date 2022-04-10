@@ -297,8 +297,8 @@ void CTerrainRenderer::GenerateMesh(int size)
 
 void CTerrainRenderer::LoadTerrain()
 {
-	char* diffuse_tmp = "Terrain_/GrandCanyon/diffuse_4097_x0%d_y0%d.dds";
-	char* height_tmp  = "Terrain_/GrandCanyon/height_4097_x0%d_y0%d.dds";
+	char* diffuse_tmp = "Terrain/GrandCanyon/diffuse_4097_x0%d_y0%d.dds";
+	char* height_tmp  = "Terrain/GrandCanyon/height_4097_x0%d_y0%d.dds";
 
 	char  buffer[256] = {};
 	int   nx          = 10;
@@ -312,7 +312,7 @@ void CTerrainRenderer::LoadTerrain()
 			sprintf(buffer, height_tmp, x, y);
 			auto  Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
 
-			Patch patch{Albedo, Height, glm::vec3(x, 0, 9 - y)};
+			Patch patch{Albedo, Height, glm::vec3(x, 0, ny - y)};
 			m_Patches.emplace_back(patch);
 		}
 	}

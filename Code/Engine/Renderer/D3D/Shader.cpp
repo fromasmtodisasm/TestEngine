@@ -1,4 +1,5 @@
 #include "Shader.hpp"
+#include "ShaderMan.h"
 #include "Renderer.h"
 #include <BlackBox/Core/Utils.hpp>
 #include <filesystem>
@@ -8,6 +9,7 @@
 #include <d3dcompiler.h>
 
 namespace fs = std::filesystem;
+extern ShaderMan* gShMan;
 
 CShader::~CShader()
 {
@@ -18,6 +20,7 @@ CShader::~CShader()
 			SAFE_DELETE(s);
 		}
 	}
+
 }
 
 CShader& CShader::operator=(const CShader& src)
@@ -109,6 +112,11 @@ int CShader::GetFlags()
 int CShader::GetFlags2()
 {
 	return m_Flags2;
+}
+
+bool CShader::Reload(int nFlags)
+{
+	return false;
 }
 
 bool CShader::WaitUntilLoaded()
