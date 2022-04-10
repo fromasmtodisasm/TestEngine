@@ -134,7 +134,7 @@ void CTerrainRenderer::DrawElement(CCamera& Camera)
 	auto         cb             = CreateCBuffer<HLSL_PerDrawCB>();
 
 	m_Shader->Bind();
-	for (auto& p : m_Patches)
+	for (auto& p : m_Nodes)
 	{
 		glm::mat4 transform(1);
 		//transform   = glm::translate(transform, {0, 1, 0});
@@ -296,7 +296,7 @@ void CTerrainRenderer::GenerateMesh(int size)
 
 	Env::Renderer()->CreateIndexBuffer(&m_pIndices, Indices, 3 * nFaces);
 
-	SAFE_DELETE(Indices);
+	SAFE_DELETE_ARRAY(Indices);
 }
 
 void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
@@ -316,8 +316,8 @@ void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 			sprintf(buffer, height_tmp, baseFolder.data(), x, y);
 			auto  Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
 
-			Patch patch{Albedo, Height, glm::vec3(x, 0, ny - y)};
-			m_Patches.emplace_back(patch);
+			CTerrainNode patch{Albedo, Height, glm::vec3(x, 0, ny - y)};
+			m_Nodes.emplace_back(patch);
 		}
 	}
 }
