@@ -104,7 +104,7 @@ void CTerrainRenderer::Render(CCamera& Camera)
 
 	PrepareForDrawing();
 
-	DrawElement(Camera);
+	RenderNodes(Camera);
 }
 
 void CTerrainRenderer::PrepareForDrawing()
@@ -120,7 +120,7 @@ void CTerrainRenderer::PrepareForDrawing()
 	//::GetDeviceContext()->OMSetDepthStencilState(m_pDSStateMeshCurrent, 0);
 }
 
-void CTerrainRenderer::DrawElement(CCamera& Camera)
+void CTerrainRenderer::RenderNodes(CCamera& Camera)
 {
 	// Update our time
 	static DWORD dwTimeStart    = 0;

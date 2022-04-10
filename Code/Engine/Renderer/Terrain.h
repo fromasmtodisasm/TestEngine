@@ -62,7 +62,7 @@ public:
 
 	void Render(CCamera& Camera);
 	void PrepareForDrawing();
-	void DrawElement(CCamera& Camera);
+	void RenderNodes(CCamera& Camera);
 	void Update();
 
 	void DrawAxises();
