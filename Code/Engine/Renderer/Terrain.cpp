@@ -307,12 +307,15 @@ void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 	char  buffer[256] = {};
 	int   nx          = 10;
 	int   ny          = 10;
+	auto  Albedo      = Env::Renderer()->EF_LoadTexture("Textures/terrain/detail/detail_sand.dds", FT_NOREMOVE, 0, eTT_Base);
 	for (int y = 0; y < ny; y++)
 	{
 		for (int x = 0; x < nx; x++)
 		{
+			#if 0
 			sprintf(buffer, diffuse_tmp, baseFolder.data(), x, y);
 			auto Albedo = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Base);
+			#endif
 			sprintf(buffer, height_tmp, baseFolder.data(), x, y);
 			auto  Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
 

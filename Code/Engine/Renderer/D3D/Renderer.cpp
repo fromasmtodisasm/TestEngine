@@ -139,7 +139,7 @@ void CD3DRenderer::UpdateConstants()
 	//D3DPERF_BeginEvent(D3DC_Blue, L"UpdateConstants");
 	ScopedMap<HLSL_PerFrameConstantBuffer>(m_PerFrameConstants, [&](auto pConstData)
 	                                   {
-		                                   pConstData->SunDirection    = Legacy::Vec4(glm::normalize(Legacy::Vec3(2, 3, 4)), 1.f);
+		                                   pConstData->SunDirection    = Legacy::Vec4(Legacy::Vec3(0,-10,50), 1.f);
 		                                   pConstData->SunColor        = {r_SunColor, 1};
 		                                   pConstData->AmbientStrength = Legacy::Vec4(1, 1, 1, 1) * 0.3f;
 		                                   pConstData->NumLights       = m_LigthsList.size();
