@@ -43,6 +43,11 @@ public:
 	glm::vec3  Pos;
 };
 
+struct RenderNode
+{
+	glm::vec2 Min, Max;
+};
+
 template<typename T>
 class CVar
 {
@@ -60,6 +65,11 @@ public:
 			auto var = Env::Console()->GetCVar(m_Name);
 			SAFE_UNREGISTER_CVAR(var);
 		}
+	}
+	T& operator=(const T& val)
+	{
+		m_Val = val;
+		return m_Val;
 	}
 	operator T()
 	{
@@ -83,14 +93,18 @@ public:
 class CTerrainRenderer : IConsoleVarSink
 {
 public:
-	using Vec3          = Legacy::Vec3;
-	using VertexType    = SVF_P3F_T2F;
+	using Vec3           = Legacy::Vec3;
+	using VertexType     = SVF_P3F_T2F;
 
-	const int PatchSize = 65;
+	const int PatchSize  = 65;
+	glm::vec2 TerrainMin = glm::vec3(-float(0xffff));
+	glm::vec2 TerrainMax = glm::vec3(float(0xffff));
 
 public:
 	CTerrainRenderer();
 	~CTerrainRenderer();
+
+	void PrepareRenderNodes(glm::vec2 point, int level, glm::vec2 min, glm::vec2 max);
 
 	void Render(CCamera& Camera);
 	void PrepareForDrawing();
@@ -109,34 +123,38 @@ private:
 public:
 	//std::vector<_smart_ptr<CStatObj>> m_Areas;
 
-	CVertexBufferUnique               m_pVerts;
-	SVertexStream                     m_pIndices;
+	CVertexBufferUnique        m_pVerts;
+	SVertexStream              m_pIndices;
 
-	ShaderPtr                         m_Shader;
-	CRendElement*                     m_pRendElement;
+	ShaderPtr                  m_Shader;
+	CRendElement*              m_pRendElement;
 
-	std::vector<CTerrainNode>         m_Nodes;
-	std::vector<CTerrainNode>         m_NodesTmp;
+	std::vector<CTerrainNode>  m_Nodes;
+	std::vector<CTerrainNode>  m_NodesTmp;
 	//REGISTER_CVAR2("r_TerrainPatchSize", &CV_TerrainPatchSize, 64, 0, "");
 	//REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
 	//REGISTER_CVAR2("r_TerrainPatchScale", &CV_Scale, 100.f, 0, "Terrain patch scale");
 
-	CVarInt                           CV_TerrainPatchSize{"r_TerrainPatchSize", 65};
-	CVarFloat                         CV_DrawDistance{"r_DrawDistance", 1500.f};
-	CVarFloat                         CV_Scale{"r_TerrainPatchScale", 100.f};
-	bool                              m_bNeedRegenerate{};
-	ComPtr<ID3D11SamplerState>        LinearSampler;
+	CVarInt                    CV_TerrainPatchSize{"r_TerrainPatchSize", 65};
+	CVarFloat                  CV_DrawDistance{"r_DrawDistance", 1500.f};
+	CVarFloat                  CV_Scale{"r_TerrainScalePatch", 100.f};
+	bool                       m_bNeedRegenerate{};
+	ComPtr<ID3D11SamplerState> LinearSampler;
 
-	std::thread                       m_LoadingThread;
-	std::mutex                        m_NodesLock;
-	std::atomic_bool                  m_StopLoading;
+	std::thread                m_LoadingThread;
+	std::mutex                 m_NodesLock;
+	std::atomic_bool           m_StopLoading;
 	using Task = std::function<void()>;
-	std::deque<Task> m_Tasks;
+	std::deque<Task>        m_Tasks;
+	std::vector<RenderNode> m_RenderNodes;
+
+	CVarInt                 CV_PatchPerBatch{"r_PatchPerBatch", 10};
+	CVarInt                 CV_SleepMillisecondsInDownload{"r_SleepMillisecondsInDownload", 100};
 
 	// Inherited via IConsoleVarSink
-	virtual bool                      OnBeforeVarChange(ICVar* pVar, const char* sNewValue) override;
-	virtual void                      OnAfterVarChange(ICVar* pVar) override;
-	virtual void                      OnVarUnregister(ICVar* pVar) override;
+	virtual bool            OnBeforeVarChange(ICVar* pVar, const char* sNewValue) override;
+	virtual void            OnAfterVarChange(ICVar* pVar) override;
+	virtual void            OnVarUnregister(ICVar* pVar) override;
 };
 
 extern std::unique_ptr<CTerrainRenderer> gTerrainRenderer;

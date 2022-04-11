@@ -110,7 +110,7 @@ CTerrainRenderer::CTerrainRenderer()
 	rasterizerDesc.CullMode = D3D11_CULL_BACK;
 	GetDevice()->CreateRasterizerState(&rasterizerDesc, g_pRasterizerStateWire.GetAddressOf());
 
-	g_pRasterizerStateForMeshCurrent = g_pRasterizerStateSolid;
+	g_pRasterizerStateForMeshCurrent = g_pRasterizerStateWire;
 
 	Env::Console()->AddConsoleVarSink(this);
 
@@ -124,9 +124,9 @@ CTerrainRenderer::CTerrainRenderer()
 										int num_loaded = 0;
 		                              while (!m_StopLoading)
 		                              {
-			                              if (m_Tasks.empty() || num_loaded == 50)
+			                              if (m_Tasks.empty() || num_loaded == CV_PatchPerBatch)
 			                              {
-				                              std::this_thread::sleep_for(std::chrono::milliseconds(15));
+				                              std::this_thread::sleep_for(std::chrono::milliseconds(int(5000)));
 				                              num_loaded = 0;
 				                              continue;
 			                              }
@@ -157,9 +157,79 @@ CTerrainRenderer::~CTerrainRenderer()
 	SAFE_DELETE(m_pRendElement);
 }
 
+bool PointInQuad(glm::vec2 point, glm::vec2 min, glm::vec2 max)
+{
+	auto tmp = glm::max(min, max);
+	min      = glm::min(min, max);
+	max      = tmp;
+
+	if ((point.x >= min.x && point.y >= min.y) && (point.x <= max.x && point.y <= max.y))
+	{
+		return true;
+	}
+	return false;
+}
+
+enum NodePos
+{
+	UL = BIT(1),
+	BL = BIT(2),
+	UR = BIT(3),
+	BR = BIT(4),
+};
+
+void CTerrainRenderer::PrepareRenderNodes(glm::vec2 point, int level, glm::vec2 min, glm::vec2 max)
+{
+	if (level > 5)
+		return;
+	auto bl = min;
+	auto ur = max;
+	auto c  = max - min;
+	auto uc = {c.x, max.y};
+	auto bc = {c.x, min.y};
+	auto ul = {min.x, max.y};
+	auto br = {max.x, min.y};
+
+	// on left side
+	if (point.x <= (max - min).x)
+	{
+		//UR
+		m_RenderNodes.push_back(RenderNode{c, ur});
+		m_RenderNodes.push_back(RenderNode{{(min - max).x, max.x}, {(max - min).y, max.x}});
+		// bottom left
+		if (point.y <= (max - min).y)
+		{
+			m_RenderNodes.push_back(RenderNode{{(min - max).x, max.x}, {(max - min).y, max.x}});
+			PrepareRenderNodes(point, level + 1, min, min + max);
+		}
+		// upper left
+		else
+		{
+			PrepareRenderNodes(point, level + 1, min, min + max);
+		}
+	}
+	// on right
+	else
+	{
+		// right left
+		if (point.y <= (max - min).y)
+		{
+			PrepareRenderNodes(point, level + 1, min, min + max);
+		}
+		// upper right
+		else
+		{
+			PrepareRenderNodes(point, level + 1, min, min + max);
+		}
+	}
+}
+
 void CTerrainRenderer::Render(CCamera& Camera)
 {
 	DrawAxises();
+
+	auto p = Camera.GetPos();
+	PrepareRenderNodes({p.x, p.z}, 0, TerrainMin, TerrainMax);
 
 	PrepareForDrawing();
 
@@ -172,6 +242,7 @@ void CTerrainRenderer::PrepareForDrawing()
 	::GetDeviceContext()->VSSetSamplers(0, 1, LinearSampler.GetAddressOf());
 	//::GetDeviceContext()->OMSetDepthStencilState(CRenderAuxGeom::m_pDSStateZPrePass, 0);
 	//::GetDeviceContext()->RSSetState(g_pRasterizerStateWire);
+	//::GetDeviceContext()->RSSetState(g_pRasterizerStateForMeshCurrent);
 	::GetDeviceContext()->RSSetState(g_pRasterizerStateSolid);
 	//::GetDeviceContext()->OMSetBlendState(m_pBlendState, 0, 0xffffffff);
 
@@ -195,18 +266,29 @@ void CTerrainRenderer::RenderNodes(CCamera& Camera)
 
 	m_Shader->Bind();
 	//std::unique_lock lock(m_NodesLock);
+	int i = 0;
 	for (auto& p : m_Nodes)
 	{
+		i++;
+		if (i == 98)
+		{
+			printf("sldfkj");
+
+		}
+		
 		glm::mat4 transform(1);
 		//transform   = glm::translate(transform, {0, 1, 0});
-		transform = glm::scale(transform, glm::vec3(CV_Scale));
+		CV_Scale  = 100.f;
+		transform = glm::scale(transform, glm::vec3(CV_Scale, CV_Scale, CV_Scale));
+		auto pp   = glm::vec4(p.Pos, 1) * transform;
 		transform = glm::translate(transform, p.Pos);
+		//p.Pos     = glm::vec4(p.Pos, 1) * transform ;
 
 		auto pos  = glm::vec4(p.Pos, 1) * transform;
 		auto d    = glm::distance(Camera.GetPos(), glm::vec3(pos));
 		if (d > CV_DrawDistance)
 		{
-			continue;
+			//continue;
 		}
 
 		cb.World               = transform;
@@ -376,14 +458,14 @@ void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 	char* diffuse_tmp = "Terrain/%s/diffuse_2049_x0%d_y0%d.dds";
 	char* height_tmp  = "Terrain/%s/height_2049_x0%d_y0%d.dds";
 
-	int   nx          = 10;
-	int   ny          = 10;
+	int   nx          = 9;
+	int   ny          = 9;
 #ifdef DETAIL_MAP
 	auto Albedo = Env::Renderer()->EF_LoadTexture("Textures/terrain/detail/detail_sand.dds", FT_NOREMOVE, 0, eTT_Base);
 #endif
-	for (int y = 0; y < ny; y++)
+	for (int y = 0; y <= ny; y++)
 	{
-		for (int x = 0; x < nx; x++)
+		for (int x = 0; x <= nx; x++)
 		{
 #ifndef DETAIL_MAP
 			m_Tasks.push_back([=]()

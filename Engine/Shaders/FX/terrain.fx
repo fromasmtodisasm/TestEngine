@@ -50,7 +50,7 @@ VS_OUTPUT VS(
     output.N = WorldTransofrm(N);
 
     float h = height(IN.Pos.xz);
-    float3 newPos = IN.Pos + float3(0, h - 0.5, 0);
+    float3 newPos = IN.Pos + float3(0, h, 0);
     output.Pos = Transform(newPos);
     output.W = WorldTransofrm(newPos);
     
@@ -88,7 +88,7 @@ float4 PS(VS_OUTPUT IN) : SV_Target0
 
 
     //finalColor = float4(IN.N, 1);
-    //finalColor.rgb *= diffuseLighting.xxx + 0.3;
+    finalColor.rgb *= diffuseLighting.xxx + 0.3;
     //finalColor = lerp(finalColor, float4(1, 0, 0, 1), normalize(float4(IN.W, 1)));
 
     return finalColor;
