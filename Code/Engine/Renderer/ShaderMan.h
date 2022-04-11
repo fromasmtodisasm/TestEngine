@@ -1,5 +1,7 @@
 #pragma once
 class CShader;
+#include <thread>
+#include <mutex>
 
 class ShaderMan
 {
@@ -14,10 +16,23 @@ public:
 
 	bool     Compile(std::string_view name, int flags, uint64 nMaskGen, CShader* p);
 
-	CShader*     Reload(CShader* pShader);
+	CShader* Reload(CShader* pShader);
+	void     Update();
 
 	void     ReloadAll();
+	ShaderMan();
 	~ShaderMan();
 
-	std::map<string, _smart_ptr<CShader>> m_Shaders;
+	std::mutex                        m_ReloadMutex;
+	std::mutex                        m_ShadersAccessMutex;
+	std::map<string, CShader*>        m_Shaders;
+	std::vector<CShader*>             m_ToReload;
+	std::thread::id                   m_nMainThreadId;
+
+	std::function<void()>             m_Watch;
+	std::array<std::set<CShader*>, 2> m_WatchedNames;
+	int                               m_WatchIndex;
+
+	std::thread                       m_ShaderWatcher;
+	std::atomic<bool>                 m_bStopWatch;
 };

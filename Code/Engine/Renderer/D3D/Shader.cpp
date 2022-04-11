@@ -13,6 +13,11 @@ extern ShaderMan* gShMan;
 
 CShader::~CShader()
 {
+	Free();
+}
+
+void CShader::Free()
+{
 	for (auto s : m_Shaders)
 	{
 		if (s)
@@ -20,22 +25,29 @@ CShader::~CShader()
 			SAFE_DELETE(s);
 		}
 	}
-
 }
 
 CShader& CShader::operator=(const CShader& src)
 {
 	//uint32 i;
 
-	//mfFree();
+	//Free();
 
 	int   Offs = (int)(INT_PTR) & (((CShader*)0)->m_NumRefs);
 	byte* d    = (byte*)this;
 	byte* s    = (byte*)&src;
 	memcpy(&d[Offs], &s[Offs], sizeof(CShader) - Offs);
 
-	m_NameShader = src.m_NameShader;
-	m_NameFile   = src.m_NameFile;
+	m_NameShader   = src.m_NameShader;
+	m_NameFile     = src.m_NameFile;
+	m_pInputLayout = src.m_pInputLayout;
+	m_pReflection  = src.m_pReflection;
+
+	for (int i = 0; i < 3; i++)
+	{
+		m_Shaders[i] = src.m_Shaders[i];
+	}
+	
 	//m_NameShaderICRC = src.m_NameShaderICRC;
 
 #if 0
@@ -116,12 +128,12 @@ int CShader::GetFlags2()
 
 bool CShader::Reload(int nFlags)
 {
-	auto shader =  gShMan->Reload(this);
+	auto shader    = gShMan->Reload(this);
 
-	m_pInputLayout = shader->m_pInputLayout;
-	m_Desc = shader->m_Desc;
-	m_pReflection = shader->m_pReflection;
-	*this       = *shader;
+	//m_pInputLayout = shader->m_pInputLayout;
+	//m_Desc         = shader->m_Desc;
+	//m_pReflection  = shader->m_pReflection;
+	*this          = *shader;
 	return true;
 }
 
@@ -141,17 +153,18 @@ void CShader::SaveBinaryShader(std::string_view name, int flags, uint64 nMaskGen
 {
 	string   path = PathUtil::Make("%engineroot%/bin/shadercache", (string(name) + ".fxb").c_str());
 	CCryFile file(path.c_str(), "wb");
-	auto     Save = [&](CHWShader* pShader)->bool {
+	auto     Save = [&](CHWShader* pShader) -> bool
+	{
 		if (auto code = pShader->m_ByteCode; code->GetBufferPointer())
 		{
-            file.Write((void*)&pShader->m_Type, sizeof pShader->m_Type);
+			file.Write((void*)&pShader->m_Type, sizeof pShader->m_Type);
 			auto size = code->GetBufferSize();
-            file.Write((void*)&size, sizeof size);
-            file.Write(code->GetBufferPointer(), code->GetBufferSize());
+			file.Write((void*)&size, sizeof size);
+			file.Write(code->GetBufferPointer(), code->GetBufferSize());
 			return true;
 		}
 		return false;
-    };
+	};
 	if (m_Shaders[Type::E_VERTEX])
 	{
 		if (!Save(m_Shaders[Type::E_VERTEX]))
@@ -348,9 +361,9 @@ bool CShader::LoadFromEffect(CShader* pSH, PEffect pEffect, int nTechnique, int 
 			}
 			else
 			{
-				#if 0
+#if 0
 				res.second->Release();
-				#endif
+#endif
 				delete shader;
 				return false;
 			}

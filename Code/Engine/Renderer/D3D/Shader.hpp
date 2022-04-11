@@ -9,6 +9,8 @@
 #include <d3dcompiler.h>
 #include <dxsdk-d3dx/D3DX11.h>
 
+#include <filesystem>
+
 enum class ShaderBinaryFormat
 {
 	SPIRV  = 1,
@@ -47,12 +49,16 @@ public:
 	{
 		//auto r = m_D3DShader->Release();
 	}
+	~CHWShader()
+	{
+	}
 
 	void Bind()
 	{
 	}
 
 	bool Upload(ID3DBlob* pBlob, CShader* pSH);
+	
 };
 
 struct MemoryTag
@@ -77,6 +83,7 @@ public:
 	{
 	}
 	~CShader();
+	void                     Free();
 
 	CShader&                 operator=(const CShader& src);
 
@@ -112,15 +119,17 @@ public:
 	static CHWShader*                      LoadFromFile(const std::string_view text, IShader::Type type, const char* pEntry);
 	static std::pair<ID3DBlob*, ID3DBlob*> LoadFromMemory(const std::vector<std::string>& text, IShader::Type type, const char* pEntry);
 
+	ComPtr<ID3D11InputLayout>              m_pInputLayout;
+	ComPtr<ID3D11ShaderReflection>         m_pReflection;
+	std::array<CHWShader*, Type::E_NUM>    m_Shaders{0};
 	string                                 m_NameShader;
 	string                                 m_NameFile;
 	int                                    m_NumRefs = 0;
 	int                                    m_Flags   = 0;
 	int                                    m_Flags2  = 0;
 
-	ComPtr<ID3D11InputLayout>              m_pInputLayout;
-	D3D11_SHADER_DESC                      m_Desc;
-	ComPtr<ID3D11ShaderReflection>         m_pReflection;
 	DynVertexFormat                        format;
-	std::array<CHWShader*, Type::E_NUM>    m_Shaders{0};
+	D3D11_SHADER_DESC                      m_Desc;
+
+	std::filesystem::file_time_type        m_LastAccesTime;
 };

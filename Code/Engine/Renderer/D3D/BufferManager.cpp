@@ -219,7 +219,10 @@ void CBufferManager::Create(SVertexStream* dest, const void* src, int indexcount
 void CBufferManager::Release(SVertexStream* pVertexStream)
 {
 	assert(pVertexStream);
-	reinterpret_cast<ID3D11Buffer*>(pVertexStream->m_VertBuf.m_pPtr)->Release();
+	if (pVertexStream->m_VertBuf.m_pPtr)
+	{
+		reinterpret_cast<ID3D11Buffer*>(pVertexStream->m_VertBuf.m_pPtr)->Release();
+	}
 	//delete pVertexStream;
 }
 

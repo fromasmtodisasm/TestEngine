@@ -13,12 +13,17 @@
 
 #include <FreeImage.h>
 #include "../Terrain.h"
+#include <BlackBox/System/ConsoleRegistration.h>
 
-CTerrainRenderer* gTerrainRenderer;
+std::unique_ptr<CTerrainRenderer> gTerrainRenderer;
 #define EDITOR (Env::Get()->IsEditing())
 // Globals
 static CD3DRenderer _gcpRendD3D;
 CD3DRenderer*       gcpRendD3D = _gcpRendD3D;
+
+#include "../ShaderMan.h"
+
+extern ShaderMan* gShMan;
 
 namespace util
 {
@@ -63,6 +68,7 @@ CD3DRenderer::~CD3DRenderer()
 		SAFE_RELEASE(t.second.first);
 		SAFE_RELEASE(t.second.second);
 	}
+	gTerrainRenderer.reset(nullptr);
 	CRenderer::~CRenderer();
 }
 
@@ -111,6 +117,13 @@ IWindow* CD3DRenderer::Init(int x, int y, int width, int height, unsigned int cb
 	m_LigthsList[1] = {Legacy::Vec3{10.0f, 10.0f, 10.0f}, Legacy::Vec3{300, 300, 300}};
 	m_LigthsList[2] = {Legacy::Vec3{-10.0f, -10.0f, 10.0f}, Legacy::Vec3{300, 300, 300}};
 	m_LigthsList[3] = {Legacy::Vec3{-10.0f, -10.0f, 10.0f}, Legacy::Vec3{300, 300, 300}};
+	REGISTER_COMMAND(
+	    "r_ReloadTerrain", [](IConsoleCmdArgs*)
+	    { 
+			gTerrainRenderer.reset(nullptr);
+			gTerrainRenderer.reset(DEBUG_NEW CTerrainRenderer); },
+	    0, "");
+
 	return CRenderer::Init(x, y, width, height, cbpp, zbpp, sbits, fullscreen, window);
 }
 
@@ -121,6 +134,8 @@ bool CD3DRenderer::ChangeResolution(int nNewWidth, int nNewHeight, int nNewColDe
 
 void CD3DRenderer::BeginFrame(void)
 {
+	gShMan->Update();
+
 	D3DPERF_BeginEvent(D3DC_Blue, L"BeginFrame");
 	auto pDC = m_Device->Get<ID3D11DeviceContext>();
 
@@ -128,9 +143,9 @@ void CD3DRenderer::BeginFrame(void)
 	pDC->ClearRenderTargetView(m_pMainRenderTargetView.Get(), &m_ClearColor[0]);
 	pDC->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView), D3D11_CLEAR_DEPTH, 1.f, 0);
 
-	if (gTerrainRenderer == nullptr)
+	if (!gTerrainRenderer)
 	{
-		gTerrainRenderer = DEBUG_NEW CTerrainRenderer;
+		gTerrainRenderer.reset(DEBUG_NEW CTerrainRenderer);
 	}
 }
 
@@ -138,7 +153,7 @@ void CD3DRenderer::UpdateConstants()
 {
 	//D3DPERF_BeginEvent(D3DC_Blue, L"UpdateConstants");
 	ScopedMap<HLSL_PerFrameConstantBuffer>(m_PerFrameConstants, [&](auto pConstData)
-	                                   {
+	                                       {
 		                                   pConstData->SunDirection    = Legacy::Vec4(Legacy::Vec3(0,-10,50), 1.f);
 		                                   pConstData->SunColor        = {r_SunColor, 1};
 		                                   pConstData->AmbientStrength = Legacy::Vec4(1, 1, 1, 1) * 0.3f;
@@ -689,11 +704,7 @@ ID3DShaderResourceView* CD3DRenderer::CreateTexture(std::vector<uint8_t>& blob, 
 }
 unsigned int CD3DRenderer::LoadTextureInternal(_smart_ptr<STexPic> pix, string fn, int* tex_type, unsigned int def_tid, bool compresstodisk, bool bWarn)
 {
-	auto& filename = pix->m_Name;
-	if (auto it = m_LoadedTextureNames.find(filename); it != m_LoadedTextureNames.end())
-	{
-		return it->second;
-	}
+	auto&    filename      = pix->m_Name;
 
 	int      texture_index = -1;
 	CCryFile file;
@@ -723,6 +734,12 @@ unsigned int CD3DRenderer::LoadTextureInternal(_smart_ptr<STexPic> pix, string f
 
 unsigned int CD3DRenderer::LoadTexture(const char* filename, int* tex_type, unsigned int def_tid, bool compresstodisk, bool bWarn)
 {
+	auto t = stl::find_in_map(m_LoadedTextureNames, filename, -1);
+	if (t != -1)
+	{
+		return t;
+	}
+
 	_smart_ptr<STexPic> TexPic = DEBUG_NEW STexPic;
 	TexPic->m_Id               = NextTextureIndex();
 	TexPic->m_Name             = filename;

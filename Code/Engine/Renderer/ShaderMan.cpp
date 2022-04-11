@@ -4,12 +4,13 @@
 #include "ShaderMan.h"
 #include "D3D/Shader.hpp"
 #include <Shaders/FxParser.h>
+#include <filesystem>
 
 IShader* ShaderMan::Sh_Load(const char* name, int flags, uint64 nMaskGen)
 {
 	auto pShader = _smart_ptr<CShader>(NewShader());
 	//CShader* pShader;
-	gRenDev->ExecuteRenderThreadCommand([=,&pShader]
+	gRenDev->ExecuteRenderThreadCommand([=, &pShader]
 	                                    {
 												CryLog("load shader: %s", name);
 												RT_ShaderLoad(name, flags, nMaskGen, &pShader); });
@@ -47,15 +48,22 @@ bool ShaderMan::Compile(std::string_view name, int flags, uint64 nMaskGen, CShad
 		if (auto tech = pEffect->GetTechnique(technique.data(), technique.length()); tech != nullptr)
 			nTech = tech->GetId();
 		p->m_NameShader = name;
-		p->m_NameFile   = path.str();
+		p->m_NameFile   = shader_path;
 		if (CShader::LoadFromEffect(p, pEffect, nTech, pass))
 		{
 			p->ReflectShader();
 			p->CreateInputLayout();
 			p->m_Flags = flags;
+
+			std::filesystem::path sp(p->m_NameFile);
+			auto                  access = std::filesystem::last_write_time(sp);
+			p->m_LastAccesTime           = access;
+
 			p->m_Flags2 |= EF2_LOADED;
 			delete pEffect;
 			m_Shaders[string(name)] = p;
+			m_WatchedNames[1 - m_WatchIndex].insert(p);
+			p->AddRef();
 			return true;
 		}
 		p->m_Flags2 |= EF2_FAILED;
@@ -68,21 +76,41 @@ bool ShaderMan::Compile(std::string_view name, int flags, uint64 nMaskGen, CShad
 	return false;
 }
 
+#define CryGetCurrentThreadId() std::this_thread::get_id()
+
 CShader* ShaderMan::Reload(CShader* pShader)
 {
-	string name = pShader->GetName();
-	auto flags = pShader->GetFlags();
+	if (CryGetCurrentThreadId() != m_nMainThreadId)
+	{
+		//std::unique_lock lock(m_ReloadMutex);
+		m_ToReload.push_back(pShader);
+		return nullptr;
+	}
+	string name   = pShader->GetName();
+	auto   flags  = pShader->GetFlags();
 
-	auto it = m_Shaders.find(pShader->m_NameShader);
-	m_Shaders.erase(it);
+	//std::unique_lock lock(m_ShadersAccessMutex);
+	//auto             it = m_Shaders.find(pShader->m_NameShader);
+	//m_Shaders.erase(it);
 	/*if (pShader->m_NumRefs > 0)
 	{
 		pShader->~CShader();
 	}*/
 
-	auto shader = (CShader*)Sh_Load(name.c_str(), flags, 0);
+	auto   shader = (CShader*)Sh_Load(name.c_str(), flags | EF_RELOAD, 0);
 	return shader;
+}
 
+void ShaderMan::Update()
+{
+	std::unique_lock lock(m_ReloadMutex);
+	for each (auto& s in m_ToReload)
+	{
+		s->Reload(0);
+	}
+	m_ToReload.clear();
+
+	m_WatchIndex = Env::Renderer()->GetFrameID() % 2;
 }
 
 void ShaderMan::ReloadAll()
@@ -93,40 +121,90 @@ void ShaderMan::ReloadAll()
 	}
 }
 
+ShaderMan::ShaderMan()
+{
+	m_nMainThreadId = std::this_thread::get_id();
+	m_Watch         = [this]()
+	{
+
+#if 1
+		while (!m_bStopWatch)
+#endif
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(30));
+			for (auto& shader : m_WatchedNames[m_WatchIndex])
+			{
+				//std::unique_lock lock(m_ShadersAccessMutex);
+				std::unique_lock      lock(m_ReloadMutex);
+				std::filesystem::path sp(shader->m_NameFile);
+				auto                  access = std::filesystem::last_write_time(sp);
+				if (shader->m_LastAccesTime < access)
+				{
+					m_ToReload.push_back(shader);
+					//Reload(shader);
+				}
+			}
+		}
+		//CryLog("Stop watching");
+	};
+	m_WatchIndex = Env::Renderer()->GetFrameID() % 2;
+#if 1
+	m_ShaderWatcher = std::thread(m_Watch);
+#endif
+}
+
 ShaderMan::~ShaderMan()
 {
-	auto f = fopen("shader.txt", "wb");
+	auto f       = fopen("shader.txt", "wb");
+	m_bStopWatch = true;
+	m_ShaderWatcher.join();
+
 	for (auto& [k, v] : m_Shaders)
 	{
 		fprintf(f, "Shader: %s has %d references\n", k.c_str(), v->m_NumRefs);
-		auto s = v.ReleaseOwnership();
-		s->Release(true);
+		//auto s = v.ReleaseOwnership();
+		v->Release(true);
 	}
 	fclose(f);
 }
 
 void ShaderMan::RT_ShaderLoad(const char* name, int flags, uint64 nMaskGen, _smart_ptr<CShader>* p)
 {
-	if (auto& it = m_Shaders.find((name)); it != m_Shaders.end())
+	if (flags & EF_RELOAD)
+	{
+	}
+	auto shader = stl::find_in_map(m_Shaders, name, nullptr);
+	if (shader && !(flags & EF_RELOAD))
 	{
 		CryLog("Shader <%s> already cached", name);
-		//it->second->AddRef();
+		shader->AddRef();
 		auto s = (*p).ReleaseOwnership();
 		s->Release();
-		*p = it->second;
+		*p = shader;
 		return;
 	}
-	if (!Sh_LoadBinary(name, flags, nMaskGen, *p))
+	else if (shader)
 	{
-		if (Compile(name, flags, nMaskGen, *p))
+		shader->Release();
+	}
+	if (!shader)
+	{
+		shader = *p;
+	}
+	else
+	{
+		*p = shader;
+	}
+	if (!Sh_LoadBinary(name, flags, nMaskGen, shader))
+	{
+		if (Compile(name, flags, nMaskGen, shader))
 		{
-			(*p)->SaveBinaryShader(name, flags, nMaskGen);
+			shader->SaveBinaryShader(name, flags, nMaskGen);
 		}
 		else
 		{
-			(*p)->Release();
-			*p = nullptr;
+			shader->Release();
+			shader = nullptr;
 		}
 	}
 }
-

@@ -8,6 +8,7 @@
 
 CTerrain::CTerrain()
 {
+	return;
 	GenerateMesh();
 
 	m_Shader  = Env::Renderer()->Sh_Load("terrain");

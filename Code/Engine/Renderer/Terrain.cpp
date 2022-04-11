@@ -8,7 +8,8 @@
 
 //#include "StatObject.hpp"
 #include "CryHeaders.h"
-#include <BlackBox/System/ConsoleRegistration.h>
+#include "ShaderMan.h"
+extern ShaderMan* gShMan;
 
 template<typename T>
 struct ConstBuffer : public T
@@ -49,6 +50,24 @@ namespace
 	_smart_ptr<ID3D11RasterizerState> g_pRasterizerStateForMeshCurrent{};
 } // namespace
 
+namespace
+{
+	inline bool Check(HRESULT hr, const char* msg)
+	{
+		if (FAILED(hr))
+		{
+			CryFatalError(msg);
+			return false;
+		}
+		return true;
+	}
+} // namespace
+
+#define CheckError(stmnt, msg)            \
+	do {                                  \
+		if (!Check((stmnt), msg)) return; \
+	} while (false)
+
 CTerrainRenderer::CTerrainRenderer()
 {
 	GenerateMesh(PatchSize);
@@ -58,6 +77,17 @@ CTerrainRenderer::CTerrainRenderer()
 	LoadTerrain("GrandCanyon");
 
 	m_pRendElement = Env::Renderer()->EF_CreateRE(EDataType::eDATA_Terrain);
+
+	D3D11_SAMPLER_DESC desc;
+	ZeroStruct(desc);
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.Filter   = D3D11_FILTER(D3D11_FILTER_ANISOTROPIC);
+	CheckError(
+	    GetDevice()->CreateSamplerState(&desc, LinearSampler.GetAddressOf()),
+	    "Error create sampler for font");
+
 	// Set up rasterizer
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroStruct(rasterizerDesc);
@@ -81,20 +111,21 @@ CTerrainRenderer::CTerrainRenderer()
 
 	Env::Console()->AddConsoleVarSink(this);
 
-	REGISTER_CVAR2("r_TerrainPatchSize", &CV_TerrainPatchSize, 64, 0, "");
-	REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
-	REGISTER_CVAR2("r_TerrainPatchScale", &SV_Scale, 100.f, 0, "Terrain patch scale");
-
-	REGISTER_COMMAND("r_TerrainShaderReload", [](IConsoleCmdArgs*)
+	REGISTER_COMMAND(
+	    "r_TerrainShaderReload", [](IConsoleCmdArgs*)
 	    { gTerrainRenderer->m_Shader->Reload(0); },
 	    0, "Reload terrain shader");
+
 }
 
 CTerrainRenderer::~CTerrainRenderer()
 {
 	//Env::Renderer()->ReleaseBuffer(m_pVerts);
 
-	Env::Console()->RemoveConsoleVarSink(this);
+	if (Env::Console())
+	{
+		Env::Console()->RemoveConsoleVarSink(this);
+	}
 	SAFE_DELETE(m_pRendElement);
 }
 
@@ -109,7 +140,8 @@ void CTerrainRenderer::Render(CCamera& Camera)
 
 void CTerrainRenderer::PrepareForDrawing()
 {
-	//::GetDeviceContext()->PSSetSamplers(0, 1, CGlobalResources::Get().LinearSampler.GetAddressOf());
+	::GetDeviceContext()->PSSetSamplers(0, 1, LinearSampler.GetAddressOf());
+	::GetDeviceContext()->VSSetSamplers(0, 1, LinearSampler.GetAddressOf());
 	//::GetDeviceContext()->OMSetDepthStencilState(CRenderAuxGeom::m_pDSStateZPrePass, 0);
 	//::GetDeviceContext()->RSSetState(g_pRasterizerStateWire);
 	::GetDeviceContext()->RSSetState(g_pRasterizerStateSolid);
@@ -138,7 +170,7 @@ void CTerrainRenderer::RenderNodes(CCamera& Camera)
 	{
 		glm::mat4 transform(1);
 		//transform   = glm::translate(transform, {0, 1, 0});
-		transform = glm::scale(transform, glm::vec3(SV_Scale));
+		transform = glm::scale(transform, glm::vec3(CV_Scale));
 		transform = glm::translate(transform, p.Pos);
 
 		auto pos  = glm::vec4(p.Pos, 1) * transform;
@@ -148,10 +180,10 @@ void CTerrainRenderer::RenderNodes(CCamera& Camera)
 			continue;
 		}
 
-		cb.World = transform;
-		cb.MVP   = ViewProjection * cb.World;
-		cb.MV    = View* cb.World;
-		cb.Model = cb.World;
+		cb.World               = transform;
+		cb.MVP                 = ViewProjection * cb.World;
+		cb.MV                  = View * cb.World;
+		cb.Model               = cb.World;
 
 		ID3DBuffer* pBuffers[] = {
 		    cb.Buffer.Get(),
@@ -298,7 +330,7 @@ void CTerrainRenderer::GenerateMesh(int size)
 
 	SAFE_DELETE_ARRAY(Indices);
 }
-
+//#define DETAIL_MAP
 void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 {
 	char* diffuse_tmp = "Terrain/%s/diffuse_4097_x0%d_y0%d.dds";
@@ -307,17 +339,19 @@ void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 	char  buffer[256] = {};
 	int   nx          = 10;
 	int   ny          = 10;
+	#ifdef DETAIL_MAP
 	auto  Albedo      = Env::Renderer()->EF_LoadTexture("Textures/terrain/detail/detail_sand.dds", FT_NOREMOVE, 0, eTT_Base);
+	#endif
 	for (int y = 0; y < ny; y++)
 	{
 		for (int x = 0; x < nx; x++)
 		{
-			#if 0
+#ifndef DETAIL_MAP
 			sprintf(buffer, diffuse_tmp, baseFolder.data(), x, y);
 			auto Albedo = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Base);
-			#endif
+#endif
 			sprintf(buffer, height_tmp, baseFolder.data(), x, y);
-			auto  Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
+			auto         Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
 
 			CTerrainNode patch{Albedo, Height, glm::vec3(x, 0, ny - y)};
 			m_Nodes.emplace_back(patch);

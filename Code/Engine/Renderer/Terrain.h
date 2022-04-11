@@ -1,5 +1,6 @@
 #pragma once
 #include <BlackBox/System/IStreamEngine.h>
+#include <BlackBox/System/ConsoleRegistration.h>
 
 class CStatObj;
 class CIndexedMesh;
@@ -42,6 +43,37 @@ public:
 	glm::vec3  Pos;
 };
 
+template<typename T>
+class CVar
+{
+public:
+	CVar(cstr Name, T Val)
+	    : m_Name(Name)
+	    , m_Val(Val)
+	{
+		REGISTER_CVAR2(Name, &m_Val, Val, 0, "");
+	}
+	~CVar()
+	{
+		if (Env::Console())
+		{
+			auto var = Env::Console()->GetCVar(m_Name);
+			SAFE_UNREGISTER_CVAR(var);
+		}
+	}
+	operator T()
+	{
+		return m_Val;
+	}
+
+public:
+	T    m_Val;
+	cstr m_Name;
+};
+
+using CVarFloat = CVar<float>;
+using CVarInt   = CVar<int>;
+
 class CQuadTreeTerrain
 {
 public:
@@ -77,23 +109,27 @@ private:
 public:
 	//std::vector<_smart_ptr<CStatObj>> m_Areas;
 
-	CVertexBufferUnique       m_pVerts;
-	SVertexStream             m_pIndices;
+	CVertexBufferUnique        m_pVerts;
+	SVertexStream              m_pIndices;
 
-	ShaderPtr                 m_Shader;
-	CRendElement*             m_pRendElement;
+	ShaderPtr                  m_Shader;
+	CRendElement*              m_pRendElement;
 
-	std::vector<CTerrainNode> m_Nodes;
+	std::vector<CTerrainNode>  m_Nodes;
+	//REGISTER_CVAR2("r_TerrainPatchSize", &CV_TerrainPatchSize, 64, 0, "");
+	//REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
+	//REGISTER_CVAR2("r_TerrainPatchScale", &CV_Scale, 100.f, 0, "Terrain patch scale");
 
-	int                       CV_TerrainPatchSize;
-	float                     CV_DrawDistance;
-	float                     SV_Scale;
-	bool                      m_bNeedRegenerate{};
+	CVarInt                    CV_TerrainPatchSize{"r_TerrainPatchSize", 65};
+	CVarFloat                  CV_DrawDistance{"r_DrawDistance", 500.f};
+	CVarFloat                  CV_Scale{"r_TerrainPatchScale", 100.f};
+	bool                       m_bNeedRegenerate{};
+	ComPtr<ID3D11SamplerState> LinearSampler;
 
 	// Inherited via IConsoleVarSink
-	virtual bool              OnBeforeVarChange(ICVar* pVar, const char* sNewValue) override;
-	virtual void              OnAfterVarChange(ICVar* pVar) override;
-	virtual void              OnVarUnregister(ICVar* pVar) override;
+	virtual bool               OnBeforeVarChange(ICVar* pVar, const char* sNewValue) override;
+	virtual void               OnAfterVarChange(ICVar* pVar) override;
+	virtual void               OnVarUnregister(ICVar* pVar) override;
 };
 
-extern CTerrainRenderer* gTerrainRenderer;
+extern std::unique_ptr<CTerrainRenderer> gTerrainRenderer;

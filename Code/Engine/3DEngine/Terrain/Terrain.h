@@ -55,5 +55,5 @@ private:
 	CVertexBufferUnique m_pVerts;
 	ShaderPtr           m_Shader;
 	TexturePtr          m_Texture = nullptr;
-	CRendElement*       m_pRendElement;
+	CRendElement*       m_pRendElement = nullptr;
 };

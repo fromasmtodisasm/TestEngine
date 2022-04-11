@@ -88,7 +88,8 @@ float4 PS(VS_OUTPUT IN) : SV_Target0
 
 
     //finalColor = float4(IN.N, 1);
-    finalColor.rgb *= diffuseLighting + 0.1;
+    //finalColor.rgb = diffuseLighting.xxx;
+    //finalColor = lerp(finalColor, float4(1, 0, 0, 1), normalize(float4(IN.W, 1)));
 
     return finalColor;
 
