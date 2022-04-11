@@ -180,46 +180,64 @@ enum NodePos
 
 void CTerrainRenderer::PrepareRenderNodes(glm::vec2 point, int level, glm::vec2 min, glm::vec2 max)
 {
-	if (level > 5)
+	if (level > 8)
+	{
+		m_RenderNodes.push_back(RenderNode{min, max});
 		return;
+	}
 	auto bl = min;
 	auto ur = max;
-	auto c  = max - min;
-	auto uc = {c.x, max.y};
-	auto bc = {c.x, min.y};
-	auto ul = {min.x, max.y};
-	auto br = {max.x, min.y};
+	auto c  = 0.5f * (max + min);
+	auto uc = glm::vec2{c.x, max.y};
+	auto bc = glm::vec2{c.x, min.y};
+	auto rc = glm::vec2{max.x, c.y};
+	auto lc = glm::vec2{min.x, c.y};
+	auto ul = glm::vec2{min.x, max.y};
+	auto br = glm::vec2{max.x, min.y};
 
 	// on left side
-	if (point.x <= (max - min).x)
+	if (point.x <= c.x)
 	{
 		//UR
 		m_RenderNodes.push_back(RenderNode{c, ur});
-		m_RenderNodes.push_back(RenderNode{{(min - max).x, max.x}, {(max - min).y, max.x}});
+		//BR
+		m_RenderNodes.push_back(RenderNode{bc, rc});
 		// bottom left
 		if (point.y <= (max - min).y)
 		{
-			m_RenderNodes.push_back(RenderNode{{(min - max).x, max.x}, {(max - min).y, max.x}});
-			PrepareRenderNodes(point, level + 1, min, min + max);
+			//UL
+			m_RenderNodes.push_back(RenderNode{lc, uc});
+			PrepareRenderNodes(point, level + 1, bl, c);
 		}
 		// upper left
 		else
 		{
-			PrepareRenderNodes(point, level + 1, min, min + max);
+			//BL
+			m_RenderNodes.push_back(RenderNode{bl, c});
+			PrepareRenderNodes(point, level + 1, lc, uc);
 		}
 	}
 	// on right
 	else
 	{
-		// right left
-		if (point.y <= (max - min).y)
+		//UL
+		m_RenderNodes.push_back(RenderNode{lc, uc});
+		//BL
+		m_RenderNodes.push_back(RenderNode{bl, c});
+		// bottom right
+		if (point.y <= c.y)
 		{
-			PrepareRenderNodes(point, level + 1, min, min + max);
+			//UR
+			m_RenderNodes.push_back(RenderNode{c, ur});
+			//BR
+			PrepareRenderNodes(point, level + 1, bc, rc);
 		}
 		// upper right
 		else
 		{
-			PrepareRenderNodes(point, level + 1, min, min + max);
+			//BR
+			m_RenderNodes.push_back(RenderNode{bc, rc});
+			PrepareRenderNodes(point, level + 1, c, ur);
 		}
 	}
 }
@@ -233,7 +251,8 @@ void CTerrainRenderer::Render(CCamera& Camera)
 
 	PrepareForDrawing();
 
-	RenderNodes(Camera);
+	//RenderNodes(Camera);
+	RenderQuadTree(Camera);
 }
 
 void CTerrainRenderer::PrepareForDrawing()
@@ -273,14 +292,12 @@ void CTerrainRenderer::RenderNodes(CCamera& Camera)
 		if (i == 98)
 		{
 			printf("sldfkj");
-
 		}
-		
+
 		glm::mat4 transform(1);
 		//transform   = glm::translate(transform, {0, 1, 0});
 		CV_Scale  = 100.f;
 		transform = glm::scale(transform, glm::vec3(CV_Scale, CV_Scale, CV_Scale));
-		auto pp   = glm::vec4(p.Pos, 1) * transform;
 		transform = glm::translate(transform, p.Pos);
 		//p.Pos     = glm::vec4(p.Pos, 1) * transform ;
 
@@ -308,6 +325,61 @@ void CTerrainRenderer::RenderNodes(CCamera& Camera)
 
 		Env::Renderer()->DrawBuffer(m_pVerts.get(), &m_pIndices, m_pIndices.m_nItems, 0, static_cast<int>(RenderPrimitive::TRIANGLES), 0, 0, (CMatInfo*)-1);
 	}
+}
+
+void CTerrainRenderer::RenderQuadTree(CCamera& Camera)
+{
+	// Update our time
+	static DWORD dwTimeStart    = 0;
+	DWORD        dwTimeCur      = GetTickCount();
+
+	auto         View           = Camera.GetViewMatrix();
+	auto         Projection     = Camera.GetProjectionMatrix();
+	auto         ViewProjection = Projection * View;
+
+	// NOTE: to avoid matrix transpose need follow specific order of arguments in mul function in HLSL
+	auto         cb             = CreateCBuffer<HLSL_PerDrawCB>();
+
+	m_Shader->Bind();
+	//std::unique_lock lock(m_NodesLock);
+	int i = 0;
+	for (auto& p : m_RenderNodes)
+	{
+		glm::mat4 transform(1);
+		//transform   = glm::translate(transform, {0, 1, 0});
+		auto      pp          = 0.5f * glm::vec2(p.Min + p.Max);
+		auto      pos          = glm::vec3(pp.x, 0, pp.y);
+		CV_Scale               = p.Max.x - p.Min.x;
+		transform              = glm::scale(transform, glm::vec3(CV_Scale));
+		transform              = glm::translate(transform, pos);
+		//p.Pos     = glm::vec4(p.Pos, 1) * transform ;
+
+		//auto pos  = glm::vec4(p.Pos, 1) * transform;
+		//auto d    = glm::distance(Camera.GetPos(), glm::vec3(pos));
+		//if (d > CV_DrawDistance)
+		//{
+		//	//continue;
+		//}
+
+		cb.World               = transform;
+		cb.MVP                 = ViewProjection * cb.World;
+		cb.MV                  = View * cb.World;
+		cb.Model               = cb.World;
+
+		ID3DBuffer* pBuffers[] = {
+		    cb.Buffer.Get(),
+		};
+
+		cb.Write();
+
+		::GetDeviceContext()->VSSetConstantBuffers(PERDRAW_SLOT, 1, pBuffers);
+		::GetDeviceContext()->RSSetState(g_pRasterizerStateWire);
+		//Env::Renderer()->SetTexture(p.Albedo->GetTextureID(), eTT_Base);
+		//Env::Renderer()->SetTexture(p.Height->GetTextureID(), eTT_Heightmap);
+
+		Env::Renderer()->DrawBuffer(m_pVerts.get(), &m_pIndices, m_pIndices.m_nItems, 0, static_cast<int>(RenderPrimitive::TRIANGLES), 0, 0, (CMatInfo*)-1);
+	}
+	m_RenderNodes.clear();
 }
 
 void CTerrainRenderer::Update()

@@ -97,8 +97,8 @@ public:
 	using VertexType     = SVF_P3F_T2F;
 
 	const int PatchSize  = 65;
-	glm::vec2 TerrainMin = glm::vec3(-float(0xffff));
-	glm::vec2 TerrainMax = glm::vec3(float(0xffff));
+	glm::vec2 TerrainMin = glm::vec2(-float(200));
+	glm::vec2 TerrainMax = glm::vec2(float(200));
 
 public:
 	CTerrainRenderer();
@@ -109,6 +109,7 @@ public:
 	void Render(CCamera& Camera);
 	void PrepareForDrawing();
 	void RenderNodes(CCamera& Camera);
+	void RenderQuadTree(CCamera& Camera);
 	void Update();
 
 	void DrawAxises();
@@ -135,7 +136,7 @@ public:
 	//REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
 	//REGISTER_CVAR2("r_TerrainPatchScale", &CV_Scale, 100.f, 0, "Terrain patch scale");
 
-	CVarInt                    CV_TerrainPatchSize{"r_TerrainPatchSize", 65};
+	CVarInt                    CV_TerrainPatchSize{"r_TerrainPatchSize", 127};
 	CVarFloat                  CV_DrawDistance{"r_DrawDistance", 1500.f};
 	CVarFloat                  CV_Scale{"r_TerrainScalePatch", 100.f};
 	bool                       m_bNeedRegenerate{};
