@@ -84,6 +84,9 @@ CTerrainRenderer::CTerrainRenderer()
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	desc.Filter   = D3D11_FILTER(D3D11_FILTER_ANISOTROPIC);
+	//desc.MipLODBias = 7;
+	//desc.MinLOD   = 2;
+	//desc.MaxLOD   = 7;
 	CheckError(
 	    GetDevice()->CreateSamplerState(&desc, LinearSampler.GetAddressOf()),
 	    "Error create sampler for font");
@@ -116,6 +119,28 @@ CTerrainRenderer::CTerrainRenderer()
 	    { gTerrainRenderer->m_Shader->Reload(0); },
 	    0, "Reload terrain shader");
 
+	m_LoadingThread = std::thread([this]()
+	                              {
+										int num_loaded = 0;
+		                              while (!m_StopLoading)
+		                              {
+			                              if (m_Tasks.empty() || num_loaded == 50)
+			                              {
+				                              std::this_thread::sleep_for(std::chrono::milliseconds(15));
+				                              num_loaded = 0;
+				                              continue;
+			                              }
+			                              {
+				                              m_NodesLock.lock();
+											  auto& Task{ m_Tasks.back()};
+
+											  Task();
+											  m_Tasks.pop_back();
+				                              m_NodesLock.unlock();
+				                              num_loaded++;
+			                              }
+
+		                              } });
 }
 
 CTerrainRenderer::~CTerrainRenderer()
@@ -126,6 +151,9 @@ CTerrainRenderer::~CTerrainRenderer()
 	{
 		Env::Console()->RemoveConsoleVarSink(this);
 	}
+
+	m_StopLoading = true;
+	m_LoadingThread.join();
 	SAFE_DELETE(m_pRendElement);
 }
 
@@ -166,6 +194,7 @@ void CTerrainRenderer::RenderNodes(CCamera& Camera)
 	auto         cb             = CreateCBuffer<HLSL_PerDrawCB>();
 
 	m_Shader->Bind();
+	//std::unique_lock lock(m_NodesLock);
 	for (auto& p : m_Nodes)
 	{
 		glm::mat4 transform(1);
@@ -201,6 +230,17 @@ void CTerrainRenderer::RenderNodes(CCamera& Camera)
 
 void CTerrainRenderer::Update()
 {
+	{
+		if (m_NodesLock.try_lock())
+		{
+			//m_Nodes.insert(m_Nodes.back(), m_NodesTmp.begin(), m_Nodes.end())
+			m_Nodes.insert(m_Nodes.end(), std::make_move_iterator(m_NodesTmp.begin()),
+			               std::make_move_iterator(m_NodesTmp.end()));
+
+			m_NodesTmp.clear();
+			m_NodesLock.unlock();
+		}
+	}
 	if (m_bNeedRegenerate)
 	{
 		m_pVerts.reset(nullptr);
@@ -333,28 +373,30 @@ void CTerrainRenderer::GenerateMesh(int size)
 //#define DETAIL_MAP
 void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 {
-	char* diffuse_tmp = "Terrain/%s/diffuse_4097_x0%d_y0%d.dds";
-	char* height_tmp  = "Terrain/%s/height_4097_x0%d_y0%d.dds";
+	char* diffuse_tmp = "Terrain/%s/diffuse_2049_x0%d_y0%d.dds";
+	char* height_tmp  = "Terrain/%s/height_2049_x0%d_y0%d.dds";
 
-	char  buffer[256] = {};
 	int   nx          = 10;
 	int   ny          = 10;
-	#ifdef DETAIL_MAP
-	auto  Albedo      = Env::Renderer()->EF_LoadTexture("Textures/terrain/detail/detail_sand.dds", FT_NOREMOVE, 0, eTT_Base);
-	#endif
+#ifdef DETAIL_MAP
+	auto Albedo = Env::Renderer()->EF_LoadTexture("Textures/terrain/detail/detail_sand.dds", FT_NOREMOVE, 0, eTT_Base);
+#endif
 	for (int y = 0; y < ny; y++)
 	{
 		for (int x = 0; x < nx; x++)
 		{
 #ifndef DETAIL_MAP
-			sprintf(buffer, diffuse_tmp, baseFolder.data(), x, y);
-			auto Albedo = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Base);
+			m_Tasks.push_back([=]()
+			                  {
+				char  buffer[256] = {};
+				sprintf(buffer, diffuse_tmp, baseFolder.data(), x, y);
+				auto Albedo = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Base);
 #endif
-			sprintf(buffer, height_tmp, baseFolder.data(), x, y);
-			auto         Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
+				sprintf(buffer, height_tmp, baseFolder.data(), x, y);
+				auto         Height = Env::Renderer()->EF_LoadTexture(buffer, FT_NOREMOVE, 0, eTT_Heightmap);
 
-			CTerrainNode patch{Albedo, Height, glm::vec3(x, 0, ny - y)};
-			m_Nodes.emplace_back(patch);
+				CTerrainNode patch{Albedo, Height, glm::vec3(x, 0, ny - y)};
+				m_NodesTmp.emplace_back(patch); });
 		}
 	}
 }

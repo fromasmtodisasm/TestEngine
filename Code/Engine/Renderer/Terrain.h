@@ -109,27 +109,34 @@ private:
 public:
 	//std::vector<_smart_ptr<CStatObj>> m_Areas;
 
-	CVertexBufferUnique        m_pVerts;
-	SVertexStream              m_pIndices;
+	CVertexBufferUnique               m_pVerts;
+	SVertexStream                     m_pIndices;
 
-	ShaderPtr                  m_Shader;
-	CRendElement*              m_pRendElement;
+	ShaderPtr                         m_Shader;
+	CRendElement*                     m_pRendElement;
 
-	std::vector<CTerrainNode>  m_Nodes;
+	std::vector<CTerrainNode>         m_Nodes;
+	std::vector<CTerrainNode>         m_NodesTmp;
 	//REGISTER_CVAR2("r_TerrainPatchSize", &CV_TerrainPatchSize, 64, 0, "");
 	//REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
 	//REGISTER_CVAR2("r_TerrainPatchScale", &CV_Scale, 100.f, 0, "Terrain patch scale");
 
-	CVarInt                    CV_TerrainPatchSize{"r_TerrainPatchSize", 65};
-	CVarFloat                  CV_DrawDistance{"r_DrawDistance", 500.f};
-	CVarFloat                  CV_Scale{"r_TerrainPatchScale", 100.f};
-	bool                       m_bNeedRegenerate{};
-	ComPtr<ID3D11SamplerState> LinearSampler;
+	CVarInt                           CV_TerrainPatchSize{"r_TerrainPatchSize", 65};
+	CVarFloat                         CV_DrawDistance{"r_DrawDistance", 1500.f};
+	CVarFloat                         CV_Scale{"r_TerrainPatchScale", 100.f};
+	bool                              m_bNeedRegenerate{};
+	ComPtr<ID3D11SamplerState>        LinearSampler;
+
+	std::thread                       m_LoadingThread;
+	std::mutex                        m_NodesLock;
+	std::atomic_bool                  m_StopLoading;
+	using Task = std::function<void()>;
+	std::deque<Task> m_Tasks;
 
 	// Inherited via IConsoleVarSink
-	virtual bool               OnBeforeVarChange(ICVar* pVar, const char* sNewValue) override;
-	virtual void               OnAfterVarChange(ICVar* pVar) override;
-	virtual void               OnVarUnregister(ICVar* pVar) override;
+	virtual bool                      OnBeforeVarChange(ICVar* pVar, const char* sNewValue) override;
+	virtual void                      OnAfterVarChange(ICVar* pVar) override;
+	virtual void                      OnVarUnregister(ICVar* pVar) override;
 };
 
 extern std::unique_ptr<CTerrainRenderer> gTerrainRenderer;

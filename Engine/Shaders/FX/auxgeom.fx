@@ -88,7 +88,7 @@ VsOutput AuxVS(VsInput IN)
 [[fn]]
 float4 AuxPS(VsOutput IN) : SV_Target0
 {
-    return float4(IN.Color);
+    return IN.Color;
 }
 
 // Default technique for auxiliary geometry rendering
@@ -98,10 +98,5 @@ technique AuxGeometry
     {
         VertexShader = AuxVS();
         PixelShader = AuxPS();
-    }
-    pass p1
-    {
-        VertexShader = vert;
-        PixelShader = frag;
     }
 }
