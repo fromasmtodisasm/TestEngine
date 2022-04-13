@@ -549,7 +549,7 @@ void MinePlayer::init()
 {
 	Env::ScriptSystem()->ExecuteFile("scripts/common.lua");
 
-	getCamera()->mode = CCamera::Mode::FPS;
+	//getCamera()->mode = CCamera::Mode::FPS;
 
 	auto        steve = Env::I3DEngine()->MakeObject("minecraft/minecraft_steve.obj");
 

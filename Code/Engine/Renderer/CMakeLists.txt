@@ -11,6 +11,10 @@ add_sources("NoUberFile"
 		RenderD3D11
 		RendererGL
 		RendererVK
+	SOURCE_GROUP "Terrain"
+		QuadTree.hpp
+		Terrain.cpp
+		Terrain.h
 	SOURCE_GROUP "Source Files"
 		AuxRenderer.cpp
 		AuxRendererNull.cpp
@@ -19,8 +23,6 @@ add_sources("NoUberFile"
 		RenderThread.cpp
 		RenderThread.h
 		Shaders/FxParser.cpp
-		Terrain.cpp
-		Terrain.h
 		ShaderMan.cpp
 		ShaderMan.h
 	SOURCE_GROUP "Common"

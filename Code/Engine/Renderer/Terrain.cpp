@@ -157,6 +157,11 @@ CTerrainRenderer::~CTerrainRenderer()
 	SAFE_DELETE(m_pRendElement);
 }
 
+void CTerrainRenderer::draw_plane(double ox, double oy, double size, color3 color)
+{
+	m_RenderNodes.push_back(RenderNode{glm::vec2{ox, oy}, float(size)});
+}
+
 bool PointInQuad(glm::vec2 point, glm::vec2 min, glm::vec2 max)
 {
 	auto tmp = glm::max(min, max);
@@ -178,6 +183,7 @@ enum NodePos
 	BR = BIT(4),
 };
 
+#if 0
 void CTerrainRenderer::PrepareRenderNodes(glm::vec2 point, int level, glm::vec2 min, glm::vec2 max)
 {
 	if (level > 8)
@@ -241,17 +247,60 @@ void CTerrainRenderer::PrepareRenderNodes(glm::vec2 point, int level, glm::vec2 
 		}
 	}
 }
+#endif
+
+void CTerrainRenderer::PrepareRenderNodesNew(CCamera& Camera)
+{
+	auto p     = Camera.GetPos();
+	auto point = glm::vec2{p.x, p.z};
+}
+
+namespace
+{
+	class TreeRender : public ITreeVisitorCallback
+	{
+	public:
+		TreeRender(IRender* render)
+		    : render(render)
+		{
+		}
+		// Inherited via ITreeVisitorCallback
+		virtual void BeforVisit(QuadTree* qt) override
+		{
+		}
+		virtual void AfterVisit(QuadTree* qt) override
+		{
+		}
+		virtual void OnLeaf(QuadTree* qt, bool is_last, int level) override
+		{
+			render->draw_plane(qt->m_x, qt->m_y, qt->m_size, qt->m_color);
+		}
+		virtual void BeforeRecursioCall(QuadTree* qt, bool is_last,
+		                                int level) override
+		{
+		}
+		virtual void OnRecursioCall(QuadTree* qt, bool is_last, int level)
+		{
+		}
+		virtual void AfterRecursioCall(QuadTree* qt, bool is_last,
+		                               int level) override
+		{
+		}
+
+		IRender* render = nullptr;
+	};
+} // namespace
 
 void CTerrainRenderer::Render(CCamera& Camera)
 {
 	DrawAxises();
-
-	auto p = Camera.GetPos();
-	PrepareRenderNodes({p.x, p.z}, 0, TerrainMin, TerrainMax);
-
 	PrepareForDrawing();
+	auto       quadTree = std::make_unique<QuadTree>(4, 10, 0, 0, color3(1, 0, 0));
+	TreeRender treeRender(this);
+	auto       p = Camera.GetPos();
+	quadTree->split(p.x, p.z, 1.5f);
+	quadTree->visit(&treeRender, 0, 0, 0);
 
-	//RenderNodes(Camera);
 	RenderQuadTree(Camera);
 }
 
@@ -343,23 +392,24 @@ void CTerrainRenderer::RenderQuadTree(CCamera& Camera)
 	m_Shader->Bind();
 	//std::unique_lock lock(m_NodesLock);
 	int i = 0;
+	CV_Scale = 100;
 	for (auto& p : m_RenderNodes)
 	{
+#if 0
 		glm::mat4 transform(1);
 		//transform   = glm::translate(transform, {0, 1, 0});
-		auto      pp          = 0.5f * glm::vec2(p.Min + p.Max);
+		auto      pp           = 0.5f * glm::vec2(p.Min + p.Max);
 		auto      pos          = glm::vec3(pp.x, 0, pp.y);
 		CV_Scale               = p.Max.x - p.Min.x;
 		transform              = glm::scale(transform, glm::vec3(CV_Scale));
 		transform              = glm::translate(transform, pos);
-		//p.Pos     = glm::vec4(p.Pos, 1) * transform ;
-
-		//auto pos  = glm::vec4(p.Pos, 1) * transform;
-		//auto d    = glm::distance(Camera.GetPos(), glm::vec3(pos));
-		//if (d > CV_DrawDistance)
-		//{
-		//	//continue;
-		//}
+#else
+		glm::mat4 transform(1);
+		transform   = glm::translate(transform, {-0.5, 0, -0.5});
+		transform = glm::scale(transform, glm::vec3(p.Scale));
+		auto& pos    = p.Pos;
+		transform = glm::translate(transform, glm::vec3(pos.x,0,pos.y));
+#endif
 
 		cb.World               = transform;
 		cb.MVP                 = ViewProjection * cb.World;
@@ -411,7 +461,7 @@ void CTerrainRenderer::DrawAxises()
 	auto       redColor   = Legacy::Vec3(0, 0, 1);
 	auto       greenColor = Legacy::Vec3(0, 1, 0);
 	auto       blueColor  = Legacy::Vec3(1, 0, 0);
-	float      axisLength = 100.f;
+	float      axisLength = 60.f;
 
 	const auto oX         = Legacy::Vec3{1, 0, 0};
 	const auto oY         = Legacy::Vec3{0, 1, 0};
@@ -422,9 +472,9 @@ void CTerrainRenderer::DrawAxises()
 	const auto C          = Legacy::Vec3{0, 1, 0};
 
 	auto       dir        = Legacy::Vec3{1, 0, 0};
-	//Nick(oX, A, -axisLength, axisLength, 1.f);
+	Nick(oX, A, -axisLength, axisLength, 1.f);
 	//Nick(oY, B, -axisLength, axisLength, 1.f);
-	//Nick(oZ, C, -axisLength, axisLength, 1.f);
+	Nick(oZ, C, -axisLength, axisLength, 1.f);
 
 	Env::AuxGeomRenderer()->DrawLine({0, -axisLength, 0}, {blueColor}, {0, axisLength, 0}, {blueColor});
 	Env::AuxGeomRenderer()->DrawLine({-axisLength, 0, 0}, {redColor}, {axisLength, 0, 0}, {redColor});
@@ -443,6 +493,10 @@ void CTerrainRenderer::Nick(Legacy::Vec3 dir, Legacy::Vec3 normal, float from, f
 
 		Env::AuxGeomRenderer()->DrawLine(p + width * v, color, p - width * v, color);
 	}
+}
+
+void CTerrainRenderer::RenderQuadTreeNew()
+{
 }
 
 template<typename T>

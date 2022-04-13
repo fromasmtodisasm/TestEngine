@@ -7,6 +7,7 @@
 #undef YY_DECL
 #define YY_DECL yy::parser::symbol_type Scanner::ScanToken()
 #include <stack>
+#include <BlackBox/System/File/CryFile.h>
 
 //#include "Parser.hpp"
 
@@ -29,6 +30,17 @@ public:
 		string_buf.reserve(1024 * 16);
 	}
 	virtual ~Scanner() {}
+	int LexerInput(char* buf, int max_size) override
+	{
+		return ::yyFlexLexer::LexerInput(buf, max_size);
+	}
+	void LexerOutput(const char* buf, int size) override
+	{
+		CryLog("[Flexer] %s", buf);
+	}
+	void                            LexerError(const char* msg) override {
+		CryFatalError("[Flexer] %s", msg);	
+	}
 	virtual yy::parser::symbol_type ScanToken();
 	void                            pop_state() { yy_pop_state(); }
 	void                            goto_codebody();
@@ -91,4 +103,6 @@ public:
 
 	std::map<string, string> macros;
 	string                   current_define;
+
+	CCryFile*                m_CurrentFile;
 };

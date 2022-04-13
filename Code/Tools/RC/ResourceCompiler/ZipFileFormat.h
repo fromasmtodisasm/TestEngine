@@ -543,15 +543,25 @@ namespace ZipFile
 	public:
 		int FRead(void* dst, size_t size, size_t nCount, FILE* file)
 		{
-			size_t left = m_pFileData->size - m_nCurSeek;
-			if (left > 0)
-			{
-				left        = std::min(size_t(left), size * nCount);
-				auto offset = m_pFileData->base + m_pFileData->offset + m_nCurSeek;
-				memcpy(dst, offset, left);
+			if (!GetFile())
+				return 0;
 
-				m_nCurSeek += std::int32_t(size * nCount);
-				return size * nCount;
+			size_t nTotal = size * nCount;
+			if (!nTotal || (unsigned)m_nCurSeek >= GetFileSize())
+				return 0;
+			if (nTotal > GetFileSize() - m_nCurSeek)
+			{
+				nTotal = GetFileSize() - m_nCurSeek;
+				if (nTotal < size)
+					return 0;
+				nTotal -= nTotal % size;
+			}
+			{
+				auto offset = m_pFileData->base + m_pFileData->offset + m_nCurSeek;
+				memcpy(dst, offset, nTotal);
+
+				m_nCurSeek += nTotal;
+				return nTotal;
 			}
 			return 0;
 		}

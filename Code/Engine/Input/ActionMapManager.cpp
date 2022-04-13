@@ -132,9 +132,15 @@ void CActionMapManager::Update(unsigned int nTimeMSec)
 		}
 		i++;
 	}
-	m_Queue.erase(eKI_MouseX);
-	m_Queue.erase(eKI_MouseY);
-	m_Queue.erase(eKI_MouseZ);
+	//m_Queue.erase(eKI_MouseX);
+	//m_Queue.erase(eKI_MouseY);
+	//m_Queue.erase(eKI_MouseZ);
+	for (auto& r : m_ToRemove)
+	{
+		m_Queue.erase(r);
+	}
+	m_ToRemove.clear();
+
 #if 0
 	for (auto it : m_EventRelease)
 	{
@@ -194,7 +200,11 @@ bool CActionMapManager::OnInputEvent(const SInputEvent& event)
 			e.aam   = XActionActivationMode::aamOnHold;
 			e.value = event.value;
 		}
-		m_Queue.insert(event.keyId);
+		auto it = m_Queue.insert(event.keyId);
+		if (event.state == EInputState::eIS_Changed && it.first != m_Queue.end())
+		{
+			m_ToRemove.push_back(event.keyId);
+		}
 	}
 	break;
 	case EInputState::eIS_Released:

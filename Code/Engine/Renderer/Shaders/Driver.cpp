@@ -1,4 +1,4 @@
-#pragma warning(push, 0)
+﻿#pragma warning(push, 0)
 #include <BlackBox/Core/Platform/platform_impl.inl>
 #include <BlackBox/Core/Path.hpp>
 #include "Driver.hpp"
@@ -64,8 +64,7 @@ void Driver::ScanBegin(const char* _file)
 	}
 	else
 	{
-		stream.open(file);
-		if (!stream.is_open())
+		if (!stream.open(file))
 		{
 			Env::Log()->LogError("[FX] File %s not found", file.c_str());
 		}

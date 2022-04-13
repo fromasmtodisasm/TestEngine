@@ -89,21 +89,31 @@ void CClient::Update()
 	{
 		m_CameraController.ProcessKeyboard(Movement::BACKWARD, frame_time, m_PlayerProcessingCmd.GetMoveBack());
 	}
-	if (m_PlayerProcessingCmd.CheckAction(ACTION_TURNLR))
+	if (m_PlayerProcessingCmd.CheckAction(ACTION_ZOOM_IN))
 	{
-		auto ang = m_PlayerProcessingCmd.GetDeltaAngles()[YAW];
-		//ang *= 0.01;
-		m_CameraController.ProcessMouseMovement(-ang, 0);
-		//m_CameraController.ProcessKeyboard(Movement::BACKWARD, m_pGame->m_deltaTime);
+		m_CameraController.CurrentCamera()->m_fov += 5;
 	}
-	if (m_PlayerProcessingCmd.CheckAction(ACTION_TURNUD))
+	if (m_PlayerProcessingCmd.CheckAction(ACTION_ZOOM_IN))
 	{
-		auto ang = m_PlayerProcessingCmd.GetDeltaAngles()[PITCH];
-		//ang *= 0.01;
-		m_CameraController.ProcessMouseMovement(0, -ang);
-		//m_CameraController.ProcessKeyboard(Movement::BACKWARD, m_pGame->m_deltaTime);
+		m_CameraController.CurrentCamera()->m_fov -= 5;
 	}
-
+	if (m_PlayerProcessingCmd.CheckAction(ACTION_FIRE0))
+	{
+		if (m_PlayerProcessingCmd.CheckAction(ACTION_TURNLR))
+		{
+			auto ang = m_PlayerProcessingCmd.GetDeltaAngles()[YAW];
+			//ang *= 0.01;
+			m_CameraController.ProcessMouseMovement(-ang, 0);
+			//m_CameraController.ProcessKeyboard(Movement::BACKWARD, m_pGame->m_deltaTime);
+		}
+		if (m_PlayerProcessingCmd.CheckAction(ACTION_TURNUD))
+		{
+			auto ang = m_PlayerProcessingCmd.GetDeltaAngles()[PITCH];
+			//ang *= 0.01;
+			m_CameraController.ProcessMouseMovement(0, -ang);
+			//m_CameraController.ProcessKeyboard(Movement::BACKWARD, m_pGame->m_deltaTime);
+		}
+	}
 	if (m_PlayerProcessingCmd.CheckAction(ACTION_JUMP))
 	{
 		auto pos      = m_CameraController.CurrentCamera()->GetPos();

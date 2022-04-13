@@ -17,12 +17,12 @@
     #define CURRENT_SYMBOL yy::parser::symbol_type(yy::parser::token::yytokentype(*YYText()), loc)
 
     struct IncludeData {
-        IncludeData(YY_BUFFER_STATE s, yy::location ln, const char *fname, std::unique_ptr<std::ifstream> fd = nullptr) :
+        IncludeData(YY_BUFFER_STATE s, yy::location ln, const char *fname, std::unique_ptr<CryPakIStream> fd = nullptr) :
             state(s), location(ln), file_name(fname), fileToClose(std::move(fd)) {}
         YY_BUFFER_STATE state;
         yy::location    location;
         std::string     file_name; // the name of the current file (when in #include, for example)
-        std::unique_ptr<std::ifstream>   fileToClose; // keep track of the file descriptor to make sure we will close it
+        std::unique_ptr<CryPakIStream>   fileToClose; // keep track of the file descriptor to make sure we will close it
     };
     std::stack<IncludeData> include_stack;
 
@@ -417,11 +417,11 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
         *s = '\0';
     include_stack.push(IncludeData(YY_CURRENT_BUFFER, driver.location, driver.file.c_str()));
     //driver.file = "Data/shaders/fx/" + std::string(YYText());
-    driver.file = PathUtil::Make(PathUtil::Make(PathUtil::GetEnginePath(), string("Engine/shaders/fx")).c_str(), YYText());
+	driver.file = PathUtil::Make(string("Shaders/fx").c_str(), YYText());
     driver.location.initialize(&driver.file);
     //line_num  = 1;
     //FILE *fd = NULL;
-    std::unique_ptr<std::ifstream> fd;
+    std::unique_ptr<CryPakIStream> fd;
     const char *buf = NULL;
     #if 0
     if(nvFX::g_includeCb)
@@ -433,8 +433,8 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
     else 
     #else
     {
-        fd  =  std::make_unique<std::ifstream>(driver.file);
-        if(!fd->is_open())
+        fd  =  std::make_unique<CryPakIStream>();
+        if(!fd->open(driver.file))
         {
             CryError("err loading file %s", YYText());
         } else {

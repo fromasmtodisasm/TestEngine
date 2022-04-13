@@ -2,6 +2,8 @@
 #include <BlackBox/System/IStreamEngine.h>
 #include <BlackBox/System/ConsoleRegistration.h>
 
+#include "QuadTree.hpp"
+
 class CStatObj;
 class CIndexedMesh;
 
@@ -45,44 +47,8 @@ public:
 
 struct RenderNode
 {
-	glm::vec2 Min, Max;
+	glm::vec2 Pos; float Scale;
 };
-
-template<typename T>
-class CVar
-{
-public:
-	CVar(cstr Name, T Val)
-	    : m_Name(Name)
-	    , m_Val(Val)
-	{
-		REGISTER_CVAR2(Name, &m_Val, Val, 0, "");
-	}
-	~CVar()
-	{
-		if (Env::Console())
-		{
-			auto var = Env::Console()->GetCVar(m_Name);
-			SAFE_UNREGISTER_CVAR(var);
-		}
-	}
-	T& operator=(const T& val)
-	{
-		m_Val = val;
-		return m_Val;
-	}
-	operator T()
-	{
-		return m_Val;
-	}
-
-public:
-	T    m_Val;
-	cstr m_Name;
-};
-
-using CVarFloat = CVar<float>;
-using CVarInt   = CVar<int>;
 
 class CQuadTreeTerrain
 {
@@ -90,7 +56,9 @@ public:
 	CQuadTreeTerrain() = default;
 };
 
-class CTerrainRenderer : IConsoleVarSink
+class CTerrainRenderer : 
+	public IConsoleVarSink, 
+	public IRender
 {
 public:
 	using Vec3           = Legacy::Vec3;
@@ -103,8 +71,10 @@ public:
 public:
 	CTerrainRenderer();
 	~CTerrainRenderer();
+	void draw_plane(double ox, double oy, double size, color3 color) override;
 
 	void PrepareRenderNodes(glm::vec2 point, int level, glm::vec2 min, glm::vec2 max);
+	void PrepareRenderNodesNew(CCamera& Camera);
 
 	void Render(CCamera& Camera);
 	void PrepareForDrawing();
@@ -115,6 +85,8 @@ public:
 	void DrawAxises();
 
 	void Nick(Legacy::Vec3 dir, Legacy::Vec3 normal, float from, float to, float step = 1.f);
+
+	void RenderQuadTreeNew();
 
 private:
 	void GenerateMesh(int size);

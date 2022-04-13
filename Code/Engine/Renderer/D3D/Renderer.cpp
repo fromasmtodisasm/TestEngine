@@ -124,6 +124,8 @@ IWindow* CD3DRenderer::Init(int x, int y, int width, int height, unsigned int cb
 			gTerrainRenderer.reset(DEBUG_NEW CTerrainRenderer); },
 	    0, "");
 
+	Env::CryPak()->OpenPack("%engine%/shaders.pak");
+
 	return CRenderer::Init(x, y, width, height, cbpp, zbpp, sbits, fullscreen, window);
 }
 

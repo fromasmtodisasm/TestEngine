@@ -2,6 +2,7 @@
 class CShader;
 #include <thread>
 #include <mutex>
+#include <BlackBox/System/ConsoleRegistration.h>
 
 class ShaderMan
 {
@@ -35,4 +36,6 @@ public:
 
 	std::thread                       m_ShaderWatcher;
 	std::atomic<bool>                 m_bStopWatch;
+
+	CVarInt                           CV_DumpShaders{"r_DumpShaders", true};
 };

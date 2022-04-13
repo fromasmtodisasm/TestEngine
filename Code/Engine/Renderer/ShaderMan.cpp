@@ -5,6 +5,7 @@
 #include "D3D/Shader.hpp"
 #include <Shaders/FxParser.h>
 #include <filesystem>
+#include <BlackBox/System/File/CryFile.h>
 
 IShader* ShaderMan::Sh_Load(const char* name, int flags, uint64 nMaskGen)
 {
@@ -41,7 +42,9 @@ bool ShaderMan::Compile(std::string_view name, int flags, uint64 nMaskGen, CShad
 		technique = name.substr(pos + 1);
 	}
 	path << real_name << ".fx";
-	auto shader_path = PathUtil::Make(PathUtil::Make(PathUtil::GetEnginePath(), string("Engine/shaders/fx")), path.str());
+	// FIXME: CryPak should can properly handling path such %engine%/shaders/fx
+	// now bindrot has no effect for pak'ed files
+	auto shader_path = PathUtil::Make(string("Shaders/fx"), path.str());
 	if (g_FxParser->Parse(shader_path.c_str(), &pEffect))
 	{
 		auto nTech = 0;
@@ -51,19 +54,34 @@ bool ShaderMan::Compile(std::string_view name, int flags, uint64 nMaskGen, CShad
 		p->m_NameFile   = shader_path;
 		if (CShader::LoadFromEffect(p, pEffect, nTech, pass))
 		{
+			if (CV_DumpShaders)
+			{
+				auto     code = pEffect->GetCode();
+				string   path = PathUtil::Make("%engineroot%/bin/shadercache", (string(real_name) + ".fxc").c_str());
+				CCryFile file(path.c_str(), "wb");
+				if (file)
+				{
+					file.Write((void*)code, strlen(code));
+				}
+			}
+
 			p->ReflectShader();
 			p->CreateInputLayout();
 			p->m_Flags = flags;
 
 			std::filesystem::path sp(p->m_NameFile);
-			auto                  access = std::filesystem::last_write_time(sp);
-			p->m_LastAccesTime           = access;
+			p->m_LastAccesTime = std::filesystem::file_time_type{};
+			if (std::filesystem::exists(sp))
+			{
+				auto access        = std::filesystem::last_write_time(sp);
+				p->m_LastAccesTime = access;
+			}
 
 			p->m_Flags2 |= EF2_LOADED;
-			delete pEffect;
 			m_Shaders[string(name)] = p;
 			m_WatchedNames[1 - m_WatchIndex].insert(p);
 			p->AddRef();
+			delete pEffect;
 			return true;
 		}
 		p->m_Flags2 |= EF2_FAILED;
@@ -137,11 +155,14 @@ ShaderMan::ShaderMan()
 				//std::unique_lock lock(m_ShadersAccessMutex);
 				std::unique_lock      lock(m_ReloadMutex);
 				std::filesystem::path sp(shader->m_NameFile);
-				auto                  access = std::filesystem::last_write_time(sp);
-				if (shader->m_LastAccesTime < access)
+				if (std::filesystem::exists(sp))
 				{
-					m_ToReload.push_back(shader);
-					//Reload(shader);
+					auto access = std::filesystem::last_write_time(sp);
+					if (shader->m_LastAccesTime < access)
+					{
+						m_ToReload.push_back(shader);
+						//Reload(shader);
+					}
 				}
 			}
 		}

@@ -554,7 +554,6 @@ IShader* CRenderer::Sh_Load(const char* name, int flags, uint64 nMaskGen)
 #if 0
 	flags = int(ShaderBinaryFormat::SPIRV);
 #endif
-	CryLog("load shader: %s", name);
 	return gShMan->Sh_Load(name, flags, nMaskGen);
 }
 

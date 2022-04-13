@@ -1,47 +1,99 @@
 #pragma once
+#pragma once
 #include "FxParser.h"
 #include <BlackBox/Renderer/IRender.hpp>
 #include <BlackBox/Renderer/IShader.hpp>
 #include <BlackBox/Renderer/VertexFormats.hpp>
 
+struct ShaderResourceBase
+{
+	enum EType
+	{
+		Sampler,
+		Texture,
+		CBuffer
+	};
+	EType  Type;
+	string Name;
+	uint   Register;
+	string Value;
+};
+
+struct SFXSamplerState : ShaderResourceBase
+{
+};
+struct SFXTexture : ShaderResourceBase
+{
+};
+struct SFXCBuffer : ShaderResourceBase
+{
+	string Text;
+};
+
+struct ShaderFragmnet
+{
+	enum Type
+	{
+		Deps,
+		Decl,
+		Resource,
+		Functions,
+		RawText
+	};
+	Type Type;
+	int  Index;
+};
+
 class CTechnique : public ITechnique
 {
-  public:
+public:
 	CTechnique(int id, std::string name)
-		: Name(name)
-		, Id(id)
+	    : Name(name)
+	    , Id(id)
 	{
 	}
 	// Inherited via ITechnique
-	virtual int			GetNumPasses() override;
-	virtual bool		CompilePass(int i) override;
-	virtual SPass*		GetPass(int i) override;
-	virtual int			GetId() override;
-	virtual const char* GetName() override;;
+	virtual int         GetNumPasses() override;
+	virtual bool        CompilePass(int i) override;
+	virtual SPass*      GetPass(int i) override;
+	virtual int         GetId() override;
+	virtual const char* GetName() override;
+	;
 
-	std::string Name;
-	int			Id;
+	std::string        Name;
+	int                Id;
 	//std::vector<std::string_view> CommonCode;
 	std::vector<SPass> Passes;
 };
 
+/// <summary>
+/// Describe whole shader struct
+/// </summary>
+struct SShaderView
+{
+	std::vector<string>             Deps;         //! Includes dependencies
+	std::vector<string>             Declarations; //! Decls(e.g structs)
+	std::vector<ShaderResourceBase> Resources;    //! Samplers, Textures, CBuffers
+	std::vector<string>             Functions;    //! List of functions
+};
+
 class CEffect : public IEffect
 {
-  public:
+public:
 	CEffect(std::string_view name)
-		: m_name(name)
+	    : m_name(name)
 	{
 	}
-	virtual IShader*   GetShader(const char* name) override;
+	virtual IShader*    GetShader(const char* name) override;
 
-	virtual int			GetNumTechniques() override;
+	virtual int         GetNumTechniques() override;
 	virtual ITechnique* GetTechnique(int i) override;
 	virtual ITechnique* GetTechnique(const char* name, size_t size) override;
 
-	void shader_assignment(IShader::Type type, const string& name)
+	void                shader_assignment(IShader::Type type, const string& name)
 	{
-		auto& tech			   = m_Techniques.back();
-		auto& pass			   = tech.Passes.back();
+		auto& tech             = m_Techniques.back();
+		auto& pass             = tech.Passes.back();
 		pass.EntryPoints[type] = name;
 	}
 	bool SetLang(ShaderLangId id)
@@ -52,19 +104,21 @@ class CEffect : public IEffect
 		return true;
 	}
 
-  public:
-	std::string				m_name;
+public:
+	std::string                 m_name;
 	//std::vector<ShaderInfo> m_shaders;
-	std::vector<CTechnique> m_Techniques;
-	ShaderLangId			m_LangId = ShaderLangId::None;
-	std::string				m_Code;
+	SShaderView                 m_ShaderView; //! Aka AST, but in linearized maner
+	std::vector<ShaderFragmnet> m_Fragments;
+	std::vector<CTechnique>     m_Techniques;
+	ShaderLangId                m_LangId = ShaderLangId::None;
+	std::string                 m_Code;
 
 	// Inherited via IEffect
-	virtual const char* GetName() override;
+	virtual const char*         GetName() override;
 
 	// Inherited via IEffect
-	virtual ShaderLangId GetLangId() override;
+	virtual ShaderLangId        GetLangId() override;
 
 	// Inherited via IEffect
-	virtual const char* GetCode() override;
+	virtual const char*         GetCode() override;
 };

@@ -578,3 +578,39 @@ namespace Detail
 	#define REGISTER_COMMAND_DEDI_ONLY(_name, _func, _flags, _comment)                              REGISTER_COMMAND_DEV_ONLY(_name, _func, ((_flags) | VF_DEDI_ONLY), _comment)
 #endif // defined(RELEASE)
 //////////////////////////////////////////////////////////////////////////////
+template<typename T>
+class CVarT
+{
+public:
+	CVarT(cstr Name, T Val)
+	    : m_Name(Name)
+	    , m_Val(Val)
+	{
+		REGISTER_CVAR2(Name, &m_Val, Val, 0, "");
+	}
+	~CVarT()
+	{
+		if (Env::Console())
+		{
+			auto var = Env::Console()->GetCVar(m_Name);
+			SAFE_UNREGISTER_CVAR(var);
+		}
+	}
+	T& operator=(const T& val)
+	{
+		m_Val = val;
+		return m_Val;
+	}
+	operator T()
+	{
+		return m_Val;
+	}
+
+public:
+	T    m_Val;
+	cstr m_Name;
+};
+
+using CVarFloat  = CVarT<float>;
+using CVarInt    = CVarT<int>;
+using CVarString = CVarT<const char*>;

@@ -2006,6 +2006,7 @@ void CXClient::TriggerZoomIn(float fValue, XActivationEvent ae)
 	IEntity* pEntity = m_pEntitySystem->GetEntity(m_wPlayerID);
 	if (pEntity)
 		pEntity->SendScriptEvent(ScriptEvent_ZoomIn, 0);
+	m_PlayerProcessingCmd.AddAction(ACTION_ZOOM_IN);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2014,6 +2015,7 @@ void CXClient::TriggerZoomOut(float fValue, XActivationEvent ae)
 	IEntity* pEntity = m_pEntitySystem->GetEntity(m_wPlayerID);
 	if (pEntity)
 		pEntity->SendScriptEvent(ScriptEvent_ZoomOut, 0);
+	m_PlayerProcessingCmd.AddAction(ACTION_ZOOM_OUT);
 }
 
 //////////////////////////////////////////////////////////////////////

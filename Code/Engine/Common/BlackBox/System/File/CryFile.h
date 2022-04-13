@@ -75,7 +75,7 @@ public:
 	//! Example:
 	//! Original filename "textures/red.dds" adjusted filename will look like "game/textures/red.dds"
 	//! \return Adjusted filename, this is a pointer to a static string, copy return value if you want to keep it.
-	const char* GetAdjustedFilename() const;
+	const char*    GetAdjustedFilename() const;
 
 	//! Check if file is opened from pak file.
 	bool           IsInPak() const;
@@ -83,7 +83,7 @@ public:
 	//! Get path of archive this file is in.
 	const char*    GetPakPath() const;
 
-	               operator bool()
+	               operator bool() const
 	{
 		return m_file != nullptr;
 	}
