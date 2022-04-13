@@ -56,6 +56,10 @@ public:
 	{
 		defered_fragment = f + (" " + defered_fragment);
 	}
+	void add_shader_fragment_direct(const char* f)
+	{
+		shader += f;
+	}
 	void add_shader_fragment()
 	{
 		if (previewsCanAddFragment && canNowAddFragment)

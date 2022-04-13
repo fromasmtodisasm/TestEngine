@@ -158,7 +158,8 @@ public:
 
 struct CryPakIStream : std::istream
 {
-	CryPakBuffer buf{64};
+	const uint   bufferSize = 512;
+	CryPakBuffer buf{bufferSize};
 	CryPakIStream()
 	    : std::istream(&buf)
 	{

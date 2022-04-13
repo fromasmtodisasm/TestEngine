@@ -440,6 +440,11 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
         } else {
             CryLog("Including file %s", YYText());
             yy_switch_to_buffer( yy_create_buffer(fd.get(), YY_BUF_SIZE));
+
+         	string line("", 256);
+		    sprintf(line.data(), "\n#line 1 \"%s\"\n", driver.file.c_str());
+            add_shader_fragment();
+		    add_shader_fragment_direct(line.c_str());
         }
     }
     #endif
@@ -486,12 +491,18 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
     {
         yy_delete_buffer(  YY_CURRENT_BUFFER  );
         IncludeData &incData = include_stack.top();
+
+        string line("", 256);
+        sprintf(line.data(), "\n#line %d \"%s\"", incData.location.begin.line + 1, incData.file_name.c_str());
+        add_shader_fragment_direct(line.c_str());
+
         yy_switch_to_buffer(incData.state);//[include_stack_ptr]);
         driver.location = incData.location;
         driver.file = incData.file_name;
         if(incData.fileToClose->is_open())
             incData.fileToClose->close();
         include_stack.pop();
+
     }
 }
 

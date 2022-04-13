@@ -74,6 +74,13 @@ void Driver::ScanBegin(const char* _file)
 		}
 		//std::cout << file << std::endl;
 		Env::Log()->Log(file.c_str());
+
+		string line("", 256);
+		sprintf(line.data(), "#line 1 \"%s\"\n", _file);
+
+		scanner->previewsCanAddFragment = true;
+		scanner->add_shader_fragment_direct(line.c_str());
+
 		scanner->yyrestart(&stream);
 	}
 }

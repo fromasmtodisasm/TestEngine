@@ -7,6 +7,7 @@
 #include <string_view>
 
 #include <d3dcompiler.h>
+#include <d3d11shader.h>
 
 namespace fs = std::filesystem;
 extern ShaderMan* gShMan;
@@ -47,7 +48,7 @@ CShader& CShader::operator=(const CShader& src)
 	{
 		m_Shaders[i] = src.m_Shaders[i];
 	}
-	
+
 	//m_NameShaderICRC = src.m_NameShaderICRC;
 
 #if 0
@@ -128,12 +129,12 @@ int CShader::GetFlags2()
 
 bool CShader::Reload(int nFlags)
 {
-	auto shader    = gShMan->Reload(this);
+	auto shader = gShMan->Reload(this);
 
 	//m_pInputLayout = shader->m_pInputLayout;
 	//m_Desc         = shader->m_Desc;
 	//m_pReflection  = shader->m_pReflection;
-	*this          = *shader;
+	*this       = *shader;
 	return true;
 }
 
@@ -418,6 +419,21 @@ void SaveHlslToDisk(const std::vector<std::string>& code, IShader::Type type)
 	output_file.close();
 }
 
+class CD3DDummyIncluder : public ID3DInclude
+{
+	// Inherited via ID3DInclude
+	virtual HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override
+	{
+		return S_OK;
+	}
+	virtual HRESULT __stdcall Close(LPCVOID pData) override
+	{
+		return S_OK;
+	}
+};
+
+static CD3DDummyIncluder        s_Includer;
+
 std::pair<ID3DBlob*, ID3DBlob*> CShader::Load(const std::string_view text, IShader::Type type, const char* pEntry, bool bFromMemory)
 {
 	const char* profile = type == Type::E_VERTEX ? "vs_5_0" : type == Type::E_GEOMETRY ? "gs_5_0"
@@ -435,7 +451,7 @@ std::pair<ID3DBlob*, ID3DBlob*> CShader::Load(const std::string_view text, IShad
 	               size,
 	               file,
 	               nullptr,
-	               nullptr,
+	               &s_Includer,
 	               pEntry,
 	               profile,
 	               nFlags,
