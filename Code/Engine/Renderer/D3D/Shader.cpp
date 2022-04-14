@@ -436,16 +436,31 @@ static CD3DDummyIncluder        s_Includer;
 
 std::pair<ID3DBlob*, ID3DBlob*> CShader::Load(const std::string_view text, IShader::Type type, const char* pEntry, bool bFromMemory)
 {
-	const char* profile = type == Type::E_VERTEX ? "vs_5_0" : type == Type::E_GEOMETRY ? "gs_5_0"
-	                                                                                   : "ps_5_0";
+	const char* profile = [&]() {
+		switch (type)
+		{
+		case IShader::E_VERTEX:
+			return "vs_5_0";
+		case IShader::E_GEOMETRY:
+			return "gs_5_0";
+		case IShader::E_FRAGMENT:
+			return "ps_5_0";
+		case IShader::E_COMPUTE:
+			return "cs_5_0";
+		default:
+			assert(0);
+			return "";
+		}
+	
+	}();
 	ID3DBlob*   pShaderBlob{};
 	ID3DBlob*   pErrorBlob{};
 	const char* code   = bFromMemory ? text.data() : nullptr;
 	const char* file   = bFromMemory ? nullptr : text.data();
 	auto        size   = text.size();
 
-	//auto        nFlags = 0;	//D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION;
-	auto        nFlags = D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION;
+	auto        nFlags = 0;	//D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION;
+	//auto        nFlags = D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION;
 	auto        hr     = D3DCompile(
 	               code,
 	               size,
@@ -506,7 +521,7 @@ std::pair<ID3DBlob*, ID3DBlob*> CShader::Load(const std::string_view text, IShad
 
 bool CHWShader::Upload(ID3DBlob* pBlob, CShader* pSH)
 {
-	HRESULT   hr;
+	HRESULT   hr = E_FAIL;
 	auto      pBuf  = (DWORD*)pBlob->GetBufferPointer();
 	auto      nSize = pBlob->GetBufferSize();
 
@@ -522,6 +537,9 @@ bool CHWShader::Upload(ID3DBlob* pBlob, CShader* pSH)
 		break;
 	case IShader::E_FRAGMENT:
 		hr = (handle = GetDeviceObjectFactory().CreatePixelShader(pBuf, nSize)) ? S_OK : E_FAIL;
+		break;
+	case IShader::E_COMPUTE:
+		hr = (handle = GetDeviceObjectFactory().CreateComputeShader(pBuf, nSize)) ? S_OK : E_FAIL;
 		break;
 	case IShader::E_NUM:
 		break;

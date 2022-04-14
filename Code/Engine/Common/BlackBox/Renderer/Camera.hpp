@@ -236,8 +236,21 @@ public:
 		Env::Renderer()->GetViewport(&v.x, &v.y, &v.z, &v.w);
 		if (type == Type::Perspective)
 		{
+#ifdef USE_REVERSED_Z_BUFFER
+			auto MakeInfReversedZProjLH = [](float fovY_radians, float aspectWbyH, float zNear)->glm::mat4
+			{
+				float f = 1.0f / tan(fovY_radians / 2.0f);
+				return glm::mat4(
+				    f / aspectWbyH, 0.0f, 0.0f, 0.0f,
+				    0.0f, f, 0.0f, 0.0f,
+				    0.0f, 0.0f, 0.0f, +1.0f,
+				    0.0f, 0.0f, zNear, 0.0f);
+			};
+			return MakeInfReversedZProjLH(glm::radians(m_fov), float(v.z) / float(v.w), zNear);
+#else
 			//return glm::perspective(glm::radians(m_fov), (float)(v.z) / (float)(v.w), zNear, zFar);
 			return glm::perspectiveFovLH_ZO(glm::radians(m_fov), (float)v.z, (float)v.w, zNear, zFar);
+#endif
 		}
 		else
 		{
@@ -308,8 +321,8 @@ public:
 		//	}
 		//};
 
-		Frustum         frustum;
-		#if 0
+		Frustum frustum;
+#if 0
 		const float     halfVSide    = zFar * tanf(fovY * .5f);
 		const float     halfHSide    = halfVSide * aspect;
 		const glm::vec3 frontMultFar = zFar * cam.Front;
@@ -325,7 +338,7 @@ public:
 		frustum.bottomFace           = {cam.GetPos(),
                               glm::cross(frontMultFar + cam.Up * halfVSide, cam.Right)};
 
-		#endif
+#endif
 		return frustum;
 	}
 	//AABB-frustum test

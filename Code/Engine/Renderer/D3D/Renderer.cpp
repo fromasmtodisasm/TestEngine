@@ -143,7 +143,7 @@ void CD3DRenderer::BeginFrame(void)
 
 	m_GBuffer.OnBeginFrame(pDC, m_ClearColor);
 	pDC->ClearRenderTargetView(m_pMainRenderTargetView.Get(), &m_ClearColor[0]);
-	pDC->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView), D3D11_CLEAR_DEPTH, 1.f, 0);
+	pDC->ClearDepthStencilView(static_cast<ID3D11DepthStencilView*>(m_DepthStencil->m_pView), D3D11_CLEAR_DEPTH, ZBUFFER_CLEAR_VALUE, 0);
 
 	if (!gTerrainRenderer)
 	{
@@ -462,7 +462,7 @@ bool CD3DRenderer::InitOverride()
 		desc.DepthEnable    = true;
 		desc.StencilEnable  = false;
 		desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		desc.DepthFunc      = D3D11_COMPARISON_LESS;
+		desc.DepthFunc      = ZBUFFER_FUNC;
 
 		GetDevice()->CreateDepthStencilState(&desc, &m_pDepthStencilState);
 		GetDeviceContext()->OMSetDepthStencilState(m_pDepthStencilState.Get(), 0);

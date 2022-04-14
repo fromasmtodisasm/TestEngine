@@ -286,7 +286,6 @@ input: %empty { CryLog("Empty effect"); }
 | input function_definition
 | input function_declaration {CryLog("Pop lex state from declaration"); lex_pop_state();}
 | input fatal_error
-| input struct
 | input error
 ;
 
@@ -484,6 +483,7 @@ object_type direct_declarator semantic
 | object_type direct_declarator semantic annotations '=' type_constructor
 | object_type direct_declarator semantic annotations '=' value
 | object_type direct_declarator semantic annotations ';'
+| struct
 ;
 
 

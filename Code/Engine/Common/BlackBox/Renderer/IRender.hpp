@@ -282,6 +282,41 @@ struct Transform
 #define STR_DX12_RENDERER         "DX12"
 #define STR_VK_RENDERER           "VK"
 
+#define FILTER_NONE      -1
+#define FILTER_POINT     0
+#define FILTER_LINEAR    1
+//#define FILTER_BILINEAR  2
+#define FILTER_TRILINEAR 3
+#define FILTER_ANISO2X   4
+#define FILTER_ANISO4X   5
+#define FILTER_ANISO8X   6
+#define FILTER_ANISO16X  7
+
+struct SamplerStateHandle
+{
+	typedef uint16 ValueType;
+	ValueType value;
+
+	constexpr SamplerStateHandle() : value(Unspecified) { }
+	constexpr SamplerStateHandle(ValueType v) : value(v) { }
+
+	// Test operators
+	template<typename T> bool operator ==(const T other) const { return value == other; }
+	template<typename T> bool operator !=(const T other) const { return value != other; }
+	// Range operators
+	template<typename T> bool operator <=(const T other) const { return value <= other; }
+	template<typename T> bool operator >=(const T other) const { return value >= other; }
+	// Sorting operators
+	template<typename T> bool operator < (const T other) const { return value <  other; }
+	template<typename T> bool operator > (const T other) const { return value >  other; }
+
+	// Auto cast for array access operator []
+	operator ValueType() const { return value; }
+
+	// Not an enum, because of SWIG
+	static constexpr ValueType Unspecified = ValueType(~0);
+};
+
 //////////////////////////////////////////////////////////////////////
 // Texture object interface
 struct ITexPic

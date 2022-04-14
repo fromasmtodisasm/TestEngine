@@ -235,7 +235,7 @@ CRenderAuxGeom::CRenderAuxGeom()
 	desc.DepthEnable    = true;
 	desc.StencilEnable  = false;
 	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	desc.DepthFunc      = D3D11_COMPARISON_LESS;
+	desc.DepthFunc      = ZBUFFER_FUNC;
 
 	GetDevice()->CreateDepthStencilState(&desc, &m_pDSStateZPrePass);
 

@@ -1987,6 +1987,7 @@ public:
 		E_VERTEX,
 		E_GEOMETRY,
 		E_FRAGMENT,
+		E_COMPUTE,
 		E_NUM
 	};
 	virtual ~IShader() {}

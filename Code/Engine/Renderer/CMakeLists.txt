@@ -76,10 +76,15 @@ add_sources("NoUberFile"
 		D3D/Device.cpp
 		D3D/Device.hpp
 	SOURCE_GROUP "DeviceManager"
+		DeviceManager/DeviceResourceSet.h
 		DeviceManager/DeviceObjects.h
-		DeviceManager/Deviceobjects.cpp
+		DeviceManager/DevicePSO.h
 		DeviceManager/DeviceResources.cpp
 		DeviceManager/DeviceResources.hpp
+		DeviceManager/Deviceobjects.cpp
+	SOURCE_GROUP "DeviceManager\\\\D3D11"
+		DeviceManager/D3D11/DevicePSO.cpp
+		DeviceManager/D3D11/DevicePSO.h
 )
 
 add_sources("NoUberFile"
