@@ -75,19 +75,19 @@ void CClient::Update()
 	m_NumHitsInFrame       = 0;
 	if (m_PlayerProcessingCmd.CheckAction(ACTION_MOVE_LEFT))
 	{
-		m_CameraController.ProcessKeyboard(Movement::LEFT, frame_time, m_PlayerProcessingCmd.GetMoveLeft());
+		m_CameraController.Move(Movement::LEFT, frame_time, m_PlayerProcessingCmd.GetMoveLeft());
 	}
 	if (m_PlayerProcessingCmd.CheckAction(ACTION_MOVE_RIGHT))
 	{
-		m_CameraController.ProcessKeyboard(Movement::RIGHT, frame_time, m_PlayerProcessingCmd.GetMoveRight());
+		m_CameraController.Move(Movement::RIGHT, frame_time, m_PlayerProcessingCmd.GetMoveRight());
 	}
 	if (m_PlayerProcessingCmd.CheckAction(ACTION_MOVE_FORWARD))
 	{
-		m_CameraController.ProcessKeyboard(Movement::FORWARD, frame_time, m_PlayerProcessingCmd.GetMoveFwd());
+		m_CameraController.Move(Movement::FORWARD, frame_time, m_PlayerProcessingCmd.GetMoveFwd());
 	}
 	if (m_PlayerProcessingCmd.CheckAction(ACTION_MOVE_BACKWARD))
 	{
-		m_CameraController.ProcessKeyboard(Movement::BACKWARD, frame_time, m_PlayerProcessingCmd.GetMoveBack());
+		m_CameraController.Move(Movement::BACKWARD, frame_time, m_PlayerProcessingCmd.GetMoveBack());
 	}
 	if (m_PlayerProcessingCmd.CheckAction(ACTION_ZOOM_IN))
 	{
@@ -167,6 +167,8 @@ void CClient::Update()
 			font->RenderText(buffer, 0, 0, 1.f, color);
 		}
 	}
+
+	m_CameraController.Update(frame_time);
 
 	auto pos = m_CameraController.CurrentCamera()->GetPos();
 	auto cam = m_CameraController.CurrentCamera();

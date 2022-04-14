@@ -26,18 +26,10 @@
     };
     std::stack<IncludeData> include_stack;
 
-    // we need to do this because yy_pop_state is generated as static
-    //static void yy_pop_state();
-    #if 0
-    void lex_pop_state()
-    {
-        yy_pop_state();
-    }
-    #endif
     bool return_from_func = true;
     void print_state(int state);
     void print_current_state();
-  const char* state_to_string(int state);
+    const char* state_to_string(int state);
 
     void Scanner::print_state()
     {
@@ -67,14 +59,15 @@
     );
 %}
 
-id    [_a-zA-Z][a-zA-Z_0-9]*
+IDENTIFIER    [_a-zA-Z][a-zA-Z_0-9]*
 int   [0-9]+
 blank [ \t\r]
 
 float_number [+-]?([0-9]*[.])?[0-9]+
 
 %option stack
-%x checkif skiptoendofline ifdef endif getname define defname defval fbo fbo1 clearmode rendermode incl comment comment2 str function functionbody cstbuffer technique pass sampler_state dst_state pr_state color_sample_state rasterization_state resource resource1 input_layout
+%x checkif skiptoendofline ifdef endif getname define defname defval fbo fbo1 clearmode rendermode incl comment comment2 str function functionbody cstbuffer technique pass  dst_state pr_state color_sample_state rasterization_state resource resource1 input_layout texture sampler_state
+
 
 %{
   // Code run each time a pattern is matched.
@@ -97,7 +90,8 @@ float_number [+-]?([0-9]*[.])?[0-9]+
 
 %}
 
-FatalError {
+<INITIAL,function>FatalError {
+    CryFatalError("!!!");
 	return yy::parser::make_FATALERROR(loc);
 }
 
@@ -106,13 +100,10 @@ FatalError {
     yy_push_state(technique);
 	return yy::parser::make_TECHNIQUE(loc);
 }
-<INITIAL,cstbuffer>register {
-  CryError("REGISTER");
+<INITIAL,cstbuffer,sampler_state,texture>register {
 	return yy::parser::make_REGISTER(loc);
 }
-<INITIAL>"[[fn]]" {
-  CryLog("[[fn]]");
-  add_shader_fragment("//");
+<INITIAL>"[fn]" {
   yy_push_state(function);
   print_state();
 }
@@ -121,13 +112,15 @@ FatalError {
 	return yy::parser::make_CSTBUFFER(loc);
 }
 <INITIAL>ConstantBuffer {
-  yy_push_state(cstbuffer);
+    yy_push_state(cstbuffer);
 	return yy::parser::make_CONSTANTBUFFER(loc);
 }
 <INITIAL>Texture2D {
+    yy_push_state(texture);
 	return yy::parser::make_TEXTURE2D_TYPE(loc);
 }
 <INITIAL>SamplerState {
+    yy_push_state(sampler_state);
 	return yy::parser::make_SAMPLERSTATE(loc);
 }
 
@@ -191,6 +184,9 @@ FatalError {
     ivec4  return yy::parser::make_INT4_TYPE(loc);
     uniform return yy::parser::make_UNIFORM(loc);
     string return yy::parser::make_STRING_TYPE(loc);
+    Texture2D  return yy::parser::make_TEXTURE2D_TYPE(loc);
+    SamplerState return yy::parser::make_SAMPLERSTATE(loc);
+    TextureCube return yy::parser::make_TEXTURECUBE_TYPE(loc);
 }
 
 VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
@@ -198,12 +194,12 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
     /*==================================================================
       Comment starting points
     */
-<INITIAL,str,cstbuffer,technique,pass,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,resource,resource1,fbo,fbo1,input_layout,function,functionbody>"/*" {
+<INITIAL,str,cstbuffer,technique,pass,sampler_state,texture,dst_state,pr_state,color_sample_state,rasterization_state,resource,resource1,fbo,fbo1,input_layout,function,functionbody>"/*" {
     comment_caller  =  INITIAL;
     yy_push_state(comment);
 }
 
-<INITIAL,str,cstbuffer,technique,pass,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,resource,resource1,fbo,fbo1,input_layout,function,functionbody>"//" {
+<INITIAL,str,cstbuffer,technique,pass,sampler_state,texture,dst_state,pr_state,color_sample_state,rasterization_state,resource,resource1,fbo,fbo1,input_layout,function,functionbody>"//" {
     comment_caller  =  YY_START;
     yy_push_state(comment2);
     ::print_state(YY_START);
@@ -352,10 +348,10 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
     }
 }
 
-<INITIAL,cstbuffer,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,technique,pass,function,functionbody,resource,resource1,fbo,fbo1,input_layout>\n+ {
+<INITIAL,cstbuffer,sampler_state,texture,dst_state,pr_state,color_sample_state,rasterization_state,technique,pass,function,functionbody,resource,resource1,fbo,fbo1,input_layout>\n+ {
     loc.lines (yyleng); loc.step ();
 }
-<INITIAL,cstbuffer,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,technique,pass,function,functionbody,resource,resource1,fbo,fbo1,input_layout>{blank}+ {
+<INITIAL,cstbuffer,sampler_state,texture,dst_state,pr_state,color_sample_state,rasterization_state,technique,pass,function,functionbody,resource,resource1,fbo,fbo1,input_layout>{blank}+ {
     loc.step ();
 }
 
@@ -376,9 +372,9 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
 ","        return yy::parser::make_COMMA(loc);
     */
 
-{int}      return make_INT(yytext, loc);
+{int}               return make_INT(yytext, loc);
 {float_number}      return make_FLOAT(yytext, loc);
-<INITIAL,cstbuffer,technique,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,pass,resource,resource1,fbo,fbo1,input_layout,function>{id} {
+<INITIAL,cstbuffer,technique,texture,sampler_state,texture,dst_state,pr_state,color_sample_state,rasterization_state,pass,resource,resource1,fbo,fbo1,input_layout,function>{IDENTIFIER} {
 	std::string_view id = YYText();
 	if (auto it = macros.find(id.data()); it == macros.end())
 	{
@@ -391,7 +387,7 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
 	}
 
 }
-<INITIAL,cstbuffer,technique,sampler_state,dst_state,pr_state,color_sample_state,rasterization_state,pass,resource,resource1,fbo,fbo1,input_layout,function>. {   
+<INITIAL,cstbuffer,technique,sampler_state,texture,dst_state,pr_state,color_sample_state,rasterization_state,pass,resource,resource1,fbo,fbo1,input_layout,function>. {   
     if((yytext[0] >= 33) && (yytext[0] <= 126))
         return CURRENT_SYMBOL;
     else {
@@ -464,7 +460,7 @@ VertexFormat return yy::parser::make_VERTEXFORMAT(loc);
 #endif yy_push_state(skiptoendofline); 
 #elif yy_push_state(skiptoendofline);
 
-<define>{id} current_define = YYText(); yy_push_state(skiptoendofline);
+<define>{IDENTIFIER} current_define = YYText(); yy_push_state(skiptoendofline);
 <checkif>[^\n]* CryLog("#if: %s", YYText()); 
 <checkif>\n yy_pop_state(/*skiptoendofline*/);
 

@@ -16,14 +16,16 @@ struct VS_OUTPUT
     float2 TC : TEXCOORD0;
     float viewDistance : FOG;
 };
+
 HEIGHTMAP
 
+[fn]
 float height(float2 pos)
 {
     return heightTex.SampleLevel(ssLinear, pos, 0).r;
 }
 
-[[fn]]
+[fn]
 VS_OUTPUT VS(
     VS_INPUT IN
 )
@@ -61,7 +63,7 @@ VS_OUTPUT VS(
 
 DIFFUSEMAP
 //SunDirection
-[[fn]]
+[fn]
 float4 PS(VS_OUTPUT IN) : SV_Target0
 {    
     float4 textureColor;

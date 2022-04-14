@@ -577,7 +577,7 @@ void MinePlayer::update()
 
 	auto const gravity = 0.f;
 	auto       ft      = Env::Timer()->GetRealFrameTime();
-	move(glm::vec3(0.0f, -1.0f, 0.0f), gravity * ft);
+	move(glm::vec3(0.0f, -1.0f, 0.0f), gravity);
 
 	applyMovement();
 	//getCamera()->SetPos(entity->GetPos());

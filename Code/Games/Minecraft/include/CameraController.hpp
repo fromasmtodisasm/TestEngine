@@ -28,7 +28,7 @@ public:
 	CCameraController(CCamera* pCamera)
 	    : m_Camera{pCamera}
 	{
-		InitCVars();
+		static bool inited = InitCVars();
 		Env::System()->GetIHardwareMouse()->AddListener(this);
 	}
 
@@ -41,19 +41,16 @@ public:
 	virtual bool          OnInputEvent(const SInputEvent& event) override;
 	bool                  OnKeyPress(EKeyId key);
 	bool                  OnKeyReleas(EKeyId key);
-	void                  InitCVars();
+	bool                  InitCVars();
 	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-	void ProcessKeyboard(Movement direction, float deltaTime, float value = 1.0f);
-	// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 	// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 	void                  ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
 
-	void                  update(float deltatime);
+	void                  Update(float deltatime);
 
 	CCamera*              CurrentCamera();
 
-	CCamera* RenderCamera()
+	CCamera*              RenderCamera()
 	{
 		return m_Camera[m_RenderCamera];
 	}
@@ -75,15 +72,21 @@ public:
 		m_CurrentCamera = n;
 	}
 
+	void Move(Movement direction, float deltaTime, float value = 1.0f);
+
+private:
+	void ProcessKeyboard(Movement direction, float deltaTime, float value = 1.0f);
+
 public:
 	Legacy::Vec3     velocity = Legacy::Vec3(10);
 	std::set<EKeyId> m_keys;
 	Legacy::Vec2     delta;
-	float            MovementSpeed;
+	static float     MovementSpeed;
 	const float      SCROLL_SPEED    = 2.0f;
 	const float      MOUSE_SPEED     = 1.5f;
 	const float      MOUSE_SENSIVITY = 0.05f;
 
+	glm::vec3        m_MoveDirection;
 	// Inherited via IHardwareMouseEventListener
 
 	void             OnHardwareMouseEvent(int iX, int iY, EHARDWAREMOUSEEVENT eHardwareMouseEvent, int wheelDelta = 0)

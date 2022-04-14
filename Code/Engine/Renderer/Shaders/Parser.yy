@@ -228,6 +228,7 @@
 
 %token              SAMPLERSTATE
 
+
 /*------------------------------------------------------------------
   token for extensions
 */
@@ -303,7 +304,7 @@ function_definition: function_declaration semantic '{' {
     //CryLog("FuncBody: %s", body.data());
 }
 
-object_type: TYPE_NAME | base_type;
+object_type: TYPE_NAME | base_type | object_type template_parameter;
 
 function_declaration: object_type IDENTIFIER[name] '(' {}arguments ')'{
     CryLog("Parsed function declaration for: [%s]", $name.data());
@@ -342,17 +343,22 @@ struct_footer: IDENTIFIER {CryLog("Declared and defined struct with name: %s", $
 
 var_decls: var_decls  var_decl ';' | var_decl ';' | struct';';
 
-shader_resource: cbuffer | texture2d | sampler_state;
+shader_resource: cbuffer | texture2d | sampler_state
+{
+
+};
 
 resource_initializer: %empty | '=' IDENTIFIER;
-texture2d: TEXTURE2D_TYPE IDENTIFIER register_declaration resource_initializer
+texture2d: TEXTURE2D_TYPE  IDENTIFIER register_declaration resource_initializer
 {
-    CryLog("texture2d");
+    lex_pop_state();
+    CryLog("Parsed: Texture2D %s",  $IDENTIFIER.c_str());
 }
 
 sampler_state: SAMPLERSTATE IDENTIFIER register_declaration resource_initializer
 {
-    CryLog("sampler");
+    lex_pop_state();
+    CryLog("Parsed: SamplerState %s",  $IDENTIFIER.c_str());
 }
 
 shader_type 
@@ -404,6 +410,9 @@ base_type:
 |  MAT3_TYPE { $$ = nvFX::IUniform::TMat3; }
 |  MAT34_TYPE { $$ = nvFX::IUniform::TMat3; }
 |  MAT4_TYPE { $$ = nvFX::IUniform::TMat4; }
+|  TEXTURE2D_TYPE { $$ = nvFX::IUniform::TTexture2D; }
+|  SAMPLERSTATE { $$ = nvFX::IUniform::TMat4; }
+|  TEXTURECUBE_TYPE { $$ = nvFX::IUniform::TTextureCube; }
 
 ;
 

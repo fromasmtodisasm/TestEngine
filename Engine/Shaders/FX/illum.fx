@@ -43,7 +43,7 @@ struct VS_OUTPUT
 Texture2D g_FontAtlas : register(t0);
 SamplerState g_LinearSampler : register(s0);
 
-[[fn]]
+[fn]
 VS_OUTPUT VS(
     VS_INPUT IN
 )
@@ -58,7 +58,7 @@ VS_OUTPUT VS(
     return output;
 }
 
-[[fn]]
+[fn]
 float4 PS(VS_OUTPUT input) : SV_Target
 {
 	//typedef float2 vec2;

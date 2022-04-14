@@ -17,7 +17,7 @@ struct VsInput
     float2 TC : TEXCOORD0;
 };
 
-[[fn]]
+[fn]
 VsOutput FontVS(VsInput IN)
 {
     VsOutput Output;
@@ -27,14 +27,14 @@ VsOutput FontVS(VsInput IN)
     return Output;
 }  
 
-[[fn]]
+[fn]
 float4 FontPS(VsOutput IN) : SV_Target0
 {    
     // {{{{{{{{{{{{{{{{{
     return IN.Color * float4(1.0, 1.0, 1.0, text.Sample(textSampler, IN.TexCoords).r);
 }
 
-[[fn]]
+[fn]
 // same function declaration style as vertex shaders
 // pixel shaders return the colour value of the pixel (hence the float4)
 float4 GrayScalePS(float3 color) : SV_Target0
@@ -48,7 +48,7 @@ float4 GrayScalePS(float3 color) : SV_Target0
     return grey;
 }
 
-[[fn]]
+[fn]
 float4 TexturedQuadPS(VsOutput IN) : SV_Target0
 {    
     float4 color = text.Sample(textSampler, IN.TexCoords);
@@ -76,7 +76,7 @@ Technique TexturedQuad<string description = "This is technique spesialized for t
     }
 }
 
-[[fn]]
+[fn]
 VsOutput AuxVS(VsInput IN)
 {
     VsOutput OUT = (VsOutput)0;
@@ -85,7 +85,7 @@ VsOutput AuxVS(VsInput IN)
     return OUT;
 }
  
-[[fn]]
+[fn]
 float4 AuxPS(VsOutput IN) : SV_Target0
 {
     return IN.Color;
