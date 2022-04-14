@@ -173,39 +173,69 @@ float4 GrayScale(float4 color) : SV_Target0
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+[fn]
 half4 GetTexture2DGrad(Texture2D tex, SamplerState samplerState, float2 uv, float2 ddxUV, float2 ddyUV) { return tex.SampleGrad(samplerState, uv.xy, ddxUV, ddyUV ); }
+[fn]
 half4 GetTexture2DLod(Texture2D tex, SamplerState samplerState, float4 uv)                              { return tex.SampleLevel(samplerState, uv.xy, uv.w); }
+[fn]
 half2 GetTexture2DLod(Texture2D<float2> tex, SamplerState samplerState, float4 uv)                      { return tex.SampleLevel(samplerState, uv.xy, uv.w); }
+[fn]
 half4 GetTexture2DLod(Texture2D tex, SamplerState samplerState, float2 uv, float Lod)                   { return tex.SampleLevel(samplerState, uv.xy, Lod); }
+[fn]
 half4 GetTexture2DProj(Texture2D tex, SamplerState samplerState, float4 uv)                             { return tex.Sample(samplerState, uv.xy * rcp(uv.w)); }
+[fn]
 half2 GetTexture2DProj(Texture2D<float2> tex, SamplerState samplerState, float4 uv)                     { return tex.Sample(samplerState, uv.xy * rcp(uv.w)); }
+[fn]
 half4 GetTexture2DBias(Texture2D tex, SamplerState samplerState, float4 uv)                             { return tex.SampleBias(samplerState, uv.xy, uv.w); }
+[fn]
 half4 GetTexture2D(Texture2D tex, SamplerState samplerState, float2 uv)                                 { return tex.Sample(samplerState, uv); }
+[fn]
 half4 GetTextureCube(TextureCube tex, SamplerState samplerState, float3 uv)                             { return tex.Sample(samplerState, uv); }
+[fn]
 half4 GetTextureCubeLod(TextureCube tex, SamplerState samplerState, float4 uv)                          { return tex.SampleLevel(samplerState, uv.xyz, uv.w); }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+[fn]
 half2 GetXYNormalMap(Texture2D bumpTex, float2 bumpTC)                                           { return GetTexture2D(bumpTex, ssMaterialAnisoHigh, bumpTC).yx; }
+[fn]
 half2 GetXYNormalMap(Texture2D bumpTex, SamplerState samplerState, float2 bumpTC)                { return GetTexture2D(bumpTex, samplerState, bumpTC).yx; }
+[fn]
 half2 GetXYNormalMapLod(Texture2D bumpTex, SamplerState samplerState, float4 bumpTC)             { return GetTexture2DLod(bumpTex, samplerState, bumpTC).yx; }
+[fn]
 half2 GetXYNormalMapGrad(Texture2D bumpTex, float2 bumpTC, float2 ddx_bumpTC, float2 ddy_bumpTC) { return GetTexture2DGrad(bumpTex, ssMaterialAnisoHigh, bumpTC, ddx_bumpTC, ddy_bumpTC).yx; }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+[fn]
 half  GetAlphaTex(Texture2D tex, float2 texTC)                                                      { return GetTexture2D(tex, ssMaterialAnisoHigh, texTC.xy).a; }// alpha test value in alpha channel
+[fn]
 half4 GetDiffuseTex(Texture2D tex, float2 texTC)                                                    { return GetTexture2D(tex, ssMaterialAnisoHigh, texTC.xy); }
+[fn]
 half4 GetDiffuseTexGrad(Texture2D tex, float2 texTC, float2 ddxUV, float2 ddyUV)                    { return GetTexture2DGrad(tex, ssMaterialAnisoHigh, texTC.xy, ddxUV, ddyUV ); }
+[fn]
 half4 GetDiffuseTexLod(Texture2D tex, float4 texTC)                                                 { return GetTexture2DLod(tex, ssMaterialAnisoHigh, texTC.xyzw); }
+[fn]
 half4 GetDiffuseTexProj(Texture2D tex, float4 texTC)                                                { return GetTexture2DProj(tex, ssMaterialAnisoHigh, texTC.xyzw); }
+[fn]
 half2 GetDiffuseTexProj(Texture2D<float2> tex, float4 texTC)                                        { return GetTexture2DProj(tex, ssMaterialAnisoHigh, texTC.xyzw); }
+[fn]
 half4 GetDiffuseTexBias(Texture2D tex, float4 texTC)                                                { return GetTexture2DBias(tex, ssMaterialAnisoHigh, texTC.xyzw); }
+[fn]
 half4 GetCustomTex(Texture2D tex, float2 texTC)                                                     { return GetTexture2D(tex, ssMaterialAnisoHigh, texTC.xy); }
+[fn]
 half4 GetCustomTexLod(Texture2D tex, float4 texTC)                                                  { return GetTexture2DLod(tex, ssMaterialAnisoHigh, texTC.xyzw); }
+[fn]
 half4 GetDiffuse2Tex(Texture2D tex, float2 texTC)                                                   { return GetCustomTex(tex, texTC.xy); }
+[fn]
 half4 GetDiffuse2TexLod(Texture2D tex, float4 texTC)                                                { return GetCustomTexLod(tex, texTC.xyzw); }
+[fn]
 half4 GetDiffuseDecalTex(Texture2D tex, float2 texTC)                                               { return GetTexture2D(tex, ssMaterialAnisoHighBorder, texTC.xy); }
+[fn]
 half  GetHeightTex(Texture2D tex, float2 texTC)                                                     { return GetTexture2D(tex, ssMaterialTrilinear, texTC.xy); }
+[fn]
 half  GetHeightTexLod(Texture2D tex, float4 texTC)                                                  { return GetTexture2DLod(tex, ssMaterialTrilinear, texTC.xyzw); }
+[fn]
 half4 GetHeight2Tex(Texture2D tex, float2 texTC)                                                    { return GetTexture2D(tex, ssMaterialTrilinear, texTC.xy); }
+[fn]
 half4 GetHeight2TexLod(Texture2D tex, float4 texTC)                                                 { return GetTexture2DLod(tex, ssMaterialTrilinear, texTC.xyzw); }

@@ -16,10 +16,8 @@ struct VS_OUTPUT
     float2 TC : TEXCOORD0;
     float viewDistance : FOG;
 };
-
 HEIGHTMAP
 
-[fn]
 float height(float2 pos)
 {
     return heightTex.SampleLevel(ssLinear, pos, 0).r;
