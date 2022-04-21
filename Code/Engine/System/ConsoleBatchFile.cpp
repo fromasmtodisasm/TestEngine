@@ -19,7 +19,7 @@ void CConsoleBatchFile::ExecuteFileCmdFunc(IConsoleCmdArgs* args)
 
 	const string filename = args->GetArg(1);
 	CCryFile     file;
-#if 0
+#if 1
 	{
 		if (!CSystemConfiguration::OpenFile(filename, file, ICryPak::FOPEN_ONDISK))
 		{

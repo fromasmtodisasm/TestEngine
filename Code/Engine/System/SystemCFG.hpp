@@ -11,7 +11,7 @@ class CSystemConfiguration
 {
 public:
 	CSystemConfiguration(const string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink);
-	bool OpenFile(const string& filename, CCryFile& file, int flags);
+	static bool OpenFile(const string& filename, CCryFile& file, int flags);
   ~CSystemConfiguration() = default;
 	bool        IsError() const { return m_bError; }
 

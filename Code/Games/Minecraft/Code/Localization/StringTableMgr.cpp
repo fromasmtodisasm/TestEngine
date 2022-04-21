@@ -84,20 +84,19 @@ void CStringTableMgr::AddControl(int nKey)
 			return;
 		SInputEvent e;
 		s->AssignTo(e);
-		auto name = pInput->GetOSKeyName(e);
-		if (name)
+		string name = pInput->GetOSKeyName(e);
+		if (!name.empty())
 		{
 			sprintf(szKey, "control%d", nKey);
 
 			int nID          = (int)m_vStrings.size();
 
 			m_keysMap[szKey] = nID;
-#if 0
-			m_vStrings.push_back(name);
-#endif
+			wstring wname(name.begin(), name.end());
+			m_vStrings.push_back(wname);
 			m_pLanguageStriptObject->AddString(szKey, nID);
 
-			sprintf(szKey, "%S", name);
+			sprintf(szKey, "%S", name.c_str());
 			m_vEnglishStrings.push_back(szKey);
 		}
 	}

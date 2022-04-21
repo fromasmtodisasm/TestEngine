@@ -397,7 +397,7 @@ bool CSystemConfiguration::ParseSystemConfig()
 			//strValue.replace("\\\\", "\\");
 			//strValue.replace("\\\"", "\"");
 
-			if (strKey == "r_DisplayIndex")
+			if (strKey == "g_language")
 			{
 				CryLog("here r_DisplayIndex");
 			}

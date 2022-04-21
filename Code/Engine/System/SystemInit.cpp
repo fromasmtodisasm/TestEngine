@@ -12,7 +12,6 @@
 #include <BlackBox/Core/Path.hpp>
 #include <BlackBox/Core/Platform/CryLibrary.h>
 
-
 //#undef USE_DEDICATED_SERVER_CONSOLE
 //////////////////////////////////////////////////////////////////////////
 #define DEFAULT_LOG_FILENAME                "Log.txt"
@@ -238,6 +237,11 @@ void CSystem::ProcessCommandLine()
 	}
 }
 
+CryPathString operator/(const CryPathString& l, const CryPathString& r)
+{
+	return PathUtil::Make(l.c_str(), r.c_str());
+}
+
 bool CSystem::Init()
 {
 	m_env.SetIsDedicated(m_startupParams.bDedicatedServer);
@@ -384,6 +388,8 @@ bool CSystem::Init()
 	#if 0
 		// Set this as soon as the system cvars got initialized.
 		static_cast<CCryPak* const>(m_env.pCryPak)->SetLocalizationFolder(g_cvars.sys_localization_folder->GetString());
+	#else
+
 	#endif
 
 		//////////////////////////////////////////////////////////////////////////
@@ -432,6 +438,19 @@ bool CSystem::Init()
 	if (auto ovr = m_pCmdLine->FindArg(eCLAT_Pre, "override"); ovr)
 	{
 		LoadConfiguration(ovr->GetValue());
+	}
+	{
+		//FIXME: need a smarter approach, g_language not available now
+		CryPathString path(MAX_PATH, 0);
+		#if 0
+		//Env::Console()->GetCVar("g_language")->GetString()
+		auto          g_language = "english";
+		snprintf(path.data(), MAX_PATH, "%s*.pak", g_language);
+		#endif
+
+		path = PathUtil::GetGameFolder() / "localized" / "english*.pak";
+
+		m_env.pCryPak->OpenPacks(path.data());
 	}
 	//====================================================
 	if (!OpenRenderLibrary(Env::Console()->GetCVar("r_Driver")->GetString()))

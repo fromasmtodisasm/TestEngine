@@ -1,21 +1,28 @@
 #include "xml.h"
+#include <BlackBox/System/File/CryFile.h>
 
 inline void _not_implemented(const char* file, int line, const char* fn)
 {
-	CryError("%s:%d:%s", file, line, fn);
+	CryError("NOT IMPLEMENTED: %s:%d:%s", file, line, fn);
+	assert(0);
 }
 
 #define NOT_IMPLEMENTED _not_implemented(__FILE__, __LINE__, __FUNCTION__)
 
 int CIXMLDOMNode::AddRef()
 {
-	NOT_IMPLEMENTED;
-	return {};
+	_reference_target_t::AddRef();
+	return NumRefs();
 }
 
 void CIXMLDOMNode::Release()
 {
-	NOT_IMPLEMENTED;
+	_reference_target_t::Release();
+}
+
+CIXMLDOMNode::CIXMLDOMNode(tinyxml2::XMLNode* pNode)
+    : m_Node(pNode)
+{
 }
 
 XDOM::_DOMNodeType CIXMLDOMNode::getNodeType()
@@ -26,20 +33,21 @@ XDOM::_DOMNodeType CIXMLDOMNode::getNodeType()
 
 const char* CIXMLDOMNode::getText()
 {
-	NOT_IMPLEMENTED;
-	return {};
+	if (auto child = m_Node->FirstChild(); child)
+	{
+		return child->Value();
+	}
+	return nullptr;
 }
 
 const char* CIXMLDOMNode::getName()
 {
-	NOT_IMPLEMENTED;
-	return {};
+	return m_Node->Value();
 }
 
 XDOM::IXMLDOMNodeList* CIXMLDOMNode::getChildNodes()
 {
-	NOT_IMPLEMENTED;
-	return {};
+	return new CXMLDOMNodeList(m_Node->FirstChild());
 }
 
 void CIXMLDOMNode::setText(const char* sText)
@@ -54,8 +62,7 @@ void CIXMLDOMNode::setName(const char* sName)
 
 bool CIXMLDOMNode::hasChildNodes()
 {
-	NOT_IMPLEMENTED;
-	return {};
+	return !m_Node->NoChildren();
 }
 
 bool CIXMLDOMNode::appendChild(IXMLDOMNode* pNode)
@@ -72,41 +79,49 @@ XDOM::IXMLDOMNode* CIXMLDOMNode::getAttribute(const char* sName)
 
 XDOM::IXMLDOMNodeList* CIXMLDOMNode::getElementsByTagName(const char* sName)
 {
-	NOT_IMPLEMENTED;
-	return {};
+	if (auto root = m_Node->FirstChildElement(sName); root)
+	{
+		return new CXMLDOMNodeList(root);
+	}
+	return nullptr;
 }
 
 int CXMLDOMNodeList::AddRef()
 {
-	return ++m_nRefCounter;
+	::_reference_target_t::AddRef();
+	return NumRefs();
 }
 
 void CXMLDOMNodeList::Release()
 {
-	++m_nRefCounter;
+	::_reference_target_t::Release();
 }
 
 CXMLDOMNodeList::CXMLDOMNodeList(tinyxml2::XMLNode* first)
-    : m_NodeList(first)
 {
+	m_NodeList.push_back(first);
+	for (; first; first = first->NextSibling())
+	{
+		m_NodeList.push_back(first);
+	}
+	m_CurrentNode = m_NodeList.begin();
 }
 
 size_t CXMLDOMNodeList::length()
 {
-	NOT_IMPLEMENTED;
-	return 0;
+	return m_NodeList.size();
 }
 
 void CXMLDOMNodeList::reset()
 {
-	NOT_IMPLEMENTED;
+	m_CurrentNode = m_NodeList.begin();
 }
 
 XDOM::IXMLDOMNode* CXMLDOMNodeList::nextNode()
 {
-	//return new CXMLDOMNodeList(m_NodeList->NextSibling());
-	NOT_IMPLEMENTED;
-	return nullptr;
+	if (m_CurrentNode == m_NodeList.end())
+		return nullptr;
+	return new CIXMLDOMNode(*(m_CurrentNode++));
 }
 
 // Inherited via IXMLDOMDocument
@@ -175,14 +190,28 @@ XDOM::IXMLDOMNode* CXMLDocument::getAttribute(const XMLCHAR* sName)
 
 XDOM::IXMLDOMNodeList* CXMLDocument::getElementsByTagName(const XMLCHAR* sName)
 {
-	NOT_IMPLEMENTED;
-	return new CXMLDOMNodeList(m_Document.FirstChildElement(sName));
+	if (auto root = m_Root->FirstChildElement(sName); root)
+	{
+		return new CXMLDOMNodeList(root);
+	}
+	return nullptr;
 }
 
 bool CXMLDocument::load(const XMLCHAR* sSourceFile)
 {
-	NOT_IMPLEMENTED;
-	return m_Document.LoadFile(sSourceFile) == tinyxml2::XML_SUCCESS;
+	if (CCryFile file(sSourceFile, "r"); file)
+	{
+		std::vector<char> Xml;
+		Xml.reserve(file.GetLength());
+		file.Read(Xml.data(), file.GetLength());
+		if (m_Document.Parse(Xml.data(), file.GetLength()) == tinyxml2::XML_SUCCESS)
+		{
+			getRootNode();
+			return m_Root != nullptr;
+		}
+		return false;
+	}
+	return false;
 }
 
 bool CXMLDocument::loadXML(const XMLCHAR* szString)
@@ -192,8 +221,12 @@ bool CXMLDocument::loadXML(const XMLCHAR* szString)
 
 XDOM::IXMLDOMNode* CXMLDocument::getRootNode()
 {
-	NOT_IMPLEMENTED;
-	return nullptr;
+	m_Root = m_Document.FirstChild();
+	while (m_Root->NoChildren())
+	{
+		m_Root = m_Root->NextSibling();
+	}
+	return new CIXMLDOMNode(m_Root);
 }
 
 XDOM::IXMLDOMNode* CXMLDocument::createNode(XDOM::_DOMNodeType Type, const char* name)
