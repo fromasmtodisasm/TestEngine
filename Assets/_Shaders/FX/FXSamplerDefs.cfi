@@ -1,0 +1,24 @@
+//=== Shared samplers =========================================================
+
+// Material textures. TODO: remove sRGBLookup as it cannot work with resource sets
+//#define DIFFUSEMAP            Texture2D   diffuseTex          : register(t0)       /*<sRGBLookup = true>*/    ;//= TM_Diffuse;
+#define DIFFUSEMAP            Texture2D   diffuseTex          : register(t0)                                    ;//= TM_Diffuse;
+#define NORMALMAP             Texture2D   normalsTex          : register(t1)       <UIName = "Normalmap">       ;//= TM_Normals;
+#define SPECULARMAP           Texture2D   specularTex         : register(t2)                                    ;//= TM_Specular;
+#define ENVIRONMENTCUBEMAP    TextureCube envCubeTex          : register(t3)                                    ;//= TM_Env;
+#define DETAILMAP             Texture2D   detailTex           : register(t4)       <sRGBLookup = true>          ;//= TM_Detail;
+#define HEIGHTMAP             Texture2D   heightTex           : register(t6)                                    ;//= TM_Height;
+
+// Material sampler states
+SamplerState ssMaterialAnisoHigh       : register(s0) ;//= SS_MaterialAnisoHighWrap;
+SamplerState ssMaterialAnisoLow        : register(s1) ;//= SS_MaterialAnisoLowWrap;
+SamplerState ssMaterialTrilinear       : register(s2) ;//= SS_MaterialTrilinearWrap;
+SamplerState ssMaterialBilinear        : register(s3) ;//= SS_MaterialBilinearWrap; 
+
+SamplerState ssMaterialTrilinearClamp  : register(s4) ;//= SS_MaterialTrilinearClamp;
+SamplerState ssMaterialBilinearClamp   : register(s5) ;//= SS_MaterialBilinearClamp;
+
+SamplerState ssMaterialAnisoHighBorder : register(s6) ;//= SS_MaterialAnisoHighBorder; 
+SamplerState ssMaterialTrilinearBorder : register(s7) ;//= SS_MaterialTrilinearBorder; 
+
+SamplerState ssLinear : register(s0);

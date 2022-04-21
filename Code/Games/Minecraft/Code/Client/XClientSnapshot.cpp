@@ -17,15 +17,6 @@
 #include "XClientSnapshot.hpp"
 //#include "Stream.h"
 
-//FIXME: remove it
-#ifndef max
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 //////////////////////////////////////////////////////////////////////
 CXClientSnapshot::CXClientSnapshot()
 {

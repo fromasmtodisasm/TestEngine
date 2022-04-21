@@ -10,6 +10,7 @@ inline void _not_implemented(const char* file, int line, const char* fn)
 int CIXMLDOMNode::AddRef()
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 void CIXMLDOMNode::Release()
@@ -20,21 +21,25 @@ void CIXMLDOMNode::Release()
 XDOM::_DOMNodeType CIXMLDOMNode::getNodeType()
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 const char* CIXMLDOMNode::getText()
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 const char* CIXMLDOMNode::getName()
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 XDOM::IXMLDOMNodeList* CIXMLDOMNode::getChildNodes()
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 void CIXMLDOMNode::setText(const char* sText)
@@ -50,21 +55,25 @@ void CIXMLDOMNode::setName(const char* sName)
 bool CIXMLDOMNode::hasChildNodes()
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 bool CIXMLDOMNode::appendChild(IXMLDOMNode* pNode)
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 XDOM::IXMLDOMNode* CIXMLDOMNode::getAttribute(const char* sName)
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 XDOM::IXMLDOMNodeList* CIXMLDOMNode::getElementsByTagName(const char* sName)
 {
 	NOT_IMPLEMENTED;
+	return {};
 }
 
 int CXMLDOMNodeList::AddRef()

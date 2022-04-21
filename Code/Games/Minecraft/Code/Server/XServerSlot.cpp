@@ -5,15 +5,6 @@
 #include <Server/XServer.hpp>
 #include <Server/XSystemServer.h>
 
-//FIXME: remove it
-#ifndef max
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 //////////////////////////////////////////////////////////////////////
 CXServerSlot::CXServerSlot(CXServer* pParent, IServerSlot* pSlot)
 {

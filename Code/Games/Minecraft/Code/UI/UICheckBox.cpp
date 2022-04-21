@@ -19,15 +19,6 @@
 
 _DECLARE_SCRIPTABLEEX(CUICheckBox)
 
-//FIXME: remove it
-#ifndef max
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 CUICheckBox::CUICheckBox()
     : m_iState(0)

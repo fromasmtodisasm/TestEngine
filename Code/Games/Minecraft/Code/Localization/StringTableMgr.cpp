@@ -127,7 +127,7 @@ bool CStringTableMgr::LoadExcelXmlSpreadsheet(const string& sFileName)
 		return (true);
 
 	//FIXME: properly wrap tinyxml without memory leaks
-#if 0
+#if 1
 	XDOM::IXMLDOMDocumentPtr pDoc = m_pSystem->CreateXMLDocument();
 
 	// load xml-file

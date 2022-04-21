@@ -22,15 +22,6 @@
 #include <algorithm>
 #include <iostream>
 
-//FIXME: remove it
-#ifndef max
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 _DECLARE_SCRIPTABLEEX(CUIListView);
 CUIListView* CUIListView::m_pStaticThis = 0;
 

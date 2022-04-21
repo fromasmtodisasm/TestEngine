@@ -14,15 +14,6 @@
 #include <Player/Spectator.h>
 #include <Player/AdvCamSystem.h>
 
-//FIXME: remove it
-#ifndef max
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 //////////////////////////////////////////////////////////////////////
 CXClient::CXClient()
     : m_DummyClient((CXGame*)(Env::System()->GetIGame()))

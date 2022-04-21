@@ -19,15 +19,6 @@
 
 _DECLARE_SCRIPTABLEEX(CUIButton)
 
-//FIXME: remove it
-#ifndef max
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 CUIButton::CUIButton()
     : m_iHAlignment(UIALIGN_CENTER)

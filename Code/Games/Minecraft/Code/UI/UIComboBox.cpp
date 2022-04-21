@@ -25,15 +25,6 @@
 
 _DECLARE_SCRIPTABLEEX(CUIComboBox);
 
-//FIXME: remove it
-#ifndef max
-	#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-	#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 CUIComboBox* CUIComboBox::m_pStaticThis = 0;
 
 //////////////////////////////////////////////////////////////////////////
