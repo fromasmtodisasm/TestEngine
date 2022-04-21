@@ -183,7 +183,11 @@ public:
 #if 0
 		NOT_IMPLEMENTED_V;
 #else
+		#if 0
 		return 1.f;
+		#else
+		return value * GetWidth() / 800.f;
+		#endif
 #endif
 	}
 	virtual float ScaleCoordY(float value) override
@@ -191,7 +195,11 @@ public:
 #if 0
 		NOT_IMPLEMENTED_V;
 #else
+		#if 0
 		return 1.f;
+		#else
+		return value * GetHeight() / 600.f;
+		#endif
 #endif
 	}
 

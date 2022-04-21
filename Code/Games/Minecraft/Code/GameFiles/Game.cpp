@@ -27,7 +27,7 @@
 #include <BlackBox/System/File/CryFile.h>
 
 //#include "CMovieUser.h"
-#if 1
+#if 0
 	#define EDITOR_IMPLEMENT_LOAD_LEVEL
 #else
 	#undef EDITOR_IMPLEMENT_LOAD_LEVEL
@@ -502,9 +502,10 @@ CXGame::~CXGame()
 	SAFE_DELETE(m_pTimeDemoRecorder);
 	SAFE_DELETE(m_pGameMods);
 
+#ifdef EDITOR_IMPLEMENT_LOAD_LEVEL
 	SAFE_DELETE(minecraft);
+#endif
 	SAFE_DELETE(m_pLegacyInput);
-
 
 	delete m_pTagPointManager;
 }
@@ -723,8 +724,8 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 	m_pRConSystem       = m_pNetwork->CreateRConSystem();
 #endif
 	m_pWeaponSystemEx = DEBUG_NEW CWeaponSystemEx();
-	m_pVehicleSystem  = DEBUG_NEW CVehicleSystem();
-	m_pPlayerSystem   = DEBUG_NEW CPlayerSystem();
+	m_pVehicleSystem  = DEBUG_NEW  CVehicleSystem();
+	m_pPlayerSystem   = DEBUG_NEW   CPlayerSystem();
 #if 0
 	m_pFlockManager	  = DEBUG_NEW CFlockManager(m_pSystem);
 #endif
@@ -834,7 +835,7 @@ bool CXGame::Init(ISystem* pSystem, bool bDedicatedSrv, bool bInEditor, const ch
 	if (!m_bDedicatedServer)
 	{
 		m_pSystem->GetIConsole()->ShowConsole(0);
-		if (!bInEditor && 0)
+		if (!bInEditor)
 		{
 			//////////////////////////////////////////////////////////////////////
 			m_pUISystem = DEBUG_NEW CUISystem;
@@ -935,7 +936,7 @@ bool CXGame::Update()
 	//////////////////////////////////////////////////////////////////////////
 	FUNCTION_PROFILER(PROFILE_GAME);
 
-	#if 1
+#if 1
 	ICVar* test = Env::Console()->GetCVar("sys_PakPriority");
 	if (test && test->GetIVal() == 1)
 	{
@@ -948,7 +949,7 @@ bool CXGame::Update()
 		}
 		test->Set(0);
 	}
-	#endif
+#endif
 
 #ifdef USE_STEAM
 	SteamAPI_RunCallbacks();
@@ -1424,13 +1425,13 @@ IGAME_API IGame* CreateGameInstance()
 	return (game);
 }
 //////////////////////////////////////////////////////////////////////////
-bool CXGame::ConstrainToSandbox(IEntity *pEntity)
+bool CXGame::ConstrainToSandbox(IEntity* pEntity)
 {
 	bool bPosChanged = false;
 	if (IsMultiplayer())
 	{
-		Vec3 vPos, vBounds[2]={Vec3(0,0,0),Vec3(0,0,0)};
-		IPhysicalEntity *pPhysEnt = pEntity->GetPhysics();
+		Vec3             vPos, vBounds[2] = {Vec3(0, 0, 0), Vec3(0, 0, 0)};
+		IPhysicalEntity* pPhysEnt = pEntity->GetPhysics();
 		if (pPhysEnt)
 		{
 			pe_status_pos sp;
@@ -1438,14 +1439,15 @@ bool CXGame::ConstrainToSandbox(IEntity *pEntity)
 			vPos = sp.pos;
 		}
 		else
-			vPos=Legacy::from(pEntity->GetPos());
-		
+			vPos = Legacy::from(pEntity->GetPos());
+
 		vBounds[1].x = vBounds[1].y = (float)m_p3DEngine->GetTerrainSize();
-		vBounds[0].z = -100; vBounds[1].z = 500;
-		for(int i=0;i<3;i++) 
-			if (!inrange(vPos[i], vBounds[0][i],vBounds[1][i]))
+		vBounds[0].z                = -100;
+		vBounds[1].z                = 500;
+		for (int i = 0; i < 3; i++)
+			if (!inrange(vPos[i], vBounds[0][i], vBounds[1][i]))
 			{
-				vPos[i] = vBounds[isneg((vBounds[0][i]+vBounds[1][i])*0.5f-vPos[i])][i];
+				vPos[i]     = vBounds[isneg((vBounds[0][i] + vBounds[1][i]) * 0.5f - vPos[i])][i];
 				bPosChanged = true;
 			}
 
@@ -1463,7 +1465,6 @@ bool CXGame::ConstrainToSandbox(IEntity *pEntity)
 	}
 	return bPosChanged;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 void CXGame::GotoMenu(bool bTriggerOnSwitch)

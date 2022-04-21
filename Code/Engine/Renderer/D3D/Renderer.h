@@ -401,6 +401,7 @@ private:
 	ComPtr<ID3DRenderTargetView>                                      m_pMainRenderTargetView;
 	ComPtr<ID3DRasterizerState>                                       m_pRasterizerState{};
 	ComPtr<ID3DDepthStencilState>                                     m_pDepthStencilState{};
+	ComPtr<ID3DDepthStencilState>                                     m_pDepthStencilState2D{};
 
 	std::shared_ptr<CTexture>                                         m_ShadowMap;
 	std::shared_ptr<CTexture>                                         m_DepthStencil;

@@ -502,8 +502,8 @@ bool CSystem::Init()
 #else
 			    0,
 			    0,
-			    (float)Env::Renderer()->GetWidth(),
-			    (float)Env::Renderer()->GetHeight(),
+			    800,
+			    600,
 			    splash,
 			    0, 0, 1, 1, 1, 1, 1, 1);
 #endif

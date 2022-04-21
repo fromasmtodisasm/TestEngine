@@ -168,8 +168,8 @@ void MineWorld::init()
 		//}
 	}
 
-	Env::Console()->ExecuteString("load_level minecraft");
-	Env::Console()->ShowConsole(false);
+	//Env::Console()->ExecuteString("load_level minecraft");
+	//Env::Console()->ShowConsole(false);
 }
 
 void MineUI::init()

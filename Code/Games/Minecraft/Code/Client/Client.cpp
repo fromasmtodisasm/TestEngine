@@ -148,24 +148,24 @@ void CClient::Update()
 	}
 
 	{
-		float       pickDistance = 1000;
-		const float interval     = 300;
+		//float       pickDistance = 1000;
+		//const float interval     = 300;
 
-		glm::ivec3  pos, side;
-		if (m_pGame->minePlayer->blockSideOnCursor(pos, side, pickDistance))
-		{
-			static IFont* font{};
-			if (!font)
-			{
-				font = Env::Renderer()->GetIFont();
-				font->Init("arial.ttf", 14, 14);
-			}
-			m_pGame->minecraft->world.highliteCubeTmp(pos);
-			char buffer[256];
-			sprintf(buffer, "Selected block pos: (%d,%d,%d); pickDistance: %f", pos.x, pos.y, pos.z, pickDistance);
-			float color[] = {1.f, 1.f, 1.f, 1.f};
-			font->RenderText(buffer, 0, 0, 1.f, color);
-		}
+		//glm::ivec3  pos, side;
+		//if (m_pGame->minePlayer->blockSideOnCursor(pos, side, pickDistance))
+		//{
+		//	static IFont* font{};
+		//	if (!font)
+		//	{
+		//		font = Env::Renderer()->GetIFont();
+		//		font->Init("arial.ttf", 14, 14);
+		//	}
+		//	m_pGame->minecraft->world.highliteCubeTmp(pos);
+		//	char buffer[256];
+		//	sprintf(buffer, "Selected block pos: (%d,%d,%d); pickDistance: %f", pos.x, pos.y, pos.z, pickDistance);
+		//	float color[] = {1.f, 1.f, 1.f, 1.f};
+		//	font->RenderText(buffer, 0, 0, 1.f, color);
+		//}
 	}
 
 	m_CameraController.Update(frame_time);

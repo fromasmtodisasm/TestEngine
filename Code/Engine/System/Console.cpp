@@ -1424,8 +1424,8 @@ void CXConsole::Draw()
 				IRenderAuxImage::DrawImage(0, 0, fSizeX, fSizeY, m_nWhiteTexID, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.7f);
 				IRenderAuxImage::DrawImage(0, fSizeY, fSizeX, 2.0f * m_pRenderer->GetHeight() / fReferenceSize, m_nWhiteTexID, 0, 0, 0, 0, 0.0f, 0.0f, 0.0f, 1.0f);
 #else
-				Env::Renderer()->Draw2dImage(0, 0, fSizeX, fSizeY, m_nWhiteTexID, s0, 0.0f, s0 + 1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.98f);
-				Env::Renderer()->Draw2dImage(0, 0, fSizeX, fSizeY, m_nWhiteTexID, s0, 0.0f, s0 - 1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.98f);
+				Env::Renderer()->Draw2dImage(0, 0, 800, 600, m_nWhiteTexID, s0, 0.0f, s0 + 1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.98f);
+				Env::Renderer()->Draw2dImage(0, 0, 800, 600, m_nWhiteTexID, s0, 0.0f, s0 - 1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.98f);
 				//Env::Renderer()->Draw2dImage(0, fSizeY, fSizeX, 2.0f * m_pRenderer->GetHeight() / fReferenceSize, m_nWhiteTexID, 0, 0, 0, 0, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 #endif
 			}
@@ -1433,7 +1433,7 @@ void CXConsole::Draw()
 
 		// draw progress bar
 		if (m_nProgressRange)
-			m_pRenderer->DrawImage(0.0f, 0.0f, float(m_pRenderer->GetWidth()), float(m_pRenderer->GetHeight()), m_nLoadingBackTexID, 0.0f, 1.0f, 1.0f, 0.0f, 0, 0, 0, 1);
+			m_pRenderer->DrawImage(0.0f, 0.0f, float(800), float(600), m_nLoadingBackTexID, 0.0f, 1.0f, 1.0f, 0.0f, 0, 0, 0, 1);
 
 		DrawBuffer(m_nScrollPos, "console");
 	}

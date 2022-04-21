@@ -279,8 +279,8 @@ void CD3DRenderer::Update(void)
 			}
 			{
 				m_RenderAuxGeom->Flush();
-				gTerrainRenderer->Update();
-				gTerrainRenderer->Render(m_Camera);
+				//gTerrainRenderer->Update();
+				//gTerrainRenderer->Render(m_Camera);
 				D3DPERF_BeginEvent(D3DC_Blue, L"DrawImages");
 				for (auto img : m_DrawImages)
 				{
@@ -465,6 +465,8 @@ bool CD3DRenderer::InitOverride()
 		desc.DepthFunc      = ZBUFFER_FUNC;
 
 		GetDevice()->CreateDepthStencilState(&desc, &m_pDepthStencilState);
+		desc.DepthEnable    = false;
+		GetDevice()->CreateDepthStencilState(&desc, &m_pDepthStencilState2D);
 		GetDeviceContext()->OMSetDepthStencilState(m_pDepthStencilState.Get(), 0);
 	}
 
@@ -548,7 +550,7 @@ void CD3DRenderer::GetMemoryUsage(ICrySizer* Sizer) const
 void CD3DRenderer::Draw2dImage(float xpos, float ypos, float w, float h, int texture_id, float s0, float t0, float s1, float t1, float angle, float r, float g, float b, float a, float z)
 {
 #if 1
-	if (m_Is2DMode)
+	if (m_Is2DMode && false)
 	{
 		s0 *= ortho.x;
 		s1 *= ortho.x;
@@ -557,6 +559,12 @@ void CD3DRenderer::Draw2dImage(float xpos, float ypos, float w, float h, int tex
 		t1 *= ortho.y;
 	}
 #endif
+	s0 = 0;
+	t0 = 0;	
+	s1 = 1;
+	t1 = 1;
+	//w = ScaleCoordX(w);
+	//h = ScaleCoordY(h);
 	m_DrawImages.push_back({xpos, ypos, w, h, texture_id, s0, t0, s1, t1, color4f{r, g, b, a}, z});
 
 #if 0
@@ -863,8 +871,11 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, ID3D11ShaderRe
 	glm::mat4 projection = glm::ortho(0.0f, (float)GetWidth(), (float)GetHeight(), 0.0f);
 	auto      cur_c      = Legacy::Vec4(color.r, color.g, color.b, color.a);
 	auto      screen_size(Legacy::Vec2(GetWidth(), GetHeight()));
-	auto      xpos = x;
-	auto      ypos = y;
+	auto      xpos = x * ScaleCoordX(1);
+	auto      ypos = y * ScaleCoordY(1);
+	w              = ScaleCoordX(w);
+	h              = ScaleCoordY(h);
+
 	/*
 		Coordinates of quad
 		A---D 
@@ -927,7 +938,7 @@ void CD3DRenderer::Draw2DQuad(float x, float y, float w, float h, ID3D11ShaderRe
 #endif
 	m_Device->Get<ID3D11DeviceContext>()->RSSetState(m_pRasterizerState.Get());
 	m_Device->Get<ID3D11DeviceContext>()->OMSetBlendState(CGlobalResources::Get().FontBlendState.Get(), 0, 0xffffffff);
-	//m_pd3dDevice->OMSetDepthStencilState(m_pDSState, 0);
+	m_Device->Get<ID3D11DeviceContext>()->OMSetDepthStencilState(m_pDepthStencilState2D.Get(), 0);
 
 	Env::Renderer()->DrawBuffer(VB, 0, 0, 0, static_cast<int>(RenderPrimitive::TRIANGLES), 0, vertex_cnt);
 	ReleaseBuffer(VB);

@@ -45,10 +45,13 @@ inline void GetLocalTime(LPSYSTEMTIME lpSystemTime)
 #else
 inline bool MakeSureDirectoryPathExists(string path)
 {
+	fs::path p;
 	if (!fs::exists(path)) {
-		fs::create_directories(path);
+		p = path;
+		p = p.parent_path();
+		fs::create_directories(p);
 	}
-	return fs::exists(path);
+	return fs::exists(p);
 }
 #endif
 
