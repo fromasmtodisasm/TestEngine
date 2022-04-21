@@ -547,7 +547,7 @@ bool CIndexedMesh::LoadCGF(const char* szFileName, const char* szGeomName)
 			}
 
 			char*                 vb            = (char*)(m_VertexBuffer = CreateVertexBuffer(m_VertexFormat, mesh->mNumVertices));
-			m_Indices                           = ALLOC_BUFFER(std::uint16_t, mesh->mNumFaces);
+			m_Indices                           = ALLOC_BUFFER(std::uint16_t, mesh->mNumFaces * 3);
 
 			auto                  stride        = gVertexSize[m_VertexFormat];
 
@@ -557,7 +557,7 @@ bool CIndexedMesh::LoadCGF(const char* szFileName, const char* szGeomName)
 
 			auto                  UVs           = mesh->mTextureCoords[0];
 			m_nVertCount                        = mesh->mNumVertices;
-			m_nFaceCount                        = mesh->mNumFaces;
+			m_nFaceCount                        = mesh->mNumFaces * 3;
 			for (size_t i = 0; i < m_nVertCount; i++)
 			{
 				memcpy(&vb[i * stride], &mesh->mVertices[i], sizeof(Legacy::Vec3));
@@ -579,7 +579,6 @@ bool CIndexedMesh::LoadCGF(const char* szFileName, const char* szGeomName)
 				const aiFace& Face = mesh->mFaces[i];
 				if (Face.mNumIndices == 3)
 				{
-					continue;
 					m_Indices[3 * i + 0] = Face.mIndices[0];
 					m_Indices[3 * i + 1] = Face.mIndices[1];
 					m_Indices[3 * i + 2] = Face.mIndices[2];

@@ -49,6 +49,30 @@
 #include <BlackBox/Core/BaseTypes.hpp>
 
 #define THREADID_NULL 0
+// platform independent types
+typedef signed char        int8;
+typedef signed short       int16;
+typedef signed int         int32;
+typedef signed long long   int64;
+typedef signed long long   INT64;
+typedef unsigned char      uint8;
+typedef unsigned short     uint16;
+typedef unsigned int       uint32;
+typedef unsigned long long uint64;
+
+typedef float              f32;
+typedef double             f64;
+
+// old-style (will be removed soon)
+typedef signed char        s8;
+typedef signed short       s16;
+typedef signed int         s32;
+typedef signed long long   s64;
+typedef unsigned char      u8;
+typedef unsigned short     u16;
+typedef unsigned int       u32;
+typedef unsigned long long u64;
+
 typedef long              LONG;
 typedef unsigned char     BYTE;
 typedef unsigned long     threadID;

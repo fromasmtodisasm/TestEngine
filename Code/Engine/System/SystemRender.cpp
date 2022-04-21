@@ -68,7 +68,7 @@ void CSystem::RenderStats()
 			float px               = 100;
 			float py               = 200;
 			float dy               = 18;
-			auto  PrintMemoryUsage = [&, this](const char* name, typename auto fn, auto This)
+			auto  PrintMemoryUsage = [&, this](const char* name, auto fn, auto This)
 			{
 				PrintMemoryUsageForName(name, pFont, fn, This, px, py);
 				py += dy;

@@ -60,6 +60,7 @@ public:
 template<typename TVector>
 class TVertexSorter : public TGeomSorter<TVector, float, 3>
 {
+	using TGeomSorter<TVector, float, 3>::m_arrSortOrder;
 public:
 	TVertexSorter(const TVector* pVerts, int nVerts, char* szSortOrder);
 };
@@ -113,7 +114,7 @@ TVertexSorter<TVector>::TVertexSorter(const TVector* pVerts, int nVerts, char* s
 				break;
 			}
 	}
-	FixSortOrder();
+	this->FixSortOrder();
 }
 
 // checks whether the given chunk is really the given chunk; returns true if it's valid
@@ -147,7 +148,7 @@ void CLoaderCGF::printSet(const char* szFormat, const std::set<T>& setMtls, cons
 	if (!setMtls.empty())
 	{
 		PRINT_LOG(" (");
-		for (std::set<T>::const_iterator it = setMtls.begin(); it != setMtls.end();)
+		for (auto it = setMtls.begin(); it != setMtls.end();)
 		{
 			if (it != setMtls.begin())
 				PRINT_LOG(", ");

@@ -1,4 +1,5 @@
-#include <Cry_Geo.h>
+//FIXME:
+//#include <Cry_Geo.h>
 
 #include "Terrain.h"
 
@@ -13,12 +14,16 @@ void             Terrain::mfReset() {}
 CRendElement*    Terrain::mfCopyConstruct(void) { return nullptr; }
 void             Terrain::mfCenter(Vec3& Pos, CCObject* pObj)
 {
+	#if 0
 	AABB bb;
 	mfGetBBox(bb.min, bb.max);
 
 	Pos = 0.5f * (bb.min + bb.max);
 	if (pObj)
 		Pos += pObj->GetTranslation();
+	#else
+	assert(0);
+	#endif
 }
 void  Terrain::mfGetPlane(Plane& pl) {}
 float Terrain::mfDistanceToCameraSquared(const CCObject& thisObject)

@@ -591,46 +591,46 @@ void Scanner::eof()
   }
 
 
-const char* state_to_string(int state)
-{
-    static char buffer[256];
-    char* cState{};
-    switch(state)
-    {
-        case ifdef: cState = "ifdef"; break; 
-        case endif: cState = "endif"; break;
-        case getname: cState = "getname"; break;
-        case define: cState = "define"; break;
-        case defname: cState = "defname"; break;
-        case defval: cState = "defval"; break;
-        case fbo: cState = "fbo"; break;
-        case fbo1: cState = "fbo1"; break;
-        case clearmode: cState = "clearmode"; break;
-        case rendermode: cState = "rendermode"; break;
-        case incl: cState = "incl"; break;
-        case comment: cState = "comment"; break;
-        case comment2: cState = "comment2"; break;
-        case str: cState = "str"; break;
-        case function: cState = "function"; break;
-        case functionbody: cState = "functionbody"; break;
-        case cstbuffer: cState = "cstbuffer"; break;
-        case technique: cState = "technique"; break;
-        case pass: cState = "pass"; break;
-        case sampler_state: cState = "sampler_state"; break;
-        case dst_state: cState = "dst_state"; break;
-        case pr_state: cState = "pr_state"; break;
-        case color_sample_state: cState = "color_sample_state"; break;
-        case rasterization_state: cState = "rasterization_state"; break;
-        case resource: cState = "resource"; break;
-        case resource1: cState = "resource1"; break;
-        case input_layout: cState = "input_layout"; break;
-        case INITIAL: cState = "INITIAL"; break;
-        default: cState = "unknown";
-    }
-
-    sprintf(buffer, "%s(%d)", cState, state);
-    return buffer;
-}
+//const char* state_to_string(int state)
+//{
+//    static char buffer[256];
+//    char* cState{};
+//    switch(state)
+//    {
+//        case ifdef: cState = "ifdef"; break; 
+//        case endif: cState = "endif"; break;
+//        case getname: cState = "getname"; break;
+//        case define: cState = "define"; break;
+//        case defname: cState = "defname"; break;
+//        case defval: cState = "defval"; break;
+//        case fbo: cState = "fbo"; break;
+//        case fbo1: cState = "fbo1"; break;
+//        case clearmode: cState = "clearmode"; break;
+//        case rendermode: cState = "rendermode"; break;
+//        case incl: cState = "incl"; break;
+//        case comment: cState = "comment"; break;
+//        case comment2: cState = "comment2"; break;
+//        case str: cState = "str"; break;
+//        case function: cState = "function"; break;
+//        case functionbody: cState = "functionbody"; break;
+//        case cstbuffer: cState = "cstbuffer"; break;
+//        case technique: cState = "technique"; break;
+//        case pass: cState = "pass"; break;
+//        case sampler_state: cState = "sampler_state"; break;
+//        case dst_state: cState = "dst_state"; break;
+//        case pr_state: cState = "pr_state"; break;
+//        case color_sample_state: cState = "color_sample_state"; break;
+//        case rasterization_state: cState = "rasterization_state"; break;
+//        case resource: cState = "resource"; break;
+//        case resource1: cState = "resource1"; break;
+//        case input_layout: cState = "input_layout"; break;
+//        case INITIAL: cState = "INITIAL"; break;
+//        default: cState = "unknown";
+//    }
+//
+//    sprintf(buffer, "%s(%d)", cState, state);
+//    return buffer;
+//}
 
 void print_state(int state){
   //CryLog("$1Current state: %s", state_to_string(state));

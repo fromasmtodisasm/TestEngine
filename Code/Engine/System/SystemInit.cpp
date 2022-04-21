@@ -12,7 +12,6 @@
 #include <BlackBox/Core/Path.hpp>
 #include <BlackBox/Core/Platform/CryLibrary.h>
 
-using stack_string = string;
 
 //#undef USE_DEDICATED_SERVER_CONSOLE
 //////////////////////////////////////////////////////////////////////////

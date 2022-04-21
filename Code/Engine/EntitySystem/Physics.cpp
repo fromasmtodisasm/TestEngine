@@ -19,6 +19,7 @@ void CPhysicsDebugger::drawContactPoint(const btVector3& PointOnB, const btVecto
 
 void CPhysicsDebugger::reportErrorWarning(const char* warningString)
 {
+	CryError("[PHYSICS] Warning %s", warningString);
 }
 
 void CPhysicsDebugger::draw3dText(const btVector3& location, const char* textString)

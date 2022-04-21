@@ -1,5 +1,5 @@
 #include <BlackBox/Renderer/RendElement.h>
-#include <Cry_Geo.h>
+//#include <Cry_Geo.h>
 
 using CRenderElement = CRendElement;
 
@@ -157,12 +157,17 @@ void             CRendElement::mfReset() {}
 CRendElement*    CRendElement::mfCopyConstruct(void) { return nullptr; }
 void             CRendElement::mfCenter(Vec3& Pos, CCObject* pObj)
 {
+	//FIXME:
+	#if 0
 	AABB bb;
 	mfGetBBox(bb.min, bb.max);
 
 	Pos = 0.5f * (bb.min + bb.max);
 	if (pObj)
 		Pos += pObj->GetTranslation();
+	#else
+	assert(0);
+	#endif
 }
 void  CRendElement::mfGetPlane(Plane& pl) {}
 float CRendElement::mfDistanceToCameraSquared(const CCObject& thisObject)

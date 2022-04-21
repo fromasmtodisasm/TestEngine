@@ -122,7 +122,7 @@ CShader* ShaderMan::Reload(CShader* pShader)
 void ShaderMan::Update()
 {
 	std::unique_lock lock(m_ReloadMutex);
-	for each (auto& s in m_ToReload)
+	for (auto& s : m_ToReload)
 	{
 		s->Reload(0);
 	}

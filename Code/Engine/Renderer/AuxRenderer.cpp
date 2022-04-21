@@ -239,8 +239,8 @@ CRenderAuxGeom::CRenderAuxGeom()
 
 	GetDevice()->CreateDepthStencilState(&desc, &m_pDSStateZPrePass);
 
-	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	desc.DepthFunc      = D3D11_COMPARISON_EQUAL;
+	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	desc.DepthFunc      = ZBUFFER_FUNC;
 	GetDevice()->CreateDepthStencilState(&desc, &m_pDSStateMesh);
 
 	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -353,20 +353,21 @@ void CRenderAuxGeom::DrawAABBs()
 		}
 
 		::GetDeviceContext()->RSSetState(g_pRasterizerStateForMeshCurrent);
-		if (!CV_r_DisableZP)
-		{
-			D3DPERF_BeginEvent(D3DC_Blue, L"ZPrePass");
-			for (auto const& mesh : m_Meshes)
-			{
-				DrawElementToZBuffer(mesh);
-			}
-			D3DPERF_EndEvent();
-			m_pDSStateMeshCurrent = CRenderAuxGeom::m_pDSStateMesh;
-		}
-		else
-		{
-			m_pDSStateMeshCurrent = CRenderAuxGeom::m_pDSStateZPrePass;
-		}
+		//if (!CV_r_DisableZP)
+		//{
+		//	D3DPERF_BeginEvent(D3DC_Blue, L"ZPrePass");
+		//	for (auto const& mesh : m_Meshes)
+		//	{
+		//		DrawElementToZBuffer(mesh);
+		//	}
+		//	D3DPERF_EndEvent();
+		//	m_pDSStateMeshCurrent = CRenderAuxGeom::m_pDSStateMesh;
+		//}
+		//else
+		//{
+		//	m_pDSStateMeshCurrent = CRenderAuxGeom::m_pDSStateZPrePass;
+		//}
+		m_pDSStateMeshCurrent = CRenderAuxGeom::m_pDSStateMesh;
 		::GetDeviceContext()->OMSetDepthStencilState(m_pDSStateMeshCurrent, 0);
 		{
 			D3DPERF_BeginEvent(D3DC_Blue, L"DrawMeshes");

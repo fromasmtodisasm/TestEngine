@@ -301,7 +301,9 @@ void CTerrainRenderer::Render(CCamera& Camera)
 	quadTree->split(p.x, p.z, 1.5f);
 	quadTree->visit(&treeRender, 0, 0, 0);
 
-	RenderQuadTree(Camera);
+	//RenderQuadTree(Camera);
+	//PrepareRenderNodes()
+	RenderNodes(Camera);
 }
 
 void CTerrainRenderer::PrepareForDrawing()
@@ -581,8 +583,8 @@ void CTerrainRenderer::GenerateMesh(int size)
 //#define DETAIL_MAP
 void CTerrainRenderer::LoadTerrain(std::string_view baseFolder)
 {
-	char* diffuse_tmp = "Terrain/%s/diffuse_2049_x0%d_y0%d.dds";
-	char* height_tmp  = "Terrain/%s/height_2049_x0%d_y0%d.dds";
+	auto diffuse_tmp = "Terrain/%s/diffuse_4097%d_y0%d.dds";
+	auto height_tmp  = "Terrain/%s/height_4097_x0%d_y0%d.dds";
 
 	int   nx          = 9;
 	int   ny          = 9;

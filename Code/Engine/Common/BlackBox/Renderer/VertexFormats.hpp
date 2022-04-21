@@ -311,7 +311,7 @@ struct SPipTangents
 template<typename T>
 T* AllocateBuffer(int n, const char* file, int line)
 {
-	return reinterpret_cast<T*>(::operator new(n * sizeof(T), _NORMAL_BLOCK, file, line));
+	return reinterpret_cast<T*>(::operator new[](n * sizeof(T), _NORMAL_BLOCK, file, line));
 }
 
 #define ALLOC_BUFFER(t, n) AllocateBuffer<t>(n, __FILE__, __LINE__);

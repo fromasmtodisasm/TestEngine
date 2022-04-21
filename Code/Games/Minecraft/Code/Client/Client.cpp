@@ -97,7 +97,7 @@ void CClient::Update()
 	{
 		m_CameraController.CurrentCamera()->m_fov -= 5;
 	}
-	if (m_PlayerProcessingCmd.CheckAction(ACTION_FIRE0))
+	if (m_PlayerProcessingCmd.CheckAction(ACTION_ZOOM_TOGGLE))
 	{
 		if (m_PlayerProcessingCmd.CheckAction(ACTION_TURNLR))
 		{

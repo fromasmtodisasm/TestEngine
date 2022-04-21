@@ -12,45 +12,21 @@ class CIXMLDOMNode :
 {
 	// IXMLDOMBase interface
 public:
-	virtual int AddRef() override
-	{
-	}
-	virtual void Release() override
-	{
-	}
+	virtual int  AddRef() override;
+	virtual void Release() override;
 
 	// IXMLDOMNode interface
 public:
-	virtual XDOM::_DOMNodeType getNodeType() override
-	{
-	}
-	virtual const char* getText() override
-	{
-	}
-	virtual const char* getName() override
-	{
-	}
-	virtual XDOM::IXMLDOMNodeList* getChildNodes() override
-	{
-	}
-	virtual void setText(const char* sText) override
-	{
-	}
-	virtual void setName(const char* sName) override
-	{
-	}
-	virtual bool hasChildNodes() override
-	{
-	}
-	virtual bool appendChild(IXMLDOMNode* pNode) override
-	{
-	}
-	virtual XDOM::IXMLDOMNode* getAttribute(const char* sName) override
-	{
-	}
-	virtual XDOM::IXMLDOMNodeList* getElementsByTagName(const char* sName) override
-	{
-	}
+	virtual XDOM::_DOMNodeType     getNodeType() override;
+	virtual const char*            getText() override;
+	virtual const char*            getName() override;
+	virtual XDOM::IXMLDOMNodeList* getChildNodes() override;
+	virtual void                   setText(const char* sText) override;
+	virtual void                   setName(const char* sName) override;
+	virtual bool                   hasChildNodes() override;
+	virtual bool                   appendChild(IXMLDOMNode* pNode) override;
+	virtual XDOM::IXMLDOMNode*     getAttribute(const char* sName) override;
+	virtual XDOM::IXMLDOMNodeList* getElementsByTagName(const char* sName) override;
 };
 
 class CXMLDOMNodeList :
@@ -59,114 +35,43 @@ class CXMLDOMNodeList :
 {
 	// IXMLDOMBase interface
 public:
-	virtual int AddRef() override
-	{
-		return ++m_nRefCounter;
-	}
-	virtual void Release() override
-	{
-		++m_nRefCounter;
-	}
+	virtual int  AddRef() override;
+	virtual void Release() override;
 
 public:
-	CXMLDOMNodeList(tinyxml2::XMLNode* first)
-	    : m_NodeList(first)
-	{
-	}
+	CXMLDOMNodeList(tinyxml2::XMLNode* first);
 
 	// IXMLDOMNodeList interface
 public:
-	virtual size_t length() override
-	{
-		return 0;
-	}
-	virtual void reset() override
-	{
-	}
-	virtual XDOM::IXMLDOMNode* nextNode() override
-	{
-		//return new CXMLDOMNodeList(m_NodeList->NextSibling());
-		return nullptr;
-	}
+	virtual size_t             length() override;
+	virtual void               reset() override;
+	virtual XDOM::IXMLDOMNode* nextNode() override;
 
-	tinyxml2::XMLNode* m_NodeList;
+	tinyxml2::XMLNode*         m_NodeList;
 };
 
 class CXMLDocument : public XDOM::IXMLDOMDocument, _reference_target_t
 {
 public:
 	// Inherited via IXMLDOMDocument
-	virtual int AddRef() override
-	{
-		_reference_target_t::AddRef();
-		return NumRefs();
-	}
-	virtual void Release() override
-	{
-		_reference_target_t::Release();
-	}
-	virtual XDOM::_DOMNodeType getNodeType() override
-	{
-		return XDOM::_DOMNodeType();
-	}
-	virtual const char* getText() override
-	{
-		return nullptr;
-	}
-	virtual const char* getName() override
-	{
-		return nullptr;
-	}
-	virtual XDOM::IXMLDOMNodeList* getChildNodes() override
-	{
-		return new CXMLDOMNodeList(m_Document.FirstChild());
-	}
-	virtual void setText(const char* sText) override
-	{
-	}
-	virtual void setName(const char* sName) override
-	{
-	}
-	virtual bool hasChildNodes() override
-	{
-		return !m_Document.NoChildren();
-	}
-	virtual bool appendChild(IXMLDOMNode* pNode) override
-	{
-		return false;
-	}
-	virtual XDOM::IXMLDOMNode* getAttribute(const XMLCHAR* sName) override
-	{
-		return nullptr;
-	}
-	virtual XDOM::IXMLDOMNodeList* getElementsByTagName(const XMLCHAR* sName) override
-	{
-		return new CXMLDOMNodeList(m_Document.FirstChildElement(sName));
-	}
-	virtual bool load(const XMLCHAR* sSourceFile) override
-	{
-		return m_Document.LoadFile(sSourceFile) == tinyxml2::XML_SUCCESS;
-	}
-	virtual bool loadXML(const XMLCHAR* szString) override
-	{
-		return m_Document.Parse(szString) == tinyxml2::XML_SUCCESS;
-	}
-	virtual XDOM::IXMLDOMNode* getRootNode() override
-	{
-		return nullptr;
-	}
-	virtual XDOM::IXMLDOMNode* createNode(XDOM::_DOMNodeType Type, const char* name) override
-	{
-		return nullptr;
-	}
-	virtual const XMLCHAR* getErrorString() override
-	{
-		return m_Document.ErrorStr();
-	}
-	virtual unsigned short getCheckSum() override
-	{
-		return 0;
-	}
+	virtual int                    AddRef() override;
+	virtual void                   Release() override;
+	virtual XDOM::_DOMNodeType     getNodeType() override;
+	virtual const char*            getText() override;
+	virtual const char*            getName() override;
+	virtual XDOM::IXMLDOMNodeList* getChildNodes() override;
+	virtual void                   setText(const char* sText) override;
+	virtual void                   setName(const char* sName) override;
+	virtual bool                   hasChildNodes() override;
+	virtual bool                   appendChild(IXMLDOMNode* pNode) override;
+	virtual XDOM::IXMLDOMNode*     getAttribute(const XMLCHAR* sName) override;
+	virtual XDOM::IXMLDOMNodeList* getElementsByTagName(const XMLCHAR* sName) override;
+	virtual bool                   load(const XMLCHAR* sSourceFile) override;
+	virtual bool                   loadXML(const XMLCHAR* szString) override;
+	virtual XDOM::IXMLDOMNode*     getRootNode() override;
+	virtual XDOM::IXMLDOMNode*     createNode(XDOM::_DOMNodeType Type, const char* name) override;
+	virtual const XMLCHAR*         getErrorString() override;
+	virtual unsigned short         getCheckSum() override;
 
-	tinyxml2::XMLDocument m_Document;
+	tinyxml2::XMLDocument          m_Document;
 };

@@ -242,6 +242,6 @@ ISoundSystem* CreateSoundSystem(struct ISystem*, void* pInitData)
 	auto sound = AudioSystem->LoadSound("Music/Background/spirit-blossom.mp3", FLAG_SOUND_MUSIC);
 #endif
 
-	sound->Play();
+	//sound->Play();
 	return AudioSystem;
 }

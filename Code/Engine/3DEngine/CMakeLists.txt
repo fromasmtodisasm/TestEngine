@@ -23,8 +23,8 @@ add_sources(
 		Assimp/CGFImporter.cpp
 		Assimp/CGFImporter.h
 	SOURCE_GROUP "Assimp\\\\CGF"
-		Assimp/CGF/Import.cpp
-		Assimp/CGF/Import.h
+		#Assimp/CGF/Import.cpp
+		#Assimp/CGF/Import.h
 		Assimp/CGF/Loader.cpp
 		Assimp/CGF/Loader.h
 		Assimp/CGF/CgfUtils.cpp

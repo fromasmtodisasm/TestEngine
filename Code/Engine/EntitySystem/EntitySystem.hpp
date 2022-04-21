@@ -1,6 +1,7 @@
 #pragma once
 #include <BlackBox/System/ISystem.hpp>
 #include <BlackBox/EntitySystem/IEntitySystem.hpp>
+#include <BlackBox/System/ConsoleRegistration.h>
 
 #include "Entity.hpp"
 
@@ -97,5 +98,7 @@ public:
 
 	btDiscreteDynamicsWorld*          m_pPhysicalWorld;
 
-	SPhysicsInitParams*                m_PhysicsInitParams;
+	SPhysicsInitParams*               m_PhysicsInitParams;
+
+	CVarInt                           m_DrawDebugPhysics = {"p_DrawPhysics", 0};
 };

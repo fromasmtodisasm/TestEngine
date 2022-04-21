@@ -47,7 +47,8 @@ public:
 
 struct RenderNode
 {
-	glm::vec2 Pos; float Scale;
+	glm::vec2 Pos;
+	float     Scale;
 };
 
 class CQuadTreeTerrain
@@ -56,9 +57,9 @@ public:
 	CQuadTreeTerrain() = default;
 };
 
-class CTerrainRenderer : 
-	public IConsoleVarSink, 
-	public IRender
+class CTerrainRenderer :
+    public IConsoleVarSink,
+    public IRender
 {
 public:
 	using Vec3           = Legacy::Vec3;
@@ -108,9 +109,9 @@ public:
 	//REGISTER_CVAR2("r_DrawDistance", &CV_DrawDistance, 500.f, 0, "Terrain patch draw distance");
 	//REGISTER_CVAR2("r_TerrainPatchScale", &CV_Scale, 100.f, 0, "Terrain patch scale");
 
-	CVarInt                    CV_TerrainPatchSize{"r_TerrainPatchSize", 127};
-	CVarFloat                  CV_DrawDistance{"r_DrawDistance", 1500.f};
-	CVarFloat                  CV_Scale{"r_TerrainScalePatch", 100.f};
+	CVarInt                    CV_TerrainPatchSize = {"r_TerrainPatchSize", 127};
+	CVarFloat                  CV_DrawDistance     = {"r_DrawDistance", 1500.f};
+	CVarFloat                  CV_Scale            = {"r_TerrainScalePatch", 100.f};
 	bool                       m_bNeedRegenerate{};
 	ComPtr<ID3D11SamplerState> LinearSampler;
 
@@ -121,8 +122,8 @@ public:
 	std::deque<Task>        m_Tasks;
 	std::vector<RenderNode> m_RenderNodes;
 
-	CVarInt                 CV_PatchPerBatch{"r_PatchPerBatch", 10};
-	CVarInt                 CV_SleepMillisecondsInDownload{"r_SleepMillisecondsInDownload", 100};
+	CVarInt                 CV_PatchPerBatch               = {"r_PatchPerBatch", 10};
+	CVarInt                 CV_SleepMillisecondsInDownload = {"r_SleepMillisecondsInDownload", 100};
 
 	// Inherited via IConsoleVarSink
 	virtual bool            OnBeforeVarChange(ICVar* pVar, const char* sNewValue) override;

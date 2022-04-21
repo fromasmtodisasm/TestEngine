@@ -71,6 +71,7 @@ class CScriptObjectRenderer;
 #include <BlackBox/System/ZLib/IZlibDecompressor.h>
 
 typedef void* WIN_HMODULE;
+using stack_string = string;
 
 struct SSystemCVars
 {

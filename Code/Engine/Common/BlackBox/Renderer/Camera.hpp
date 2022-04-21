@@ -27,7 +27,7 @@ namespace Detail
 	template<typename GenType>
 	GenType GetNormalized(const GenType& v)
 	{
-		return glm::normalize(v)
+		return glm::normalize(v);
 	}
 
 #if 0

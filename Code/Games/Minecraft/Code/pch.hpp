@@ -174,6 +174,8 @@ typedef SmartScriptObject _SmartScriptObject;
 #include "Client/XClient.hpp"
 
 #include "Legacy/IInput.h"
+#include <Cry_Math.h>
+//#include <BlackBox/Math/Cry_Matrix.h>
 
 //////////////////////////////////////////////////////////////////////////
 //! Reports a Game Warning to validator with WARNING severity.
@@ -391,6 +393,8 @@ inline Vec3 ConvertToRadAngles( const Ang3& v )
 	return dir;
 }	
 
+//FIXME:
+#if 0
 //////////////////////////////////////////////////////////////////////
 inline Matrix44	ViewMatrix(const Ang3 &angle)	
 {
@@ -399,6 +403,7 @@ inline Matrix44	ViewMatrix(const Ang3 &angle)
 	Matrix33 ViewMatY=Matrix33::CreateRotationY(+angle.z);
 	return GetTransposed44( ViewMatX*ViewMatY*ViewMatZ);
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 //ZXY
@@ -496,9 +501,14 @@ z is left/right
 */
 inline Ang3 ConvertVectorToCameraAnglesSnap180(const Vec3& vec)
 {
+	#if 0
 	Ang3 ang=ConvertUnitVectorToCameraAngles( GetNormalized(vec) );
 	ang.Snap180();
 	return ang;
+	#else
+	Ang3 ang{};
+	assert(0);
+	#endif
 }
 
 #define YAW		(0)  

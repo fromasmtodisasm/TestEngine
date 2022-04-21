@@ -102,7 +102,10 @@ void CEntitySystem::Update()
 {
 	auto time = Env::Timer()->GetFrameTime();
 	m_pPhysicalWorld->stepSimulation(time);
-	//m_pPhysicalWorld->debugDrawWorld();
+	if (m_DrawDebugPhysics)
+	{
+		m_pPhysicalWorld->debugDrawWorld();
+	}
 }
 
 IScriptSystem* CEntitySystem::GetScriptSystem()
