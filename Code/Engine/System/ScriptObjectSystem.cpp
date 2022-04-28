@@ -203,7 +203,13 @@ int CScriptObjectSystem::LoadTexture(IFunctionHandler* pH)
 #if 0
             CryLog("User ask load %s texture", name);
 #endif
-			int       t         = Env::Renderer()->LoadTexture(name, 0, 0);
+			string _name(name);
+			auto      ext       = PathUtil::GetExt(_name.c_str());
+			if (ext[0] == 0)
+			{
+				_name += ".dds";
+			}
+			int       t         = Env::Renderer()->LoadTexture(_name.c_str(), 0, 0);
 			USER_DATA pUserData = m_pScriptSystem->CreateUserData((int)t, USER_DATA_TEXTURE);
 			return pH->EndFunction(pUserData);
 		}

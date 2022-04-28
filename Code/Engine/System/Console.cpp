@@ -300,7 +300,7 @@ CXConsole::CXConsole(CSystem& system)
 	m_bCheatHashDirty       = false;
 	m_nCheatHash            = 0;
 
-#if 0
+#if 1
 	m_bStaticBackground = true;
 #else
 	m_bStaticBackground             = false;
@@ -1410,22 +1410,27 @@ void CXConsole::Draw()
 			{
 				//IRenderAuxImage::DrawImage(0.0f, 0.0f, float(m_pRenderer->GetWidth()), float(m_pRenderer->GetHeight()), m_pImage ? m_pImage->getId() : m_nWhiteTexID, 0.0f, 0.0f, 1.0f, 1.0f, 0,0,0,0.99);
 				//IRenderAuxImage::DrawImage(0.0f, 0.0f, float(m_pRenderer->GetWidth()), float(m_pRenderer->GetHeight()), 12, 0.0f, 0.0f, 1.0f, 1.0f, 0,0,0,0.99);
-				Env::Renderer()->Draw2dImage(0.0f, 0.0f, float(m_pRenderer->GetWidth()), float(m_nScrollPos), m_pImage ? m_pImage->GetTextureID() : m_nWhiteTexID, 0.0f, 0.0f, 1.0f, 1.0f, 0, 0, 0, 0, 0.99);
+				//Env::Renderer()->Draw2dImage(0.0f, 0.0f, float(m_pRenderer->GetWidth()), float(m_nScrollPos), m_pImage ? m_pImage->GetTextureID() : m_nWhiteTexID, 0.0f, 0.0f, 1.0f, 1.0f, 0, 0, 0, 0, 0.99);
+				IRenderAuxImage::Draw2dImage(0.0f, 0.0f, float(800), float(600), m_pImage ? m_pImage->GetTextureID() : m_nWhiteTexID, 0.0f, 1.0f, 1.0f, 0.0f, 0, ColorF(0,0,0,1));
 			}
 			else
 			{
+				//float fReferenceSize = 600.0f;
+				//float fSizeX         = 800;
+				//float s0, s1;
+				//s0 = s1      = (float)fmod(Env::Timer()->GetCurrTime(), 800) / 800.f * 10;
+				//float fSizeY = (float)m_nTempScrollMax * m_pRenderer->GetHeight() / fReferenceSize;
+
 				float fReferenceSize = 600.0f;
-				float fSizeX         = (float)m_pRenderer->GetWidth();
-				float s0, s1;
-				s0 = s1      = (float)fmod(Env::Timer()->GetCurrTime(), 800) / 800.f * 10;
-				float fSizeY = (float)m_nTempScrollMax; // * m_pRenderer->GetHeight() / fReferenceSize;
+				float fSizeX = (float)800;
+				float fSizeY = float(m_nTempScrollMax) /** m_pRenderer->GetHeight() / fReferenceSize*/;
 
 #if 0
 				IRenderAuxImage::DrawImage(0, 0, fSizeX, fSizeY, m_nWhiteTexID, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.7f);
 				IRenderAuxImage::DrawImage(0, fSizeY, fSizeX, 2.0f * m_pRenderer->GetHeight() / fReferenceSize, m_nWhiteTexID, 0, 0, 0, 0, 0.0f, 0.0f, 0.0f, 1.0f);
 #else
-				Env::Renderer()->Draw2dImage(0, 0, 800, 600, m_nWhiteTexID, s0, 0.0f, s0 + 1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.98f);
-				Env::Renderer()->Draw2dImage(0, 0, 800, 600, m_nWhiteTexID, s0, 0.0f, s0 - 1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.98f);
+				Env::Renderer()->DrawImage(0, 0, fSizeX, fSizeY, m_nWhiteTexID, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.7f);
+				//Env::Renderer()->Draw2dImage(0, 0, 800, 600, m_nWhiteTexID, s0, 0.0f, s0 - 1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.98f);
 				//Env::Renderer()->Draw2dImage(0, fSizeY, fSizeX, 2.0f * m_pRenderer->GetHeight() / fReferenceSize, m_nWhiteTexID, 0, 0, 0, 0, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 #endif
 			}
@@ -1433,7 +1438,7 @@ void CXConsole::Draw()
 
 		// draw progress bar
 		if (m_nProgressRange)
-			m_pRenderer->DrawImage(0.0f, 0.0f, float(800), float(600), m_nLoadingBackTexID, 0.0f, 1.0f, 1.0f, 0.0f, 0, 0, 0, 1);
+			m_pRenderer->Draw2dImage(0.0f, 0.0f, float(800), float(600), m_nLoadingBackTexID, 0.0f, 1.0f, 1.0f, 0.0f, 0, 0, 0, 1);
 
 		DrawBuffer(m_nScrollPos, "console");
 	}

@@ -169,7 +169,14 @@ void CFunctionHandler::Unref(HSCRIPTFUNCTION hFunc)
 
 bool CFunctionHandler::GetParamUDVal(int nIdx, USER_DATA& val, int& cookie)
 {
-	return GetParamAny(nIdx, val);
+	auto result = GetParamAny(nIdx, val);
+	if (result)
+	{
+		cookie        = ((UserDataInfo*)val)->cookie;
+		auto tmp      = ((UserDataInfo*)val)->ptr;
+		(INT_PTR&)val = tmp;
+	}
+	return result;
 }
 
 int CFunctionHandler::EndFunction(USER_DATA ud)

@@ -484,6 +484,10 @@ public:
 		_Remove(n, 1);
 	}
 
+#ifndef fxopen
+	#define fxopen fopen
+#endif // !fxopen
+
 	void Load(const char* file_name)
 	{
 		Clear();
@@ -567,7 +571,7 @@ public:
 	const T* begin() const { return m_pElements; }
 	const T* end() const { return m_pElements + m_nCount; }
 
-	int      GetMemoryUsage() { return (int)(m_nAllocatedCount * sizeof(T)); }
+	int      GetMemoryUsage() const { return (int)(m_nAllocatedCount * sizeof(T)); }
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -578,5 +582,5 @@ inline void Exchange(T& X, T& Y)
 	X           = Y;
 	Y           = Tmp;
 }
-
+#undef fxopen
 #endif // __TARRAY_H__

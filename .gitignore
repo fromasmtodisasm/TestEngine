@@ -46,3 +46,4 @@ Thumbs.db
 *.zip
 /Assets/raw
 tmp
+/profiles/player/default/savegames

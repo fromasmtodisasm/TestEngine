@@ -9,9 +9,9 @@
 //////////////////////////////////////////////////////////////////////
 
 // common containers for overloads
+	#include <BlackBox/Core/StlUtils.hpp>
+	#include <Tarray.h>
 #if 0
-	#include <CryCore/StlUtils.h>
-	#include <CryRenderer/Tarray.h>
 	#include <Cry3DEngine/CryPodArray.h>
 	#include <CryMath/Cry_Vector3.h>
 	#include <CryMath/Cry_Quat.h>
@@ -445,6 +445,17 @@ public:
 		else
 		{
 			return false;
+		}
+	}
+
+	template<typename T>
+	void AddObject(const TArray<T>& rVector)
+	{
+		if (!this->AddObject(rVector.begin(), rVector.capacity() * sizeof(T))) return;
+
+		for (int i = 0, end = rVector.size(); i < end; ++i)
+		{
+			this->AddObject(rVector[i]);
 		}
 	}
 

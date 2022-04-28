@@ -121,6 +121,13 @@ using VectorMap = std::map<K,V>;
 
 #define CONST_TEMP_STRING(a) a
 
+struct UserDataInfo
+{
+	INT_PTR ptr;
+	int cookie;
+};
+
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

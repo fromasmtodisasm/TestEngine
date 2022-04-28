@@ -29,12 +29,6 @@ typedef ScriptFileList::iterator                    ScriptFileListItor;
 
 class CFunctionHandler;
 
-struct UserDataInfo
-{
-	INT_PTR ptr;
-	int cookie;
-};
-
 inline ScriptVarType LuatypeToScriptVarType(int type)
 {
 	ScriptVarType result = ScriptVarType::Null;
